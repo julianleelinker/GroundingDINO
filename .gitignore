@@ -144,3 +144,8 @@ grounding/version.py
 
 vis/
 tmp/
+
+
+groundingdino/version.py
+data/
+weights/
