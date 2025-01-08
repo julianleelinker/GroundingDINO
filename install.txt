@@ -1,0 +1,8 @@
+# git clone groundingdino
+conda create -n groundingdino python==3.10
+conda activate groundingdino
+export TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX"
+conda install -c "nvidia/label/cuda-12.1.1" cuda -y
+export CUDA_HOME=$CONDA_PREFIX
+cd ~/work/groundingdino
+python -m pip install .
