@@ -1,6 +1,8 @@
 import argparse
 import os
 import sys
+import pathlib
+import json
 
 import numpy as np
 import torch
@@ -12,6 +14,147 @@ from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
 from groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
 from groundingdino.util.vl_utils import create_positive_map_from_span
+
+
+CLASS_LIST = [
+    'algae',
+    'animal',
+    'barricade',
+    'boat',
+    'branch',
+    'bridge',
+    'building',
+    'bus',
+    'bus stop',
+    'cane',
+    'car',
+    'collapse',
+    'detention basin',
+    'dog',
+    'door',
+    'driveway',
+    'driveway entracne',
+    'driveway exit',
+    'electric tower',
+    'electric wire',
+    'emergency exit',
+    'entrance',
+    'equipment',
+    'exit',
+    'fallen leaves',
+    'faregate',
+    'fence',
+    'fire',
+    'firearm',
+    'fish',
+    'flooding',
+    'flowmeter',
+    'garbage',
+    'graffiti',
+    'guardrail',
+    'helmet',
+    'human',
+    'intersection',
+    'jersey barrier',
+    'knife',
+    'landslide',
+    'lane',
+    'levee',
+    'life vest',
+    'lighting',
+    'litter',
+    'lock',
+    'manhole cover',
+    'motorcycle',
+    'no smoking sign',
+    'obstacle',
+    'oil leakage',
+    'oil stain',
+    'palanquin',
+    'park',
+    'parking lot',
+    'passage',
+    'paved shoulder',
+    'pavement crack',
+    'pavement defect',
+    'pavement patch',
+    'people',
+    'pipeline',
+    'platform',
+    'pole',
+    'ponding',
+    'port',
+    'road marking',
+    'rock',
+    'rope',
+    'safety belt',
+    'safety harness',
+    'seat crutch',
+    'ship',
+    'sidewalk',
+    'sign',
+    'silt',
+    'smoke',
+    'solar panel',
+    'steel',
+    'streetlight',
+    'stroller',
+    'substation',
+    'tank',
+    'thermometer',
+    'tire',
+    'tools',
+    'traffic cone',
+    'traffic light',
+    'traffic sign',
+    'transformer',
+    'transformer box',
+    'trash',
+    'trees',
+    'truck',
+    'twig',
+    'vehicle',
+    'vehicle door',
+    'waiting area',
+    'warning sign',
+    'waste',
+    'water gauge',
+    'waterway',
+    'weapon',
+    'wheelchair',
+    'window',
+    'wounds',
+]
+HARD_CLASS_LIST = [
+    'algae',
+    'detention basin', 
+    'electric tower',
+    'electric wire',
+    'flowmeter',
+    'graffiti',
+    'guardrail',
+    'safety harness',
+    'seat crutch',
+    'tank',
+    'transformer',
+    'transformer box',
+    'palanquin,'
+]
+# CLASS_LIST = [
+#     'human',
+#     'people',
+#     'pedestrian',
+#     'fence',
+# ]
+PROMPT_WORDS = 12
+N_PROMPTS = len(CLASS_LIST)//PROMPT_WORDS + 1
+TEXT_PROMPT_LIST = [' . '.join(CLASS_LIST[i:i+PROMPT_WORDS]) for i in range(N_PROMPTS-1)]
+TEXT_PROMPT_LIST.append(' . '.join(CLASS_LIST[N_PROMPTS*(PROMPT_WORDS-1):]))
+TEXT_PROMPT_LIST = [
+    'people',
+    # 'fence',
+    # 'mobile',
+]
 
 
 def plot_boxes_to_image(image_pil, tgt):
@@ -91,7 +234,6 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold=No
     device = "cuda" if not cpu_only else "cpu"
     model = model.to(device)
     image = image.to(device)
-    print(caption)
     with torch.no_grad():
         outputs = model(image[None], captions=[caption])
     logits = outputs["pred_logits"].sigmoid()[0]  # (nq, 256)
@@ -148,6 +290,68 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold=No
     return boxes_filt, pred_phrases
 
 
+def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold, token_spans):
+    # load image
+    image_pil, image = load_image(image_path)
+
+    # run model
+    boxes_filt, pred_phrases = get_grounding_output(
+        model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only, token_spans=eval(f"{token_spans}")
+    )
+
+    # visualize pred
+    size = image_pil.size
+    pred_dict = {
+        "boxes": boxes_filt,
+        "size": [size[1], size[0]],  # H,W
+        "labels": pred_phrases,
+    }
+    return image_pil, pred_dict
+
+
+def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans):
+    # load image
+    image_pil, image = load_image(image_path)
+
+    # run model
+    boxes_filt_list, pred_phrases_concat = [], []
+    for text_prompt in text_prompt_list:
+        print(f'infering {image_path} with {text_prompt}')
+        boxes_filt, pred_phrases = get_grounding_output(
+            model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only, token_spans=eval(f"{token_spans}")
+        )
+        boxes_filt_list.append(boxes_filt)
+        pred_phrases_concat.extend(pred_phrases)
+    boxes_filt = torch.vstack(boxes_filt_list)
+
+    # visualize pred
+    size = image_pil.size
+    pred_dict = {
+        "boxes": boxes_filt,
+        "size": [size[1], size[0]],  # H,W
+        "labels": pred_phrases_concat,
+    }
+    return image_pil, pred_dict
+        
+
+def infer_images_text_list_save_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans):
+    for image_path in image_path_list:
+        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans)
+        print(pred_dict['labels'])
+        image_with_box = plot_boxes_to_image(image_pil, pred_dict)[0]
+        print(os.path.join(output_root_dir, f"{image_path.name}"))
+        # import ipdb; ipdb.set_trace()
+        image_with_box.save(os.path.join(output_root_dir, f"{image_path.name}"))
+
+
+# def infer_an_image_text_list():
+#     pred_dict_list = []
+#     for text_prompt in TEXT_PROMPT_LIST:
+#         image_pil, pred_dict = infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold, token_spans)
+#         pred_dict_list.append(pred_dict)
+#         # print(pred_dict)
+#         # import ipdb; ipdb.set_trace()
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Grounding DINO example", add_help=True)
@@ -156,7 +360,6 @@ if __name__ == "__main__":
         "--checkpoint_path", "-p", type=str, required=True, help="path to checkpoint file"
     )
     parser.add_argument("--image_path", "-i", type=str, required=True, help="path to image file")
-    parser.add_argument("--text_prompt", "-t", type=str, required=True, help="text prompt")
     parser.add_argument(
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
@@ -171,47 +374,55 @@ if __name__ == "__main__":
                         ")
 
     parser.add_argument("--cpu-only", action="store_true", help="running on cpu only!, default=False")
+    # parser.add_argument("--prefix", type=str, default='pred', help="prefix of saved predicted filename")
     args = parser.parse_args()
 
     # cfg
     config_file = args.config_file  # change the path of the model config file
     checkpoint_path = args.checkpoint_path  # change the path of the model
-    image_path = args.image_path
-    text_prompt = args.text_prompt
+    image_root = args.image_path
     output_dir = args.output_dir
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold
     token_spans = args.token_spans
+    if 'SwinB' in config_file:
+        model_name = 'SwinB'
+    else:
+        model_name = 'SwinT'
 
-    # make dir
-    os.makedirs(output_dir, exist_ok=True)
-    # load image
-    image_pil, image = load_image(image_path)
     # load model
     model = load_model(config_file, checkpoint_path, cpu_only=args.cpu_only)
 
-    # visualize raw image
-    image_pil.save(os.path.join(output_dir, "raw_image.jpg"))
+    # make dir
+    os.makedirs(output_dir, exist_ok=True)
 
-    # set the text_threshold to None if token_spans is set.
+    # # set the text_threshold to None if token_spans is set.
     if token_spans is not None:
         text_threshold = None
         print("Using token_spans. Set the text_threshold to None.")
 
-
-    # run model
-    boxes_filt, pred_phrases = get_grounding_output(
-        model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only, token_spans=eval(f"{token_spans}")
-    )
-
-    # visualize pred
-    size = image_pil.size
-    pred_dict = {
-        "boxes": boxes_filt,
-        "size": [size[1], size[0]],  # H,W
-        "labels": pred_phrases,
-    }
-    print(pred_dict)
-    # import ipdb; ipdb.set_trace()
-    image_with_box = plot_boxes_to_image(image_pil, pred_dict)[0]
-    image_with_box.save(os.path.join(output_dir, "pred.jpg"))
+    root_path = pathlib.Path(image_root)
+    if root_path.is_dir():
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / root_path.name
+        output_root_dir.mkdir(exist_ok=True, parents=True)
+        image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
+        infer_images_text_list_save_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
+        # for image_path in image_path_list:
+            # image_pil, pred_dict = infer_an_image_text_list(image_path, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
+            # print(pred_dict['labels'])
+            # image_with_box = plot_boxes_to_image(image_pil, pred_dict)[0]
+            # print(os.path.join(output_root_dir, f"{args.prefix}_{image_path.name}"))
+            # # import ipdb; ipdb.set_trace()
+            # image_with_box.save(os.path.join(output_root_dir, f"{args.prefix}_{image_path.name}"))
+    elif root_path.suffix == '.json':
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / root_path.stem
+        output_root_dir.mkdir(exist_ok=True, parents=True)
+        with open(root_path, "r") as file:
+            image_path_list = json.load(file)
+        image_path_list = [pathlib.Path(image_path) for image_path in image_path_list][:20]
+        infer_images_text_list_save_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
+    else:
+        image_pil, pred_dict = infer_an_image_text_list(root_path, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
+        print(pred_dict['labels'])
+        image_with_box = plot_boxes_to_image(image_pil, pred_dict)[0]
+        image_with_box.save(os.path.join(output_dir, f"{model_name}_{root_path.name}"))
