@@ -151,7 +151,9 @@ N_PROMPTS = len(CLASS_LIST)//PROMPT_WORDS + 1
 TEXT_PROMPT_LIST = [' . '.join(CLASS_LIST[i:i+PROMPT_WORDS]) for i in range(N_PROMPTS-1)]
 TEXT_PROMPT_LIST.append(' . '.join(CLASS_LIST[N_PROMPTS*(PROMPT_WORDS-1):]))
 TEXT_PROMPT_LIST = [
-    'people',
+    # 'people',
+    # 'car',
+    'excavator',
     # 'fence',
     # 'mobile',
 ]
@@ -168,7 +170,8 @@ def plot_boxes_to_image(image_pil, tgt):
     mask_draw = ImageDraw.Draw(mask)
 
     # draw boxes and masks
-    for box, label in zip(boxes, labels):
+    for id, (box, label) in enumerate(zip(boxes, labels)):
+        label_text = f'{id}|{str(label)}'
         # from 0..1 to 0..W, 0..H
         box = box * torch.Tensor([W, H, W, H])
         # from xywh to xyxy
@@ -186,13 +189,13 @@ def plot_boxes_to_image(image_pil, tgt):
 
         font = ImageFont.load_default()
         if hasattr(font, "getbbox"):
-            bbox = draw.textbbox((x0, y0), str(label), font)
+            bbox = draw.textbbox((x0, y0), label_text, font)
         else:
             w, h = draw.textsize(str(label), font)
             bbox = (x0, y0, w + x0, y0 + h)
         # bbox = draw.textbbox((x0, y0), str(label))
         draw.rectangle(bbox, fill=color)
-        draw.text((x0, y0), str(label), fill="white")
+        draw.text((x0, y0), label_text, fill="white")
 
         mask_draw.rectangle([x0, y0, x1, y1], fill=255, width=6)
 
@@ -332,25 +335,95 @@ def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold,
         "labels": pred_phrases_concat,
     }
     return image_pil, pred_dict
-        
 
-def infer_images_text_list_save_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans):
+
+def xywh_to_xyxy(bboxes):
+    results = bboxes.clone()
+    results[:, :2] -= results[:, 2:] / 2
+    results[:, 2:] += results[:, :2]
+    return results
+
+
+def xyxy_to_xywh(bboxes):
+    results = bboxes.clone()
+    results[:, 2:] -= results[:, :2]
+    results[:, :2] += results[:, 2:] / 2
+    return results
+
+
+def fix_boundary(bboxes):
+    results = bboxes.clone()
+    results = xywh_to_xyxy(results)
+    results = torch.clamp(results, 0., 1.)
+    results = xyxy_to_xywh(results)
+    return results
+
+
+def compute_intersection_over_self(bboxes1, bboxes2=None):
+    if bboxes2 is None:
+        bboxes2 = bboxes1.clone()
+
+    area1 = ((bboxes1[:, 2] - bboxes1[:, 0]) * (bboxes1[:, 3] - bboxes1[:, 1])).unsqueeze(-1)
+    area2 = ((bboxes2[:, 2] - bboxes2[:, 0]) * (bboxes2[:, 3] - bboxes2[:, 1])).unsqueeze(0)
+    area_min = torch.min(area1, area2)
+
+    # add dummy dimension 1 to bbox1
+    bboxes1 = bboxes1.unsqueeze(-1)
+    # add dummy dimension 1 to bbox2 to last dimension
+    bboxes2 = bboxes2.unsqueeze(-1)
+    # reverse dimension of bbox2
+    bboxes2 = bboxes2.permute(2, 1, 0)
+
+    ma = torch.max(bboxes1, bboxes2)
+    mi = torch.min(bboxes1, bboxes2)
+    width = torch.max(torch.tensor([0]), mi[:, 2, :] - ma[:, 0, :])
+    height = torch.max(torch.tensor([0]), mi[:, 3, :] - ma[:, 1, :])
+    intersection_area = width * height
+    ios = intersection_area / area_min
+    return ios
+
+
+def merge_two_bbox(bbox1, bbox2):
+    result = torch.max(bbox1, bbox2)
+    result[:2] = torch.min(bbox1, bbox2)[:2]
+    return result
+
+
+def merge_by_ios(bboxes, image_size, threshold=0.1):
+    labels = [str(i) for i in range(len(bboxes))]
+    bboxes = xywh_to_xyxy(bboxes)
+    H, W = image_size
+    bboxes = bboxes * torch.Tensor([W, H, W, H])
+    while True:
+        ios = compute_intersection_over_self(bboxes)
+        ios = ios - 2.0*torch.eye(ios.size(0))
+        max_pos = torch.unravel_index(torch.argmax(ios), ios.shape)
+        print(ios)
+        print(ios[max_pos])
+        print(threshold)
+        if ios[max_pos]<threshold:
+            break
+        bboxes[max_pos[0]] = merge_two_bbox(bboxes[max_pos[0]], bboxes[max_pos[1]])
+        bboxes = torch.cat((bboxes[:max_pos[1], :], bboxes[max_pos[1]+1:, :]), dim=0)
+        labels[max_pos[0]] = labels[max_pos[0]] + ' ' + labels.pop(max_pos[1])
+    print('done')
+    bboxes = bboxes / torch.Tensor([W, H, W, H])
+    bboxes = xyxy_to_xywh(bboxes)
+    return bboxes, labels
+
+
+def infer_images_text_list_save_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans, scale=8.0):
     for image_path in image_path_list:
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans)
         print(pred_dict['labels'])
+        pred_dict["boxes"][:, 2:] *= scale
+        pred_dict["boxes"] = fix_boundary(pred_dict["boxes"])
+        pred_dict["boxes"], pred_dict['labels'] = merge_by_ios(pred_dict["boxes"], pred_dict['size'])
         image_with_box = plot_boxes_to_image(image_pil, pred_dict)[0]
         print(os.path.join(output_root_dir, f"{image_path.name}"))
         # import ipdb; ipdb.set_trace()
         image_with_box.save(os.path.join(output_root_dir, f"{image_path.name}"))
 
-
-# def infer_an_image_text_list():
-#     pred_dict_list = []
-#     for text_prompt in TEXT_PROMPT_LIST:
-#         image_pil, pred_dict = infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold, token_spans)
-#         pred_dict_list.append(pred_dict)
-#         # print(pred_dict)
-#         # import ipdb; ipdb.set_trace()
 
 if __name__ == "__main__":
 
@@ -363,7 +436,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
-
     parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
     parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
     parser.add_argument("--token_spans", type=str, default=None, help=
@@ -372,6 +444,7 @@ if __name__ == "__main__":
                         if you would like to detect 'cat', the token_spans should be '[[[2, 5]], ]', since 'a cat and a dog'[2:5] is 'cat'. \
                         if you would like to detect 'a cat', the token_spans should be '[[[0, 1], [2, 5]], ]', since 'a cat and a dog'[0:1] is 'a', and 'a cat and a dog'[2:5] is 'cat'. \
                         ")
+    parser.add_argument("--text_prompt", "-t", type=str, required=True, help="text prompt")
 
     parser.add_argument("--cpu-only", action="store_true", help="running on cpu only!, default=False")
     # parser.add_argument("--prefix", type=str, default='pred', help="prefix of saved predicted filename")
@@ -389,6 +462,7 @@ if __name__ == "__main__":
         model_name = 'SwinB'
     else:
         model_name = 'SwinT'
+    TEXT_PROMPT_LIST = [args.text_prompt]
 
     # load model
     model = load_model(config_file, checkpoint_path, cpu_only=args.cpu_only)
@@ -403,10 +477,10 @@ if __name__ == "__main__":
 
     root_path = pathlib.Path(image_root)
     if root_path.is_dir():
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / root_path.name
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt)
         output_root_dir.mkdir(exist_ok=True, parents=True)
         image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
-        infer_images_text_list_save_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
+        infer_images_text_list_save_result(image_path_list[:1], model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
         # for image_path in image_path_list:
             # image_pil, pred_dict = infer_an_image_text_list(image_path, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
             # print(pred_dict['labels'])
@@ -415,11 +489,11 @@ if __name__ == "__main__":
             # # import ipdb; ipdb.set_trace()
             # image_with_box.save(os.path.join(output_root_dir, f"{args.prefix}_{image_path.name}"))
     elif root_path.suffix == '.json':
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / root_path.stem
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.stem + '_' + args.text_prompt)
         output_root_dir.mkdir(exist_ok=True, parents=True)
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
-        image_path_list = [pathlib.Path(image_path) for image_path in image_path_list][:20]
+        image_path_list = [pathlib.Path(image_path) for image_path in image_path_list]
         infer_images_text_list_save_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
     else:
         image_pil, pred_dict = infer_an_image_text_list(root_path, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
