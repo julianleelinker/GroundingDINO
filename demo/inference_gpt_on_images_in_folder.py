@@ -4,6 +4,7 @@ import pathlib
 import json
 import base64
 import io
+import json
 
 import numpy as np
 import torch
@@ -431,9 +432,8 @@ def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold
 
     # run model
     boxes_filt, pred_phrases = get_grounding_output(
-        model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only, token_spans=eval(f"{token_spans}")
+        model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
     )
-
     # visualize pred
     size = image_pil.size
     pred_dict = {
@@ -453,7 +453,7 @@ def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold,
     for text_prompt in text_prompt_list:
         # print(f'infering {image_path} with {text_prompt}')
         boxes_filt, pred_phrases = get_grounding_output(
-            model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only, token_spans=eval(f"{token_spans}")
+            model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
         )
         boxes_filt_list.append(boxes_filt)
         pred_phrases_concat.extend(pred_phrases)
@@ -551,7 +551,54 @@ def convert_pil_to_base64(image_pil):
     return image_base64
 
 
-def infer_images_text_list_save_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans, scale=1.5, threshold=0.5):
+def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans, coco_path):
+    coco_anno = {
+        "images": [],
+        "annotations": [],
+        "categories": [{"id": i, "name": name} for i, name in enumerate(text_prompt_list)]
+    }
+    cat_to_id = {text: i+1 for i, text in enumerate(text_prompt_list)}
+    for image_id, image_path in enumerate(image_path_list):
+        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans)
+        H, W = image_pil.size[1], image_pil.size[0]
+        image_anno = {
+            "id": image_id+1,
+            "file_name": image_path.name,
+            "width": W,
+            "height": H,
+            "date_captured": "2022-09-01 00:00:00",
+        }
+        coco_anno['images'].append(image_anno)
+        boxes = pred_dict['boxes'] * torch.Tensor([W, H, W, H])
+        # print(pred_dict['labels'])
+        # print(cat)
+        for j in range(len(pred_dict['boxes'])):
+            cat = pred_dict['labels'][j].split('(')[0]
+            if cat not in cat_to_id:
+                continue
+            bbox = [int(v) for v in boxes[j]]
+            box_anno = {
+                "image_id": image_id+1,
+                "category_id": cat_to_id[cat],
+                "bbox": bbox,
+            }
+            coco_anno['annotations'].append(box_anno)
+        print(coco_anno)
+        # import ipdb; ipdb.set_trace()
+        # image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0]
+        # output_image_path = pathlib.Path(output_root_dir) / f"{image_path.name}"
+        # output_text_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.json"
+        # save coco_anno to output_text_path
+        with open(coco_path, 'w') as f:
+            json.dump(coco_anno, f)
+        # image_with_box.save(output_image_path)
+        # # write label_txt to output_image_path
+        # with open(output_text_path, 'w') as f:
+        #     f.write('\n'.join(label_text))
+        # import ipdb; ipdb.set_trace()
+
+
+def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans, scale=1.5, threshold=0.5):
     for image_path in image_path_list:
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans)
         image_base64 = convert_pil_to_base64(image_pil)
@@ -647,14 +694,16 @@ if __name__ == "__main__":
         output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:2.1f}_io{args.ios_threshold:2.1f}')
         output_root_dir.mkdir(exist_ok=True, parents=True)
         image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
-        infer_images_text_list_save_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+        # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+        print(TEXT_PROMPT_LIST)
+        infer_images_text_list_save_gdino_coco_result(image_path_list[:2], model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, output_root_dir / 'annotations.json')
     elif root_path.suffix == '.json':
         output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.stem + '_' + args.text_prompt)
         output_root_dir.mkdir(exist_ok=True, parents=True)
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
         image_path_list = [pathlib.Path(image_path) for image_path in image_path_list]
-        infer_images_text_list_save_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+        infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
     else:
         image_pil, pred_dict = infer_an_image_text_list(root_path, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
         print(pred_dict['labels'])
