@@ -379,7 +379,8 @@ def compute_intersection_over_self(bboxes1, bboxes2=None):
     width = torch.max(torch.tensor([0]), mi[:, 2, :] - ma[:, 0, :])
     height = torch.max(torch.tensor([0]), mi[:, 3, :] - ma[:, 1, :])
     intersection_area = width * height
-    ios = intersection_area / area_min
+    # ios = intersection_area / area_min # ios
+    ios = intersection_area / (area1+area2) # iou
     return ios
 
 
