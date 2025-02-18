@@ -21,7 +21,7 @@ from openai import BadRequestError, InternalServerError
 
 
 AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
-
+FULL_IMAGE_PROMPT = 'Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.'
 CLASS_LIST = [
     'algae',
     'animal',
@@ -215,7 +215,6 @@ TEXT_PROMPT_LIST = [ #Water_Resources
     'junk',
     'lane',
     'leaves',
-    'liter',
     'litter',
     'manhole',
     'motorcycle',
@@ -225,7 +224,7 @@ TEXT_PROMPT_LIST = [ #Water_Resources
     'pipeline',
     'road marking',
     'ruler',
-    'seat',
+    # 'seat',
     'sidewalk',
     'smoke',
     'solar panel',
@@ -238,6 +237,18 @@ TEXT_PROMPT_LIST = [ #Water_Resources
     'vest',
     'weapon',
 ]
+LOW_CLASS_LIST = [
+    'algae',
+    'drain',
+    'faregate',
+    'fire',
+    'guardrail',
+    'palanquin',
+    'solar panel',
+    'storage tank',
+    'weapon',
+]
+HIGHER_CLASS_LIST = [ cat for cat in TEXT_PROMPT_LIST if cat not in LOW_CLASS_LIST]
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -388,9 +399,11 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold=No
         tokenized = tokenlizer(caption)
         # build pred
         pred_phrases = []
+        scores = []
         for logit, box in zip(logits_filt, boxes_filt):
             pred_phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenlizer)
             if with_logits:
+                scores.append(logit.max().item())
                 pred_phrases.append(pred_phrase + f"({str(logit.max().item())[:4]})")
             else:
                 pred_phrases.append(pred_phrase)
@@ -423,7 +436,7 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold=No
         pred_phrases = all_phrases
 
 
-    return boxes_filt, pred_phrases
+    return boxes_filt, pred_phrases, scores
 
 
 def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold, token_spans):
@@ -431,7 +444,7 @@ def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold
     image_pil, image = load_image(image_path)
 
     # run model
-    boxes_filt, pred_phrases = get_grounding_output(
+    boxes_filt, pred_phrase, scores = get_grounding_output(
         model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
     )
     # visualize pred
@@ -444,7 +457,7 @@ def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold
     return image_pil, pred_dict
 
 
-def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans):
+def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_span):
     # load image
     image_pil, image = load_image(image_path)
 
@@ -452,12 +465,24 @@ def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold,
     boxes_filt_list, pred_phrases_concat = [], []
     for text_prompt in text_prompt_list:
         # print(f'infering {image_path} with {text_prompt}')
-        boxes_filt, pred_phrases = get_grounding_output(
+        boxes_filt, pred_phrases, scores = get_grounding_output(
             model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
         )
-        boxes_filt_list.append(boxes_filt)
-        pred_phrases_concat.extend(pred_phrases)
+        # import ipdb; ipdb.set_trace()
+        # print(scores)
+        # print(pred_phrases)
+        # print(boxes_filt)
+        if text_prompt in higher_class_list:
+            for i in range(len(boxes_filt)):
+                if scores[i] > high_threshold:
+                    boxes_filt_list.append(boxes_filt[i])
+                    pred_phrases_concat.append(pred_phrases[i])
+        else:
+            boxes_filt_list.append(boxes_filt)
+            pred_phrases_concat.extend(pred_phrases)
+        # import ipdb; ipdb.set_trace()
     boxes_filt = torch.vstack(boxes_filt_list)
+    # import ipdb; ipdb.set_trace()
 
     # visualize pred
     size = image_pil.size
@@ -537,7 +562,7 @@ def merge_by_ios(bboxes, image_size, threshold):
             break
         bboxes[max_pos[0]] = merge_two_bbox(bboxes[max_pos[0]], bboxes[max_pos[1]])
         bboxes = torch.cat((bboxes[:max_pos[1], :], bboxes[max_pos[1]+1:, :]), dim=0)
-        labels[max_pos[0]] = labels[max_pos[0]] + ' ' + labels.pop(max_pos[1])
+        labels[max_pos[0]] = labels[max_pos[0]] + '_' + labels.pop(max_pos[1])
     bboxes = bboxes / torch.Tensor([W, H, W, H])
     bboxes = xyxy_to_xywh(bboxes)
     return bboxes, labels
@@ -551,15 +576,31 @@ def convert_pil_to_base64(image_pil):
     return image_base64
 
 
-def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans, coco_path):
+def generate_vlm_pretraining_annotation(id, image_name, prompt, response):
+    return {
+        "id": id,
+        "image": image_name,
+        "conversations": [
+            {
+                "question_id": 1,
+                "question": prompt,
+                "answer": {
+                    "groundtruth": response,
+                }
+            }
+        ]
+    }
+
+
+def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans, output_root_dir):
     coco_anno = {
         "images": [],
         "annotations": [],
-        "categories": [{"id": i, "name": name} for i, name in enumerate(text_prompt_list)]
+        "categories": [{"id": i+1, "name": name} for i, name in enumerate(text_prompt_list)]
     }
     cat_to_id = {text: i+1 for i, text in enumerate(text_prompt_list)}
     for image_id, image_path in enumerate(image_path_list):
-        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans)
+        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
         H, W = image_pil.size[1], image_pil.size[0]
         image_anno = {
             "id": image_id+1,
@@ -589,27 +630,35 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
         # output_image_path = pathlib.Path(output_root_dir) / f"{image_path.name}"
         # output_text_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.json"
         # save coco_anno to output_text_path
-        with open(coco_path, 'w') as f:
-            json.dump(coco_anno, f)
-        # image_with_box.save(output_image_path)
-        # # write label_txt to output_image_path
-        # with open(output_text_path, 'w') as f:
-        #     f.write('\n'.join(label_text))
-        # import ipdb; ipdb.set_trace()
+
+        image_pil.save(pathlib.Path(output_root_dir) / f"{image_path.name}")
+
+    coco_path = output_root_dir / 'annotations.json'
+    with open(coco_path, 'w') as f:
+        json.dump(coco_anno, f)
+    # image_with_box.save(output_image_path)
+    # # write label_txt to output_image_path
+    # with open(output_text_path, 'w') as f:
+    #     f.write('\n'.join(label_text))
+    # import ipdb; ipdb.set_trace()
 
 
-def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, token_spans, scale=1.5, threshold=0.5):
+def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans, scale=1.5, merge_threshold=0.5):
     for image_path in image_path_list:
-        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, token_spans)
+        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
         image_base64 = convert_pil_to_base64(image_pil)
-        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_base64, prompt = 'Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.')
+        annotation_list = []
+        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_base64, prompt = FULL_IMAGE_PROMPT)
+        if response is None:
+            continue
+        annotation_list.append(generate_vlm_pretraining_annotation(1, image_path.name, FULL_IMAGE_PROMPT, response))
         print(f'{response=}')
         image_tmp = plot_boxes_to_image(image_pil, pred_dict, color=(255, 0, 0))[0]
         print(pred_dict['labels'])
         print(f'raw    {len(pred_dict["boxes"])=}')
         pred_dict["boxes"][:, 2:] *= scale
         pred_dict["boxes"] = fix_boundary(pred_dict["boxes"])
-        pred_dict["boxes"], pred_dict['labels'] = merge_by_ios(pred_dict["boxes"], pred_dict['size'], threshold=threshold)
+        pred_dict["boxes"], pred_dict['labels'] = merge_by_ios(pred_dict["boxes"], pred_dict['size'], threshold=merge_threshold)
         print(f'merged {len(pred_dict["boxes"])=}')
 
         bboxes = xywh_to_xyxy(pred_dict["boxes"])
@@ -617,23 +666,32 @@ def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_l
         bboxes = bboxes * torch.Tensor([W, H, W, H])
         # deep copy pred_dict['labels']
         label_text = pred_dict['labels'].copy()
+
         for i, bbox in enumerate(bboxes):
             bbox_int = torch.ceil(bbox)
             cropped_image = image_pil.crop((int(bbox_int[0]), int(bbox_int[1]), int(bbox_int[2]), int(bbox_int[3])))
             cropped_base64 = convert_pil_to_base64(cropped_image)
             response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_base64, prompt = 'Provide a one-sentence​ caption for​ the provided image.')
-            if response:
-                label_text[i] += ' ' + response
+            if response is None:
+                continue
+            label_text[i] += ' ' + response
             print(label_text[i])
+            bbox_image_name = pathlib.Path(output_root_dir) / f"{image_path.stem}-{i}.jpg"
+            cropped_image.save(bbox_image_name)
+            annotation_list.append(generate_vlm_pretraining_annotation(1, bbox_image_name.name, 'Provide a one-sentence​ caption for​ the provided image.', response))
 
+        image_pil.save(pathlib.Path(output_root_dir) / f"{image_path.name}")
+        output_image_path = pathlib.Path(output_root_dir) / f"{image_path.stem}-result.jpg"
         image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0]
-        output_image_path = pathlib.Path(output_root_dir) / f"{image_path.name}"
         output_text_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.txt"
         image_with_box.save(output_image_path)
         # write label_txt to output_image_path
         with open(output_text_path, 'w') as f:
             f.write('\n'.join(label_text))
-        # import ipdb; ipdb.set_trace()
+
+        output_anno_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.json"
+        with open(output_anno_path, "w") as json_file:
+            json.dump(annotation_list, json_file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
@@ -649,6 +707,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
     parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
+    parser.add_argument("--high_threshold", type=float, default=0.28, help="text threshold")
     parser.add_argument("--token_spans", type=str, default=None, help=
                         "The positions of start and end positions of phrases of interest. \
                         For example, a caption is 'a cat and a dog', \
@@ -671,6 +730,7 @@ if __name__ == "__main__":
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold
     token_spans = args.token_spans
+    high_threshold = args.high_threshold
     if 'SwinB' in config_file:
         model_name = 'SwinB'
     else:
@@ -694,19 +754,16 @@ if __name__ == "__main__":
         output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:2.1f}_io{args.ios_threshold:2.1f}')
         output_root_dir.mkdir(exist_ok=True, parents=True)
         image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
-        # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
-        print(TEXT_PROMPT_LIST)
-        infer_images_text_list_save_gdino_coco_result(image_path_list[:2], model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, output_root_dir / 'annotations.json')
+        # infer_images_text_list_save_gpt_result(image_path_list[:2], model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+        # print(TEXT_PROMPT_LIST)
+        infer_images_text_list_save_gdino_coco_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, output_root_dir)
     elif root_path.suffix == '.json':
         output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.stem + '_' + args.text_prompt)
         output_root_dir.mkdir(exist_ok=True, parents=True)
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
         image_path_list = [pathlib.Path(image_path) for image_path in image_path_list]
-        infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+        infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
     else:
-        image_pil, pred_dict = infer_an_image_text_list(root_path, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, token_spans)
-        print(pred_dict['labels'])
-        image_with_box = plot_boxes_to_image(image_pil, pred_dict)[0]
-        image_with_box.save(os.path.join(output_dir, f"{model_name}_{root_path.name}"))
+        print(f'unsupported {root_path=}')
 
