@@ -602,7 +602,8 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
     cat_to_id = {text: i+1 for i, text in enumerate(text_prompt_list)}
     image_root_dir = pathlib.Path(output_root_dir) / 'images'
     image_root_dir.mkdir(exist_ok=True, parents=True)
-    for image_id, image_path in tqdm.tqdm(enumerate(image_path_list), total=len(image_path_list)):
+    for image_id, image_path in enumerate(image_path_list):
+        print(f'{image_id=}, {len(image_path_list)=}')
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
         H, W = image_pil.size[1], image_pil.size[0]
         image_anno = {
