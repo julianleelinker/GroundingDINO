@@ -12,3 +12,7 @@ CUDA_VISIBLE_DEVICES=1 nohup python demo/inference_gpt_on_images_in_folder.py -c
 
 # inspect above progress using
 tail -f output.log
+
+
+# inspect result
+find . -type d -exec sh -c 'echo -n "{}: "; find "{}" -type f | wc -l' \;
