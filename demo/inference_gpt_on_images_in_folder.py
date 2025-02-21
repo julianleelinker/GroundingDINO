@@ -758,7 +758,8 @@ if __name__ == "__main__":
 
     if root_path.is_dir():
         image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:3.2f}_io{args.ios_threshold:3.2f}')
+        # output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:3.2f}_io{args.ios_threshold:3.2f}')
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
     elif root_path.suffix == '.json':
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
@@ -769,6 +770,6 @@ if __name__ == "__main__":
         exit(-1)
     output_root_dir.mkdir(exist_ok=True, parents=True)
     # print(TEXT_PROMPT_LIST)
-    # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+    # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, merge_threshold=args.ios_threshold)
     infer_images_text_list_save_gdino_coco_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, output_root_dir)
 
