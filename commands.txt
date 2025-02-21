@@ -1,0 +1,14 @@
+# replace tmux 
+
+CUDA_VISIBLE_DEVICES=1 nohup python demo/inference_gpt_on_images_in_folder.py -c groundingdino/config/GroundingDINO_SwinT_OGC.py \                     ip 10.1.24.90
+-p weights/groundingdino_swint_ogc.pth \
+-o /mnt/data-home/mobility-multimodal/gdino-coco \
+--box_threshold 0.4 \
+--text_threshold 0.3 \
+--high_threshold 0.35 \
+-t 'all' \
+--enlarge_scale 1.4 \
+--ios_threshold 0.3 -i /mnt/data-home/mobility-multimodal/data-curation/Sports_Development/20241223/Sports_Development_20241223_image_list_keep_0.95.json | tee sports1223.log 2>&1 & disown
+
+# inspect above progress using
+tail -f output.log

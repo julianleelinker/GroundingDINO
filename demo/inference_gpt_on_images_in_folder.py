@@ -5,6 +5,7 @@ import json
 import base64
 import io
 import json
+import tqdm
 
 import numpy as np
 import torch
@@ -599,7 +600,9 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
         "categories": [{"id": i+1, "name": name} for i, name in enumerate(text_prompt_list)]
     }
     cat_to_id = {text: i+1 for i, text in enumerate(text_prompt_list)}
-    for image_id, image_path in enumerate(image_path_list):
+    image_root_dir = pathlib.Path(output_root_dir) / 'images'
+    image_root_dir.mkdir(exist_ok=True, parents=True)
+    for image_id, image_path in tqdm.tqdm(enumerate(image_path_list), total=len(image_path_list)):
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
         H, W = image_pil.size[1], image_pil.size[0]
         image_anno = {
@@ -624,17 +627,18 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
                 "bbox": bbox,
             }
             coco_anno['annotations'].append(box_anno)
-        print(coco_anno)
+        # print(coco_anno)
         # import ipdb; ipdb.set_trace()
         # image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0]
         # output_image_path = pathlib.Path(output_root_dir) / f"{image_path.name}"
         # output_text_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.json"
         # save coco_anno to output_text_path
 
-        image_pil.save(pathlib.Path(output_root_dir) / f"{image_path.name}")
+        image_pil.save(image_root_dir / f"{image_path.name}")
 
-    coco_path = output_root_dir / 'annotations.json'
-    with open(coco_path, 'w') as f:
+    coco_root_dir = pathlib.Path(output_root_dir) / 'annotations'
+    coco_root_dir.mkdir(exist_ok=True, parents=True)
+    with open(coco_root_dir / 'labels.json', 'w') as f:
         json.dump(coco_anno, f)
     # image_with_box.save(output_image_path)
     # # write label_txt to output_image_path
@@ -750,20 +754,21 @@ if __name__ == "__main__":
 
     print(f'{image_root=}')
     root_path = pathlib.Path(image_root)
+
+
     if root_path.is_dir():
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:2.1f}_io{args.ios_threshold:2.1f}')
-        output_root_dir.mkdir(exist_ok=True, parents=True)
         image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
-        # infer_images_text_list_save_gpt_result(image_path_list[:2], model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
-        # print(TEXT_PROMPT_LIST)
-        infer_images_text_list_save_gdino_coco_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, output_root_dir)
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:3.2f}_io{args.ios_threshold:3.2f}')
     elif root_path.suffix == '.json':
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.stem + '_' + args.text_prompt)
-        output_root_dir.mkdir(exist_ok=True, parents=True)
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
         image_path_list = [pathlib.Path(image_path) for image_path in image_path_list]
-        infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
     else:
         print(f'unsupported {root_path=}')
+        exit(-1)
+    output_root_dir.mkdir(exist_ok=True, parents=True)
+    # print(TEXT_PROMPT_LIST)
+    # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, threshold=args.ios_threshold)
+    infer_images_text_list_save_gdino_coco_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, output_root_dir)
 
