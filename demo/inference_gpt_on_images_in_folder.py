@@ -328,6 +328,7 @@ def plot_boxes_to_image(image_pil, tgt, show_id=True, color=None):
         # draw
         x0, y0, x1, y1 = box
         x0, y0, x1, y1 = int(x0), int(y0), int(x1), int(y1)
+        print(x0, y0, x1, y1)
 
         draw.rectangle([x0, y0, x1, y1], outline=color, width=2)
         # draw.text((x0, y0), str(label), fill=color)
@@ -615,6 +616,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
         }
         coco_anno['images'].append(image_anno)
         boxes = pred_dict['boxes'] * torch.Tensor([W, H, W, H])
+        boxes[:, :2] -= boxes[:, 2:]*0.5
         # print(pred_dict['labels'])
         # print(cat)
         for j in range(len(pred_dict['boxes'])):
@@ -640,7 +642,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
     coco_root_dir = pathlib.Path(output_root_dir) / 'annotations'
     coco_root_dir.mkdir(exist_ok=True, parents=True)
     with open(coco_root_dir / 'labels.json', 'w') as f:
-        json.dump(coco_anno, f)
+        json.dump(coco_anno, f, indent=4, ensure_ascii=False)
     # image_with_box.save(output_image_path)
     # # write label_txt to output_image_path
     # with open(output_text_path, 'w') as f:
@@ -651,6 +653,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
 def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans, scale=1.5, merge_threshold=0.5):
     for image_path in image_path_list:
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
+
         image_base64 = convert_pil_to_base64(image_pil)
         annotation_list = []
         response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_base64, prompt = FULL_IMAGE_PROMPT)
@@ -760,12 +763,12 @@ if __name__ == "__main__":
     if root_path.is_dir():
         image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
         # output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:3.2f}_io{args.ios_threshold:3.2f}')
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
+        output_root_dir = pathlib.Path(output_dir).resolve() / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
     elif root_path.suffix == '.json':
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
         image_path_list = [pathlib.Path(image_path) for image_path in image_path_list]
-        output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
+        output_root_dir = pathlib.Path(output_dir).resolve() / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
     else:
         print(f'unsupported {root_path=}')
         exit(-1)
