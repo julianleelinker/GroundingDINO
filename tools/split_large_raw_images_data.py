@@ -31,13 +31,13 @@ def distribute_files_into_folders(
             continue
         shutil.move(src_path, dest_path)
 
-    print(f"Done! {len(files)} files have been distributed, with {files_per_folder} per folder.")
+    print(f"Done! {len(files)} files have been distributed to {folder_index} splits, with {files_per_folder} per folder.")
 
 if __name__ == "__main__":
     # Example usage:
     # SOURCE_DIR = "/path/to/your/source"
     # SOURCE_DIR = '/mnt/data-home/mobility-multimodal/data-curation/Kaohsiung-full-dataset/100K_images'
-    SOURCE_DIR = '/mnt/data-home/julian/lighthouse/augmented-curated-data/Transportation_20250109_image_list_keep_0.95'
+    SOURCE_DIR = '/mnt/data-home/julian/lighthouse/augmented-curated-data/Sports_Development_20241223_image_list_keep_0.95'
     DEST_DIR = SOURCE_DIR
     FILES_PER_FOLDER = 4000
 
