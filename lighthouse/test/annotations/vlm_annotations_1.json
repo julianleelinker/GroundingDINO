@@ -1,0 +1,15 @@
+[
+    {
+        "id": 1,
+        "image": "921演唱會進散場_NO.132_M區(東門)_2024_9_21 下午 (UTC+08_00) 04_00_56_s17260.jpg",
+        "conversations": [
+            {
+                "question_id": 1,
+                "question": "Describe the image concisely.",
+                "answer": {
+                    "groundtruth": "The image is a black-and-white surveillance footage showing three people walking in a dimly lit, wet area with brick flooring. One person is wearing a mask and appears to be in the foreground, while the other two are further back. There is a traffic cone illuminated in the center of the image, and construction materials and fencing can be seen in the background. The scene appears to be outdoors at night."
+                }
+            }
+        ]
+    }
+]

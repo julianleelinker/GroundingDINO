@@ -1,0 +1,28 @@
+[
+    {
+        "id": 1,
+        "image": "1.jpg",
+        "conversations": [
+            {
+                "question_id": 1,
+                "question": "Offer a succinct explanation of the picture presented.",
+                "answer": {
+                    "groundtruth": "The picture shows a body of water covered with green algae. The algae form dense, irregular patches on the water's surface, creating a vibrant green pattern interspersed with areas of open water."
+                }
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "image": "2.jpg",
+        "conversations": [
+            {
+                "question_id": 1,
+                "question": "Write a terse but informative summary of the picture.",
+                "answer": {
+                    "groundtruth": "The picture shows a body of water with a significant presence of green algae covering its surface. The water appears blue and relatively calm, contrasting with the bright green patches of algae."
+                }
+            }
+        ]
+    }
+]
