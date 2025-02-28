@@ -38,7 +38,8 @@ if __name__ == "__main__":
     # SOURCE_DIR = "/path/to/your/source"
     # SOURCE_DIR = '/mnt/data-home/mobility-multimodal/data-curation/Kaohsiung-full-dataset/100K_images'
     # SOURCE_DIR = '/mnt/data-home/julian/lighthouse/augmented-curated-data/Sports_Development_20241223_image_list_keep_0.95'
-    SOURCE_DIR = '/mnt/data-home/julian/lighthouse/augmented-curated-data/Public_Works_20241230_image_list_keep_0.95/'
+    # SOURCE_DIR = '/mnt/data-home/julian/lighthouse/augmented-curated-data/Public_Works_20241230_image_list_keep_0.95/'
+    SOURCE_DIR = '/mnt/lighthouseACD/Public_Works_20241230_image_list_keep_0.95/'
     DEST_DIR = SOURCE_DIR
     FILES_PER_FOLDER = 5000
 

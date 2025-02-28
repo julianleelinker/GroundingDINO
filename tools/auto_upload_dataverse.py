@@ -1,7 +1,10 @@
 import pathlib
 import time
 import subprocess
+import os
 
+
+PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
 
 def check_and_execute(data_path, command):
     label_path = pathlib.Path(data_path) / 'annotations' / 'labels.json'
@@ -33,11 +36,13 @@ def check_and_execute(data_path, command):
 
 if __name__ == "__main__":
     wait_time = 600
+    print(PASSWORD)
     while True:
-        for i in range(1, 14):
-            # file_path = pathlib.Path(f'/mnt/data-home/mobility-multimodal/gdino-coco/Water_Resources_20250106_image_list_keep_0.95/split{i}_0.30_0.35/')
-            file_path = pathlib.Path(f'/mnt/data-home/mobility-multimodal/gdino-coco/Sports_Development_20241223_image_list_keep_0.95/split{i}_0.30_0.35/')
-            command = f'conda run -n lighthouse python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p Baoyun5820 -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
+        file_root = pathlib.Path(f'/mnt/lighthouseACD/ACD-gdino-COCO/Public_Works_20241230_image_list_keep_0.95/')
+        file_path_list = [p for p in file_root.glob('*') if p.is_dir()]
+        for file_path in file_path_list:
+            print(str(file_path))
+            command = f'conda run -n lighthouse python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
             check_and_execute(file_path, command)
         print(f"Waiting for {wait_time} seconds")
         time.sleep(wait_time)

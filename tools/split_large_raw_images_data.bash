@@ -1,6 +1,9 @@
 #!/bin/bash
-SOURCE_DIR="/mnt/lighthouseACD/Public_Works_20241230_image_list_keep_0.95"
-FILES_PER_FOLDER=5000  # Adjust as needed
+#SOURCE_DIR="/mnt/lighthouseACD/Public_Works_20241230_image_list_keep_0.95"
+#FILES_PER_FOLDER=5000  # Adjust as needed
+
+SOURCE_DIR="/home/julian/test"
+FILES_PER_FOLDER=1001  # Adjust as needed
 
 # Ensure source directory exists
 if [[ ! -d "$SOURCE_DIR" ]]; then
@@ -65,7 +68,7 @@ while [[ -f "tmp_list_parallel_$i" ]]; do
     split_folder="split$i"
     echo "📂 Moving files from tmp_list_parallel_$i to $split_folder/"
     # Using `--null` to handle filenames with spaces and special characters
-    cat "tmp_list_parallel_$i" | parallel --jobs 0 --delimiter '\n' --bar mv "{}" "$split_folder/"
+    cat "tmp_list_parallel_$i" | parallel --j 32 --delimiter '\n' --bar mv "{}" "$split_folder/"
     # Increment counter
     ((i++))
 done

@@ -45,7 +45,8 @@ if __name__=="__main__":
         "CUDA_VISIBLE_DEVICES={gpu_id} nohup conda run -n {conda_env} python demo/inference_gpt_on_images_in_folder.py "
         "-c groundingdino/config/GroundingDINO_SwinT_OGC.py "
         "-p weights/groundingdino_swint_ogc.pth "
-        "-o /mnt/data-home/mobility-multimodal/gdino-coco/{dataset} "
+        # "-o /mnt/data-home/mobility-multimodal/gdino-coco/{dataset} "
+        "-o /mnt/lighthouseACD/ACD-gdino-COCO/{dataset} "
         "--box_threshold 0.4 "
         "--text_threshold 0.3 "
         "--high_threshold 0.35 "
@@ -55,7 +56,8 @@ if __name__=="__main__":
         # "-i /mnt/data-home/mobility-multimodal/data-curation/Sports_Development/20241223/Sports_Development_20241223_image_list_keep_0.95-part_{i} "
         # "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/Transportation_20250109_image_list_keep_0.95-split_{i}"
         # "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/Sports_Development_20241223_image_list_keep_0.95-split_{i}"
-        "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/{dataset}/split{i} "
+        # "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/{dataset}/split{i} "
+        "-i /mnt/lighthouseACD/augmented-curated-data/{dataset}/split{i} "
         "> {dataset}-{i}.log 2>&1 &"
     )
 
