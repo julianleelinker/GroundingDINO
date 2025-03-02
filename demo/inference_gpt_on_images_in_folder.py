@@ -602,7 +602,8 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
     }
     cat_to_id = {text: i+1 for i, text in enumerate(text_prompt_list)}
     image_root_dir = pathlib.Path(output_root_dir) / 'images'
-    image_root_dir.mkdir(exist_ok=True, parents=True)
+    image_root_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
+    os.chmod(image_root_dir, 0o777)
     for image_id, image_path in enumerate(image_path_list):
         print(f'{image_id=}, {len(image_path_list)=}')
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
@@ -640,7 +641,8 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
         image_pil.save(image_root_dir / f"{image_path.name}")
 
         coco_root_dir = pathlib.Path(output_root_dir) / 'annotations'
-        coco_root_dir.mkdir(exist_ok=True, parents=True)
+        coco_root_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
+        os.chmod(coco_root_dir, 0o777)
         with open(coco_root_dir / 'labels.json', 'w') as f:
             json.dump(coco_anno, f, indent=4, ensure_ascii=False)
 
@@ -775,7 +777,8 @@ if __name__ == "__main__":
     else:
         print(f'unsupported {root_path=}')
         exit(-1)
-    output_root_dir.mkdir(exist_ok=True, parents=True)
+    output_root_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
+    os.chmod(output_root_dir, 0o777)
     # print(TEXT_PROMPT_LIST)
     # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, merge_threshold=args.ios_threshold)
     infer_images_text_list_save_gdino_coco_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, output_root_dir)
