@@ -28,7 +28,7 @@ CONDA_ENV = "lighthouse"
 DATASET = 'Public_Works_20241230_image_list_keep_0.95'
 DATA_ROOT = '/mnt/lighthouseACD/augmented-curated-data/'
 THRESHOLD = 4000
-WAIT_TIME = 600
+WAIT_TIME = 300
 
 base_command = (
     "CUDA_VISIBLE_DEVICES={gpu_id} nohup conda run -n {conda_env} python demo/inference_gpt_on_images_in_folder.py "
