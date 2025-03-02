@@ -639,10 +639,13 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
 
         image_pil.save(image_root_dir / f"{image_path.name}")
 
-    coco_root_dir = pathlib.Path(output_root_dir) / 'annotations'
-    coco_root_dir.mkdir(exist_ok=True, parents=True)
-    with open(coco_root_dir / 'labels.json', 'w') as f:
-        json.dump(coco_anno, f, indent=4, ensure_ascii=False)
+        coco_root_dir = pathlib.Path(output_root_dir) / 'annotations'
+        coco_root_dir.mkdir(exist_ok=True, parents=True)
+        with open(coco_root_dir / 'labels.json', 'w') as f:
+            json.dump(coco_anno, f, indent=4, ensure_ascii=False)
+
+    pathlib.Path(output_root_dir/'done').touch()
+
     # image_with_box.save(output_image_path)
     # # write label_txt to output_image_path
     # with open(output_text_path, 'w') as f:

@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # JSON_FILE="/mnt/data-home/mobility-multimodal/data-curation/Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95.json"
-# OUTPUT_ROOT="/mnt/lighthouseACD/augmented-curated-data"
+JSON_FILE='/mnt/data-home/mobility-multimodal/data-curation/Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json'
+OUTPUT_ROOT="/mnt/lighthouseACD/augmented-curated-data"
 
-JSON_FILE="/home/julian/work/GroundingDINO/10001.json"
-OUTPUT_ROOT='/mnt/data-home/julian/test/'
+# JSON_FILE="/home/julian/work/GroundingDINO/10001.json"
+# OUTPUT_ROOT='/mnt/data-home/julian/test/'
 
 OUTPUT_FOLDER="$OUTPUT_ROOT/$(basename "$JSON_FILE" .json)"
 
