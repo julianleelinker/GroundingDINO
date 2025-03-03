@@ -6,6 +6,7 @@ import json
 import random
 import tqdm
 import argparse
+import os
 from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
 
@@ -121,7 +122,9 @@ if __name__=='__main__':
     output_image_root = output_root / 'images'
     output_anno_root = output_root / 'annotations'
     output_image_root.mkdir(exist_ok=True, parents=True)
+    os.chmod(output_image_root, 0o777)
     output_anno_root.mkdir(exist_ok=True, parents=True)
+    os.chmod(output_anno_root, 0o777)
     images_per_anno = 1000 # save a json for each target image 
 
     prev_annos_list = list(output_anno_root.rglob('*.json'))
