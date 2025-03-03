@@ -29,13 +29,11 @@ JSON_LIST_JAN = [
     # below include too much images
     # '/mnt/data-home/mobility-multimodal/data-curation/Public_Works/20241230/Public_Works_20241230_image_list_keep_0.95.json',
     # '/mnt/data-home/mobility-multimodal/data-curation/Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95.json',
-    # '/mnt/data-home/mobility-multimodal/data-curation/Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json',
 ]
 
 JSON_LIST_JAN = [
-    # '/mnt/data-home/mobility-multimodal/data-curation/Public_Works/20241230/Public_Works_20241230_image_list_keep_0.95.json',
+    '/mnt/data-home/mobility-multimodal/data-curation/Public_Works/20241230/Public_Works_20241230_image_list_keep_0.95.json',
     '/mnt/data-home/mobility-multimodal/data-curation/Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95.json',
-    # '/mnt/data-home/mobility-multimodal/data-curation/Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json',
 ]
 
 ROOT_LIST = {
