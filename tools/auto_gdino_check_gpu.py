@@ -29,6 +29,7 @@ DATASET = 'Public_Works_20241230_image_list_keep_0.95'
 DATA_ROOT = '/mnt/lighthouseACD/augmented-curated-data/'
 THRESHOLD = 4000
 WAIT_TIME = 300
+SKIP_LIST = [0,]
 
 base_command = (
     "CUDA_VISIBLE_DEVICES={gpu_id} nohup conda run -n {conda_env} python demo/inference_gpt_on_images_in_folder.py "
@@ -48,6 +49,8 @@ base_command = (
 while True:
     result = get_gpu_memory()
     for gpu_id, memory in result.items():
+        if gpu_id in SKIP_LIST:
+            continue
         if memory > THRESHOLD:
             data_path_list = pathlib.Path(f'{DATA_ROOT}/{DATASET}').glob('split*')
             data_path_list = sorted(data_path_list, key=lambda x: int(str(x).split('split')[-1]))
@@ -55,7 +58,7 @@ while True:
                 if not (data_path / 'runned').exists():
                     break
             split_index = int(str(data_path).split('split')[-1])
-            command = base_command.format(i=split_index, conda_env=CONDA_ENV, dataroot =DATA_ROOT, dataset=DATASET, gpu_id=gpu_id)
+            command = base_command.format(i=split_index, conda_env=CONDA_ENV, dataroot=DATA_ROOT, dataset=DATASET, gpu_id=gpu_id)
             print(f"GPU {gpu_id} has enough memory, running inference on {data_path}")
             print(f"Executing: {command}")
             subprocess.run(command, shell=True, executable="/bin/bash")
