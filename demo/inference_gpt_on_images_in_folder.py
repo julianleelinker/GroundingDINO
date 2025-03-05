@@ -6,6 +6,7 @@ import base64
 import io
 import json
 import tqdm
+import shutil
 
 import numpy as np
 import torch
@@ -600,16 +601,37 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
         "annotations": [],
         "categories": [{"id": i+1, "name": name} for i, name in enumerate(text_prompt_list)]
     }
+    start_image_id = 1
     cat_to_id = {text: i+1 for i, text in enumerate(text_prompt_list)}
     image_root_dir = pathlib.Path(output_root_dir) / 'images'
     image_root_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
     os.chmod(image_root_dir, 0o777)
-    for image_id, image_path in enumerate(image_path_list):
+
+    coco_label_path = pathlib.Path(output_root_dir) / 'annotations' / 'labels.json'
+    # resume function
+    if coco_label_path.exists():
+        with open(coco_label_path, 'r') as f:
+            coco_anno = json.load(f)
+        image_path_set = {image_anno['file_name'] for image_anno in coco_anno['images']}
+        new_image_path_list = []
+        print('resuming...')
+        for image_path in tqdm.tqdm(image_path_list):
+            if image_path.name in image_path_set:
+                dst = image_root_dir / f"{image_path.name}"
+                if not dst.exists():
+                    shutil.copy(image_path, dst)
+            else:
+                new_image_path_list.append(image_path)
+        image_path_list = new_image_path_list
+        start_image_id = len(image_path_set) + 1
+
+    for path_id, image_path in enumerate(image_path_list):
+        image_id = path_id + start_image_id
         print(f'{image_id=}, {len(image_path_list)=}')
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
         H, W = image_pil.size[1], image_pil.size[0]
         image_anno = {
-            "id": image_id+1,
+            "id": image_id,
             "file_name": image_path.name,
             "width": W,
             "height": H,
@@ -626,7 +648,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
                 continue
             bbox = [int(v) for v in boxes[j]]
             box_anno = {
-                "image_id": image_id+1,
+                "image_id": image_id,
                 "category_id": cat_to_id[cat],
                 "bbox": bbox,
             }
