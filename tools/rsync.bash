@@ -8,7 +8,7 @@ DEST_BASE="b202:/raid/julian/lighthouseACD/augmented-curated-data/Public_Works_2
 RSYNC_OPTS="-avz --ignore-existing --no-compress --whole-file --progress"
 
 # Loop from split2 to split400
-for i in $(seq 40 437); do
+for i in $(seq 120 437); do
     echo "===== Starting transfer for split$i ====="
     rsync $RSYNC_OPTS "$SOURCE_BASE/split$i" "$DEST_BASE/"
     echo "===== Completed transfer for split$i ====="
