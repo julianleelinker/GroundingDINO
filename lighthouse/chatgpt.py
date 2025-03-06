@@ -148,16 +148,16 @@ if __name__=='__main__':
     # assert len(prev_image_set)==len(prev_annos_list)*1000, f'{len(prev_image_set)=}, {len(prev_annos_list)=}'    
 
     # temp
-    prev_image_set = {
-        'jpg-2024_10_03_10_11_50.jpg',
-        '013054.jpg',
-        '222855.jpg',
-        '121956.jpg',
-        ' jpg-2024_09_29_18_12_51.jpg',
-        '640x480_2024_07_25_11-15.jpg',
-        '640x480_2024_10_02_05-00.jpg',
-        '131716.jpg',
-    }
+    # prev_image_set = {
+    #     'jpg-2024_10_03_10_11_50.jpg',
+    #     '013054.jpg',
+    #     '222855.jpg',
+    #     '121956.jpg',
+    #     ' jpg-2024_09_29_18_12_51.jpg',
+    #     '640x480_2024_07_25_11-15.jpg',
+    #     '640x480_2024_10_02_05-00.jpg',
+    #     '131716.jpg',
+    # }
     # temp
 
     prompt_list = [
@@ -190,9 +190,13 @@ if __name__=='__main__':
         dst_name = ('.').join(dst_name.split('.')[:-1]) + '.' + dst_name.split('.')[-1].lower()
 
         # temp, need to change file_name to dst_name
-        file_name = src_file.stem + src_file.suffix.lower()
-        if file_name in prev_image_set:
-            print(f'{file_name} already exists')
+        # file_name = src_file.stem + src_file.suffix.lower()
+        # if file_name in prev_image_set:
+        #     print(f'{file_name} already exists')
+        #     continue
+
+        if dst_name in prev_image_set:
+            print(f'{dst_name} already exists')
             continue
 
         response, prompt = ask_chatgpt_describe_image_find_suitable_answer(AZURE_OPENAI_API_KEY, image_path, prompt_list, ansewer_length=50, try_limit=5)
