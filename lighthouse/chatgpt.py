@@ -11,6 +11,17 @@ from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
 
 
+DEPART_LIST = [
+    'China_Steel',
+    'Mass_Rapid_Transit',
+    'Ports_Corporation',
+    'Public_Works',
+    'Sports_Development',
+    'Taiwan_Power',
+    'Transportation',
+    'Water_Resources',
+]
+
 def make_parser():
     parser = argparse.ArgumentParser("ask chatgpt to describe image")
     parser.add_argument(
@@ -136,6 +147,19 @@ if __name__=='__main__':
             prev_image_set.add(anno['image'])
     # assert len(prev_image_set)==len(prev_annos_list)*1000, f'{len(prev_image_set)=}, {len(prev_annos_list)=}'    
 
+    # temp
+    prev_image_set = {
+        'jpg-2024_10_03_10_11_50.jpg',
+        '013054.jpg',
+        '222855.jpg',
+        '121956.jpg',
+        ' jpg-2024_09_29_18_12_51.jpg',
+        '640x480_2024_07_25_11-15.jpg',
+        '640x480_2024_10_02_05-00.jpg',
+        '131716.jpg',
+    }
+    # temp
+
     prompt_list = [
         "Describe the image concisely.",
         "Provide a brief description of the given image.",
@@ -155,20 +179,30 @@ if __name__=='__main__':
     max_id, min_id = -1, -1
     n_anno = len(prev_annos_list) + 1
     anno_path = output_anno_root / f'vlm_annotations_{n_anno}.json'
+
     for image_path in tqdm.tqdm(image_path_list):
         src_file = image_path.resolve()
+        for depart in DEPART_LIST:
+            if depart in str(src_file):
+                break
+        folder_list = str(src_file).split(f'/{depart}/')
+        dst_name = ('-').join(folder_list[1:]).replace('/', '-')
+        dst_name = ('.').join(dst_name.split('.')[:-1]) + '.' + dst_name.split('.')[-1].lower()
+
+        # temp, need to change file_name to dst_name
         file_name = src_file.stem + src_file.suffix.lower()
         if file_name in prev_image_set:
             print(f'{file_name} already exists')
             continue
+
         response, prompt = ask_chatgpt_describe_image_find_suitable_answer(AZURE_OPENAI_API_KEY, image_path, prompt_list, ansewer_length=50, try_limit=5)
         # print(f'{prompt=}')
         # print(f'{response=}')
         if response:
             # copy file in image_path_list
-            dst_file = output_image_root / file_name
+            dst_file = output_image_root / dst_name
             shutil.copy2(src_file, dst_file)
-            annotation_list.append(generate_vlm_pretraining_annotation(image_id, file_name, prompt, response))
+            annotation_list.append(generate_vlm_pretraining_annotation(image_id, dst_name, prompt, response))
 
             # count response length
             word_count = len(response.split())
