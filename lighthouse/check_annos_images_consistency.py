@@ -3,16 +3,16 @@ import json
 
 root_path = "/mnt/data-home/mobility-multimodal/vlm-annotations"
 folder_list = [
-   "Sports_Development/20241223/Sports_Development_20241223_curated_t7-revised",
-   "Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_makeup-revised",
-   "Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full-revised",
-   "Water_Resources/20250106/Water_Resources_20250106_curated_t5-revised",
-   "Transportation/20250109/Transportation_20250109_curated_t7-revised",
-   "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95-revised",
-   "Transportation/20241230/Transportation_20241230_curated_t7-revised",
-   "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95-revised",
-   "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95-revised",
-   "Public_Works/20241230/Public_Works_20241230_curated_t5_part-revised",
+#    "Sports_Development/20241223/Sports_Development_20241223_curated_t7-revised",
+#    "Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_makeup-revised",
+#    "Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full-revised",
+#    "Water_Resources/20250106/Water_Resources_20250106_curated_t5-revised",
+#    "Transportation/20250109/Transportation_20250109_curated_t7-revised",
+#    "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95-revised",
+#    "Transportation/20241230/Transportation_20241230_curated_t7-revised",
+#    "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95-revised",
+#    "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95-revised",
+#    "Public_Works/20241230/Public_Works_20241230_curated_t5_part-revised",
 ]
 linker_vision_path = "Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part"
 for i in range(1, 6):
@@ -34,7 +34,7 @@ for depart_path in folder_list:
     # print(f"{depart_path=}")
     image_num = len(list(images_path.glob('*')))
     print(f"{image_num=}")
-    anno_path = pathlib.Path(depart_path) / 'annotations' / 'new_anno_0306.json'
+    anno_path = pathlib.Path(depart_path) / 'annotations' / 'revised_anno.json'
     if not anno_path.exists():
         print(f"{depart_path} annotations not found")
     with anno_path.open() as f:
