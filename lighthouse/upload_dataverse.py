@@ -6,27 +6,40 @@ import os
 DATAVERSE_PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
 
 depart_map = {
-    "Sports_Development": "運發局",
-    "Water_Resources":    "水利局",
-    "Transportation":     "交通局", 
-    "Mass_Rapid_Transit": "捷運局", 
-    "Taiwan_Power":       "台電",  
-    "Public_Works":       "工務局", 
-    "China_Steel":        "中鋼",
-    "Ports_Corporation":  "港務局",
+    "Sports_Development":     "運發局",
+    "Water_Resources":        "水利局",
+    "Transportation":         "交通局", 
+    "Mass_Rapid_Transit":     "捷運局", 
+    "Taiwan_Power":           "台電",  
+    "Public_Works":           "工務局", 
+    "China_Steel":            "中鋼",
+    "Ports_Corporation":      "港務局",
+    "Kaohsiung-full-dataset": "Linker",
 }
-folder_list = [
-    "Sports_Development/20241223/Sports_Development_20241223_curated_t7-revised",
-    "Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_makeup-revised",
-    "Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full-revised",
-    "Water_Resources/20250106/Water_Resources_20250106_curated_t5-revised",
-    "Transportation/20250109/Transportation_20250109_curated_t7-revised",
-    "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95-revised",
-    "Transportation/20241230/Transportation_20241230_curated_t7-revised",
-    "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95-revised",
-    "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95-revised",
-    "Public_Works/20241230/Public_Works_20241230_curated_t5_part-revised",
-]
+# folder_list = [
+    # "Sports_Development/20241223/Sports_Development_20241223_curated_t7-revised",
+    # "Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_makeup-revised",
+    # "Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full-revised",
+    # "Water_Resources/20250106/Water_Resources_20250106_curated_t5-revised",
+    # "Transportation/20250109/Transportation_20250109_curated_t7-revised",
+    # "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95-revised",
+    # "Transportation/20241230/Transportation_20241230_curated_t7-revised",
+    # "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95-revised",
+    # "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95-revised",
+    # "Public_Works/20241230/Public_Works_20241230_curated_t5_part-revised",
+# ]
+
+ij_list = []
+for i in range(1, 6):
+    for j in range(1, 5):
+        ij_list.append((i, j))
+i = 6
+for j in range(1, 4):
+    ij_list.append((i, j))
+
+folder_list = []
+for i, j in ij_list:
+    folder_list.append(f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part{i}_{j}-revised')
 root_path = "/mnt/data-home/mobility-multimodal/vlm-annotations"
 folder_list = [f'{root_path}/{folder}' for folder in folder_list]
 
