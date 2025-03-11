@@ -20,6 +20,7 @@ FILES_PER_SPLIT=5000
 
 # Create output directory
 mkdir -p "$OUTPUT_FOLDER"
+chmod 777 "$OUTPUT_FOLDER"
 
 # Define the process_image function (replaces helper script)
 process_image() {
@@ -70,6 +71,7 @@ echo "Processing $TOTAL_FILES files across $TOTAL_SPLITS splits ($FILES_PER_SPLI
 for (( SPLIT_INDEX=0; SPLIT_INDEX<$TOTAL_SPLITS; SPLIT_INDEX++ )); do
     SPLIT_DIR="$OUTPUT_FOLDER/split$SPLIT_INDEX"
     mkdir -p "$SPLIT_DIR"
+    chmod 777 "$SPLIT_DIR"
     echo "new_filename,original_path" > "$SPLIT_DIR/mapping.txt"
     
     # Get lines for this split
