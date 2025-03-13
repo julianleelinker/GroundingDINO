@@ -41,18 +41,27 @@ def remove_coco_duplicated(split, image_list, verbose=True, dry_run=True):
     anno_path = (split / 'annotations' / 'labels.json')
     image_root = (split / 'images')
     with open(anno_path) as f:
-        anno_data = json.load(f)
+        try:
+            anno_data = json.load(f)
+        except json.decoder.JSONDecodeError:
+            raise
+
     remove_count = 0
     keep_count = 0
     
     new_images_annos = []
     keep_images_ids = []
-    print('checking images')
-    print('image path sample')
-    print(anno_data['images'][0]['file_name'])
-    print(image_list[0])
     image_set = set(image_list)
-    for anno in tqdm.tqdm(anno_data['images']):
+    iterable = anno_data['images']
+
+    if verbose:
+        print('checking images')
+        print('image path sample')
+        print(anno_data['images'][0]['file_name'])
+        print(image_list[0])
+        iterable = tqdm.tqdm(iterable)
+
+    for anno in iterable:
         if anno['file_name'] in image_set:
             new_images_annos.append(anno)
             keep_images_ids.append(anno['id'])
@@ -61,8 +70,6 @@ def remove_coco_duplicated(split, image_list, verbose=True, dry_run=True):
             remove_count += 1
             image_path = image_root / anno['file_name']
             if image_path.exists():
-                if verbose:
-                    print(f'removing {image_path}')
                 if not dry_run:
                     image_path.unlink()
     
@@ -84,6 +91,7 @@ def remove_coco_duplicated(split, image_list, verbose=True, dry_run=True):
 
 
 all_keep, all_removed = 0, 0
+failed_split = []
 for revision_folder, json_file in zip(revision_list, revision_json): 
     splits = list(pathlib.Path(revision_folder).glob('split*'))
 
@@ -95,9 +103,16 @@ for revision_folder, json_file in zip(revision_list, revision_json):
     ]
     print(image_list[0])
 
-    for split in splits:
-        keep, remove = remove_coco_duplicated(split, image_list, verbose=False, dry_run=True)
-        all_keep += keep
-        all_removed += remove
+    for split in tqdm.tqdm(splits):
+        try:
+            keep, remove = remove_coco_duplicated(split, image_list, verbose=False, dry_run=True)
+            all_keep += keep
+            all_removed += remove
+        except json.decoder.JSONDecodeError:
+            print(f'Error processing {split}')
+            failed_split.append(split)
     print(f'{all_keep=}')
     print(f'{all_removed=}')
+
+for split in failed_split:
+    print(f'failed split: {split}')
