@@ -10,7 +10,6 @@ DEPART_MAP = {
     'Kaohsiung-full-dataset': 'Linker',
 }
 
-
 VLM_ANNOTATION_ROOT = '/mnt/data-home/mobility-multimodal/vlm-annotations'
 CKPT1_VLM_FOLDERS = [
     "Sports_Development/20241223/Sports_Development_20241223_curated_t7",
@@ -34,6 +33,7 @@ CKPT1_VLM_FOLDERS = [
     "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split3",
 ]
 # add linker data
-CKPT1_VLM_FOLDERS.extend([f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part{i}_{j}' for i in range(1, 6) for j in range(1, 5)])
-CKPT1_VLM_FOLDERS.extend([f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_{j}' for j in range(1, 4)])
-CKPT1_VLM_FOLDERS = [f'{VLM_ANNOTATION_ROOT}/{folder}' for folder in CKPT1_VLM_FOLDERS]
+CKPT1_LINKER_FOLDERS = [f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part{i}_{j}' for i in range(1, 6) for j in range(1, 5)]
+CKPT1_LINKER_FOLDERS.extend([f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_{j}' for j in range(1, 4)])
+CKPT1_LINKER_FOLDERS = [f'{VLM_ANNOTATION_ROOT}/{folder}' for folder in CKPT1_LINKER_FOLDERS]
+CKPT1_VLM_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
