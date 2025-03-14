@@ -17,6 +17,7 @@ DEPARTS_CH = list(DEPART_MAP.values())
 DEPARTS_EN = list(DEPART_MAP.keys())
 
 VLM_ANNOTATION_ROOT = '/mnt/data-home/mobility-multimodal/vlm-annotations'
+DATA_CURATION_ROOT = '/mnt/data-home/mobility-multimodal/data-curation'
 
 CKPT1_LINKER_FOLDERS = [f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part{i}_{j}' for i in range(1, 6) for j in range(1, 5)]
 CKPT1_LINKER_FOLDERS.extend([f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_{j}' for j in range(1, 4)])

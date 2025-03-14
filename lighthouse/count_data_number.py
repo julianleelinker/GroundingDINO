@@ -24,8 +24,7 @@ print('counting DINO COCO data...')
 depart_count = {depart: 0 for depart in DEPARTS_EN}
 for folder in tqdm.tqdm(DINO_COCO_FOLDERS):
     splits = list(folder.glob('split*'))
-    print(folder)
-    for split in tqdm.tqdm(splits):
+    for split in splits:
         image_list = list((split/'images').glob('*'))
         depart_count[get_depart(folder)] += len(image_list)
 
