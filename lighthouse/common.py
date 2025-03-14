@@ -11,6 +11,7 @@ DEPART_MAP = {
     'Transportation'        : '中鋼',          
     'Water_Resources'       : '港務局',     
     'Kaohsiung-full-dataset': 'Linker',
+    'Linker_Vision_Data_V3' : 'LinkerV3',
 }
 DEPARTS_CH = list(DEPART_MAP.values())
 DEPARTS_EN = list(DEPART_MAP.keys())
@@ -21,7 +22,7 @@ CKPT1_LINKER_FOLDERS = [f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retri
 CKPT1_LINKER_FOLDERS.extend([f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_{j}' for j in range(1, 4)])
 CKPT1_LINKER_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in CKPT1_LINKER_FOLDERS]
 
-CKPT1_VLM_FOLDERS = [
+VLM_CKPT1_FOLDERS = [
     'Sports_Development/20241223/Sports_Development_20241223_curated_t7',
     'Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_patch',
     'Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full',
@@ -42,10 +43,10 @@ CKPT1_VLM_FOLDERS = [
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split2',
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split3',
 ]
-CKPT1_VLM_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in CKPT1_VLM_FOLDERS]
-CKPT1_VLM_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
+VLM_CKPT1_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in VLM_CKPT1_FOLDERS]
+VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
 
-CKPT2_VLM_FOLDERS = [
+VLM_CKPT2_FOLDERS = [
     'Sports_Development/20241223/Sports_Development_20241223_curated_t4', #TODO need to remove rededuplicated
     'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
     'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
@@ -56,7 +57,7 @@ CKPT2_VLM_FOLDERS = [
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t14',
     'Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new',
 ]
-CKPT2_VLM_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in CKPT2_VLM_FOLDERS]
+VLM_CKPT2_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in VLM_CKPT2_FOLDERS]
 
 DINO_COCO_ROOT = '/mnt/lighthouseACD/ACD-gdino-COCO'
 DINO_COCO_FOLDERS = [
