@@ -40,3 +40,4 @@ for folder in folder_list:
     print(command)
     print('\n')
     subprocess.run(command, check=True)
+    (folder / 'uploaded').touch()

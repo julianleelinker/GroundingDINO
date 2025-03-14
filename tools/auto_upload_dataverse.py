@@ -39,9 +39,10 @@ if __name__ == "__main__":
     wait_time = 600
     coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
     file_root_list = [
-        'Sports_Development_20241223_image_list_keep_0.95', # done remove
-        'Transportation_20241230_image_list_keep_0.95', # done remove
-        'Transportation_20250109_image_list_keep_0.95', # done remove
+        # 'Sports_Development_20241223_image_list_keep_0.95', # done remove
+        # 'Transportation_20241230_image_list_keep_0.95', # done remove
+        # 'Transportation_20250109_image_list_keep_0.95', # done remove
+        'Public_Works_20241230_image_list_keep_0.95',
     ]
     file_root_list = [f'{coco_root}/{x}' for x in file_root_list]
     file_path_list = []
@@ -51,7 +52,10 @@ if __name__ == "__main__":
     while True:
         for file_path in file_path_list:
             print(str(file_path))
-            command = f'conda run -n lighthouse python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
+            command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
+            # command = [
+            #     'conda', 'run', '-n' lighthouse python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
+            # ]
             check_and_execute(file_path, command)
         print(f"Waiting for {wait_time} seconds")
         time.sleep(wait_time)
