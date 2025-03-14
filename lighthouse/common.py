@@ -49,14 +49,14 @@ VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
 
 VLM_CKPT2_FOLDERS = [
     # re running gpt
-    # 'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
-    # 'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
-    # 'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
-    # 'Public_Works/20250206/Public_Works_20250206_curated_t4',
+    'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
+    'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
+    'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
+    'Public_Works/20250206/Public_Works_20250206_curated_t4',
     # waiting for rerunning gpt
-    # 'China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95',
-    # 'Water_Resources/20250213/Water_Resources_20250213_curated_t1',
-    # 'Transportation/20250115/Transportation_20250115_curated_t4', 
+    'China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95',
+    'Water_Resources/20250213/Water_Resources_20250213_curated_t1',
+    'Transportation/20250115/Transportation_20250115_curated_t4', 
 
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t14',
     'Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new',
