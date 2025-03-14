@@ -206,6 +206,7 @@ if __name__=='__main__':
                 min_count = word_count
                 min_id = image_id
 
+    (output_root / 'done').touch()
     print(f'{max_count=}, {min_count=}')
     print(f'{max_id=}, {min_id=}')
     print(f'{image_id=}, data save to {output_root}')
