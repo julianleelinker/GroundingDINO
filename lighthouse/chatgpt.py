@@ -128,7 +128,7 @@ def create_path_name_mapping(image_path_list, mapping_file_path):
         image_name_path_dict[image_path.name].append(image_path)
     all_path_to_name = {}
     if len(image_name_path_dict) == len(image_path_list):
-        all_path_to_name = {path: name for name, path in image_name_path_dict.items()}
+        all_path_to_name = {path_list[0]: name for name, path_list in image_name_path_dict.items()}
         return all_path_to_name
 
     renamed_path_name = {}
@@ -140,7 +140,7 @@ def create_path_name_mapping(image_path_list, mapping_file_path):
             new_image_name = f'{image_path_list[i].stem}-{i}{image_path_list[i].suffix}'
             renamed_path_name[image_path_list[i]] = new_image_name
     with open(mapping_file_path, 'w') as f:
-        for path, name in renamed_path_name:
+        for path, name in renamed_path_name.items():
             f.write(f'"{name}","{path}"\n')
     all_path_to_name.update(renamed_path_name)
     return all_path_to_name
@@ -170,9 +170,10 @@ if __name__=='__main__':
     os.chmod(output_anno_root, 0o777)
 
     anno_path = output_anno_root / 'vlm_annotations.json'
-    prev_name_set = set()
-    with open(anno_path, 'r') as f:
-        prev_annos_data = json.load(f)
+    prev_name_set, prev_annos_data = set(), []
+    if anno_path.exists():
+        with open(anno_path, 'r') as f:
+            prev_annos_data = json.load(f)
     for anno in prev_annos_data:
         prev_name_set.add(anno['image'])
 
