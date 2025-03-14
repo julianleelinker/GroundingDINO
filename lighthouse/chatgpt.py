@@ -7,20 +7,26 @@ import random
 import tqdm
 import argparse
 import os
+from collections import defaultdict
 from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
+from common import DEPARTS_EN
 
 
-DEPART_LIST = [
-    'China_Steel',
-    'Mass_Rapid_Transit',
-    'Ports_Corporation',
-    'Public_Works',
-    'Sports_Development',
-    'Taiwan_Power',
-    'Transportation',
-    'Water_Resources',
+PROMPT_LIST = [
+    "Describe the image concisely.",
+    "Provide a brief description of the given image.",
+    "Offer a succinct explanation of the picture presented.",
+    "Summarize the visual content of the image.",
+    "Give a short and clear explanation of the subsequent image.",
+    "Share a concise interpretation of the image provided.",
+    "Present a compact description of the photo’s key features.",
+    "Relay a brief, clear account of the picture shown.",
+    "Render a clear and concise summary of the photo.",
+    "Write a terse but informative summary of the picture.",
+    "Create a compact narrative representing the image presented.",
 ]
+
 
 def make_parser():
     parser = argparse.ArgumentParser("ask chatgpt to describe image")
@@ -40,7 +46,6 @@ def encode_image(image_path):
 
 
 def ask_chatgpt_describe_image(azure_openai_api_key, image_path, prompt="Please briefly describe the image.\n"):
-    # print(str(image_path))
     config = {
                 "azure_endpoint": "https://azure-openai-vision-platform.openai.azure.com/",
                 "api_key": azure_openai_api_key,
@@ -115,6 +120,30 @@ def generate_vlm_pretraining_annotation(id, image_name, prompt, response):
             }
         ]
     }
+    
+
+def create_path_name_mapping(image_path_list, mapping_file_path):
+    image_name_path_dict = defaultdict(list)
+    for image_path in image_path_list:
+        image_name_path_dict[image_path.name].append(image_path)
+    all_path_to_name = {}
+    if len(image_name_path_dict) == len(image_path_list):
+        all_path_to_name = {path: name for name, path in image_name_path_dict.items()}
+        return all_path_to_name
+
+    renamed_path_name = {}
+    for image_name, image_path_list in image_name_path_dict.items():
+        if len(image_path_list) == 1:
+            all_path_to_name[image_path_list[0]] = image_name
+            continue
+        for i in range(len(image_path_list)):
+            new_image_name = f'{image_path_list[i].stem}-{i}{image_path_list[i].suffix}'
+            renamed_path_name[image_path_list[i]] = new_image_name
+    with open(mapping_file_path, 'w') as f:
+        for path, name in renamed_path_name:
+            f.write(f'"{name}","{path}"\n')
+    all_path_to_name.update(renamed_path_name)
+    return all_path_to_name
 
 
 if __name__=='__main__':
@@ -123,6 +152,7 @@ if __name__=='__main__':
     output_root = args.json_path.replace('data-curation', 'vlm-annotations').replace('.json', '')
     output_root = pathlib.Path(output_root)
     print(f'{output_root=}')
+
     with open(args.json_path, 'r') as f:
         json_data = json.load(f)
     if 'image_path' in json_data[0]:
@@ -130,83 +160,41 @@ if __name__=='__main__':
     else:
         image_path_list = [pathlib.Path(image) for image in json_data]
 
+    path_to_name = create_path_name_mapping(image_path_list, output_root / 'rename_name_path.txt')
+
     output_image_root = output_root / 'images'
     output_anno_root = output_root / 'annotations'
     output_image_root.mkdir(exist_ok=True, parents=True)
     os.chmod(output_image_root, 0o777)
     output_anno_root.mkdir(exist_ok=True, parents=True)
     os.chmod(output_anno_root, 0o777)
-    images_per_anno = 1000 # save a json for each target image 
 
-    prev_annos_list = list(output_anno_root.rglob('*.json'))
-    prev_image_set = set()
-    for previous_annos in prev_annos_list:
-        with open(previous_annos, 'r') as f:
-            previous_annos_data = json.load(f)
-        for anno in previous_annos_data:
-            prev_image_set.add(anno['image'])
-    # assert len(prev_image_set)==len(prev_annos_list)*1000, f'{len(prev_image_set)=}, {len(prev_annos_list)=}'    
+    anno_path = output_anno_root / 'vlm_annotations.json'
+    prev_name_set = set()
+    with open(anno_path, 'r') as f:
+        prev_annos_data = json.load(f)
+    for anno in prev_annos_data:
+        prev_name_set.add(anno['image'])
 
-    # temp
-    # prev_image_set = {
-    #     'jpg-2024_10_03_10_11_50.jpg',
-    #     '013054.jpg',
-    #     '222855.jpg',
-    #     '121956.jpg',
-    #     ' jpg-2024_09_29_18_12_51.jpg',
-    #     '640x480_2024_07_25_11-15.jpg',
-    #     '640x480_2024_10_02_05-00.jpg',
-    #     '131716.jpg',
-    # }
-    # temp
-
-    prompt_list = [
-        "Describe the image concisely.",
-        "Provide a brief description of the given image.",
-        "Offer a succinct explanation of the picture presented.",
-        "Summarize the visual content of the image.",
-        "Give a short and clear explanation of the subsequent image.",
-        "Share a concise interpretation of the image provided.",
-        "Present a compact description of the photo’s key features.",
-        "Relay a brief, clear account of the picture shown.",
-        "Render a clear and concise summary of the photo.",
-        "Write a terse but informative summary of the picture.",
-        "Create a compact narrative representing the image presented.",
-    ]
-    annotation_list = []
-    image_id = 1
+    annotation_list = prev_annos_data
+    image_id = len(prev_annos_data) + 1
     max_count, min_count = float('-inf'), float('inf')
     max_id, min_id = -1, -1
-    n_anno = len(prev_annos_list) + 1
-    anno_path = output_anno_root / f'vlm_annotations_{n_anno}.json'
-
     for image_path in tqdm.tqdm(image_path_list):
-        src_file = image_path.resolve()
-        for depart in DEPART_LIST:
-            if depart in str(src_file):
-                break
-        folder_list = str(src_file).split(f'/{depart}/')
-        dst_name = ('-').join(folder_list[1:]).replace('/', '-')
-        dst_name = ('.').join(dst_name.split('.')[:-1]) + '.' + dst_name.split('.')[-1].lower()
+        image_path = image_path.resolve()
+        new_image_name = path_to_name[image_path]
 
-        # temp, need to change file_name to dst_name
-        # file_name = src_file.stem + src_file.suffix.lower()
-        # if file_name in prev_image_set:
-        #     print(f'{file_name} already exists')
-        #     continue
-
-        if dst_name in prev_image_set:
-            print(f'{dst_name} already exists')
+        if new_image_name in prev_name_set:
+            print(f'{new_image_name} already exists')
             continue
 
-        response, prompt = ask_chatgpt_describe_image_find_suitable_answer(AZURE_OPENAI_API_KEY, image_path, prompt_list, ansewer_length=50, try_limit=5)
-        # print(f'{prompt=}')
-        # print(f'{response=}')
+        response, prompt = ask_chatgpt_describe_image_find_suitable_answer(AZURE_OPENAI_API_KEY, image_path, PROMPT_LIST, ansewer_length=50, try_limit=5)
         if response:
-            # copy file in image_path_list
-            dst_file = output_image_root / dst_name
-            shutil.copy2(src_file, dst_file)
-            annotation_list.append(generate_vlm_pretraining_annotation(image_id, dst_name, prompt, response))
+            annotation_list.append(generate_vlm_pretraining_annotation(image_id, new_image_name, prompt, response))
+            with open(anno_path, "w") as json_file:
+                json.dump(annotation_list, json_file, indent=4, ensure_ascii=False)
+            dst_file = output_image_root / new_image_name
+            shutil.copy2(image_path, dst_file)
 
             # count response length
             word_count = len(response.split())
@@ -216,15 +204,6 @@ if __name__=='__main__':
             if word_count < min_count:
                 min_count = word_count
                 min_id = image_id
-
-            with open(anno_path, "w") as json_file:
-                json.dump(annotation_list, json_file, indent=4, ensure_ascii=False)
-            # print(f'data save to {anno_path}')
-            image_id += 1
-            if (image_id-1)//images_per_anno>0 and (image_id-1)%images_per_anno==0:
-                annotation_list = []
-                n_anno += 1
-                anno_path = output_anno_root / f'vlm_annotations_{n_anno}.json'
 
     print(f'{max_count=}, {min_count=}')
     print(f'{max_id=}, {min_id=}')
