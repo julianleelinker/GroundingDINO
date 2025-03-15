@@ -2,7 +2,7 @@ import json
 import pathlib
 import tqdm
 from collections import defaultdict
-from common import CKPT1_VLM_FOLDERS
+from common import VLM_CKPT1_FOLDERS
 
 final_json_path = '/mnt/data-home/chungan/curation/checkpoint1_image_list_new.json'
 
@@ -55,7 +55,7 @@ def remove_duplicated(dataverse_path, rededuplicated_json, old_anno_name='new_an
 
 import ipdb; ipdb.set_trace()
 count = 0
-for folder in CKPT1_VLM_FOLDERS:
+for folder in VLM_CKPT1_FOLDERS:
     assert pathlib.Path(folder).exists(), f'{folder} not exists'
     # count += remove_duplicated(pathlib.Path(folder), final_json_path, old_anno_name='new_anno_0306.json', new_anno_name='new_anno_0306.json', verbose=False, dry_run=True)
     # count += remove_duplicated(pathlib.Path(folder), final_json_path, old_anno_name='vlm_annotations_*', new_anno_name='new_anno_0306.json', verbose=False, dry_run=False)

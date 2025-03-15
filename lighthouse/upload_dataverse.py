@@ -1,7 +1,7 @@
 import pathlib
 import subprocess
 import os
-from common import DEPART_MAP, VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
+from common import DEPART_MAP, VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, VLM_ANNOTATION_ROOT
 
 
 DATAVERSE_PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
@@ -10,6 +10,10 @@ PROJECT_ID_CKPT2 = 464
 
 folder_list = VLM_CKPT2_FOLDERS
 project_id = PROJECT_ID_CKPT2
+folder_list =[
+    'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised',
+]
+folder_list = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in folder_list]
 
 # check folder exit
 for folder in folder_list:
