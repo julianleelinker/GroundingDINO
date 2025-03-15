@@ -1,9 +1,9 @@
 import pathlib
 import json
-from common import VLM_CKPT2_FOLDERS
+from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
 
 
-folder_list = VLM_CKPT2_FOLDERS
+folder_list = VLM_CKPT1_FOLDERS + VLM_CKPT2_FOLDERS
 
 for folder in folder_list:
     images_path = pathlib.Path(folder) / 'images'

@@ -10,7 +10,6 @@ import os
 from collections import defaultdict
 from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
-from common import DEPARTS_EN
 
 
 PROMPT_LIST = [
@@ -160,7 +159,6 @@ if __name__=='__main__':
     else:
         image_path_list = [pathlib.Path(image) for image in json_data]
 
-    path_to_name = create_path_name_mapping(image_path_list, output_root / 'rename_name_path.txt')
 
     output_image_root = output_root / 'images'
     output_anno_root = output_root / 'annotations'
@@ -168,6 +166,8 @@ if __name__=='__main__':
     os.chmod(output_image_root, 0o777)
     output_anno_root.mkdir(exist_ok=True, parents=True)
     os.chmod(output_anno_root, 0o777)
+
+    path_to_name = create_path_name_mapping(image_path_list, output_root / 'rename_name_path.txt')
 
     anno_path = output_anno_root / 'vlm_annotations.json'
     prev_name_set, prev_annos_data = set(), []
