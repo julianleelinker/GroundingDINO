@@ -1,4 +1,5 @@
 import pathlib
+import json
 
 
 DEPART_MAP = {
@@ -48,16 +49,15 @@ VLM_CKPT1_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder 
 VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
 
 VLM_CKPT2_FOLDERS = [
-    # re running gpt
     'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
     'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
     'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
     'Public_Works/20250206/Public_Works_20250206_curated_t4',
-    # waiting for rerunning gpt
+    ### re running gpt
     'China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95',
     'Water_Resources/20250213/Water_Resources_20250213_curated_t1',
     'Transportation/20250115/Transportation_20250115_curated_t4', 
-
+    ###
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t14',
     'Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new',
 ]
@@ -79,7 +79,6 @@ DINO_COCO_FOLDERS = [
 ]
 DINO_COCO_FOLDERS = [pathlib.Path(f'{DINO_COCO_ROOT}/{folder}') for folder in DINO_COCO_FOLDERS]
 
-
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     for depart, depart_ch in DEPART_MAP.items():
         if depart in str(path):
@@ -87,3 +86,15 @@ def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
                 return depart_ch
             return depart
     return None
+
+def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
+    anno_path = pathlib.Path(path) / 'annotations' / 'vlm_annotations.json'
+    new_id = start_id
+    with anno_path.open('r') as f:
+        anno_data = json.load(f)
+    for data in anno_data:
+        data['id'] = new_id
+        new_id += 1
+    with anno_path.open('w') as f:
+        json.dump(anno_data, f, indent=4, ensure_ascii=False)
+    return new_id
