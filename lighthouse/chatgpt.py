@@ -190,21 +190,24 @@ if __name__=='__main__':
             continue
 
         response, prompt = ask_chatgpt_describe_image_find_suitable_answer(AZURE_OPENAI_API_KEY, image_path, PROMPT_LIST, ansewer_length=50, try_limit=5)
-        if response:
-            annotation_list.append(generate_vlm_pretraining_annotation(image_id, new_image_name, prompt, response))
-            with open(anno_path, "w") as json_file:
-                json.dump(annotation_list, json_file, indent=4, ensure_ascii=False)
-            dst_file = output_image_root / new_image_name
-            shutil.copy2(image_path, dst_file)
+        if not response:
+            continue
 
-            # count response length
-            word_count = len(response.split())
-            if word_count > max_count:
-                max_count = word_count
-                max_id = image_id
-            if word_count < min_count:
-                min_count = word_count
-                min_id = image_id
+        annotation_list.append(generate_vlm_pretraining_annotation(image_id, new_image_name, prompt, response))
+        image_id += 1
+        with open(anno_path, "w") as json_file:
+            json.dump(annotation_list, json_file, indent=4, ensure_ascii=False)
+        dst_file = output_image_root / new_image_name
+        shutil.copy2(image_path, dst_file)
+
+        # count response length
+        word_count = len(response.split())
+        if word_count > max_count:
+            max_count = word_count
+            max_id = image_id
+        if word_count < min_count:
+            min_count = word_count
+            min_id = image_id
 
     (output_root / 'done').touch()
     print(f'{max_count=}, {min_count=}')
