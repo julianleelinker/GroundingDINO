@@ -3,18 +3,31 @@ import json
 
 
 DEPART_MAP = {
-    'China_Steel'           : '運發局',
-    'Mass_Rapid_Transit'    : '水利局', 
-    'Ports_Corporation'     : '交通局',      
-    'Public_Works'          : '捷運局',         
-    'Sports_Development'    : '台電',         
-    'Taiwan_Power'          : '工務局',         
-    'Transportation'        : '中鋼',          
-    'Water_Resources'       : '港務局',     
+    'China_Steel'           : '中鋼',          
+    'Mass_Rapid_Transit'    : '捷運局',
+    'Ports_Corporation'     : '港務局',     
+    'Public_Works'          : '工務局',
+    'Sports_Development'    : '運發局',
+    'Taiwan_Power'          : '台電',            
+    'Transportation'        : '交通局',
+    'Water_Resources'       : '水利局', 
+
     'Kaohsiung-full-dataset': 'Linker',
     'Linker_Vision_Data_V3' : 'LinkerV3',
 }
-DEPARTS_CH = list(DEPART_MAP.values())
+
+#  英文名                     中文名       縮寫
+#  'China_Steel'             '中鋼',      cs      
+#  'Mass_Rapid_Transit'      '捷運局',    mrt
+#  'Ports_Corporation'       '港務局',     pc
+#  'Public_Works'            '工務局',     pw
+#  'Sports_Development'      '運發局',     sd
+#  'Taiwan_Power'            '台電',       tp      
+#  'Transportation'          '交通局',     tr
+#  'Water_Resources'         '水利局',     wr
+#  'Kaohsiung-full-dataset'  'Linker',    lk
+#  'Linker_Vision_Data_V3'   'LinkerV3',  lk3
+PARTS_CH = list(DEPART_MAP.values())
 DEPARTS_EN = list(DEPART_MAP.keys())
 
 VLM_ANNOTATION_ROOT = '/mnt/data-home/mobility-multimodal/vlm-annotations'
@@ -49,7 +62,7 @@ VLM_CKPT1_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder 
 VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
 
 VLM_CKPT2_FOLDERS = [
-    'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
+    # 'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
     'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
     'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
     'Public_Works/20250206/Public_Works_20250206_curated_t4',
