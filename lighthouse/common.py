@@ -1,5 +1,8 @@
+import os
+import shutil
 import pathlib
 import json
+import tqdm
 
 
 DEPART_MAP = {
@@ -49,10 +52,10 @@ VLM_CKPT1_FOLDERS = [
     'Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95',
     'Public_Works/20241230/Public_Works_20241230_curated_t5_part',
     #  patch data
-    'Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch',
-    'Transportation/20250115/Transportation_20250115_curated_t1',
+    'Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch', # remove union
+    'Transportation/20250115/Transportation_20250115_curated_t1', # remove union
     'Transportation/20250120/Transportation_20250120_llava-onevision-0.5b-full',
-    'Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch',
+    'Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch', # remove union
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split0',
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split1',
     'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split2',
@@ -111,3 +114,20 @@ def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
     with anno_path.open('w') as f:
         json.dump(anno_data, f, indent=4, ensure_ascii=False)
     return new_id
+
+# TODO handle same file name
+# TODO handle split
+def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True):
+    with open(json_path, 'r') as f:
+        json_data = json.load(f)
+    dst_folder = pathlib.Path(dst_root) / pathlib.Path(json_path).stem
+    dst_folder.mkdir(exist_ok=True, parents=True)
+    os.chmod(dst_folder, 0o777)
+    for data in tqdm.tqdm(json_data):
+        if is_image_list:
+            image_path = data
+        else:
+            image_path = data['image_path']
+        src_path = pathlib.Path(image_path)
+        dst_path = dst_folder / src_path.name
+        shutil.copy2(src_path, dst_path)
