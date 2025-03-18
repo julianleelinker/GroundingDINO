@@ -131,3 +131,8 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         src_path = pathlib.Path(image_path)
         dst_path = dst_folder / src_path.name
         shutil.copy2(src_path, dst_path)
+
+if __name__ == "__main__":
+    json_path = "/mnt/data-home/mobility-multimodal/data-curation/China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json"
+    dst_path = "/mnt/data-home/julian"
+    copy_images_in_json(json_path, dst_path)
