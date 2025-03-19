@@ -65,7 +65,7 @@ VLM_CKPT1_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder 
 VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
 
 VLM_CKPT2_FOLDERS = [
-    # 'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
+    'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
     'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
     'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
     'Public_Works/20250206/Public_Works_20250206_curated_t4',
@@ -115,24 +115,40 @@ def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
         json.dump(anno_data, f, indent=4, ensure_ascii=False)
     return new_id
 
-# TODO handle same file name
+
 # TODO handle split
-def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True):
+def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = 'name_to_path.txt'):
     with open(json_path, 'r') as f:
         json_data = json.load(f)
-    dst_folder = pathlib.Path(dst_root) / pathlib.Path(json_path).stem
-    dst_folder.mkdir(exist_ok=True, parents=True)
-    os.chmod(dst_folder, 0o777)
+
+    name_to_path_map = []
     for data in tqdm.tqdm(json_data):
         if is_image_list:
             image_path = data
         else:
             image_path = data['image_path']
         src_path = pathlib.Path(image_path)
-        dst_path = dst_folder / src_path.name
-        shutil.copy2(src_path, dst_path)
+        dst_path = pathlib.Path(dst_root) / src_path.name
+
+        count = 0
+        rename_path = dst_path
+        while rename_path.exists():
+            print(f'{rename_path} already exists')
+            count += 1
+            rename_path = rename_path.parent / (f'{dst_path.stem}_{count}{rename_path.suffix}')
+
+        name_to_path_map.append(f'"{rename_path.name}","{src_path}"')
+        shutil.copy2(src_path, rename_path)
+
+    with open(dst_root / path_to_name, 'w') as f:
+        f.write('"copied_name","original_path"\n')
+        f.write('\n'.join(name_to_path_map))
+
 
 if __name__ == "__main__":
     json_path = "/mnt/data-home/mobility-multimodal/data-curation/China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json"
-    dst_path = "/mnt/data-home/julian"
+    dst_root = "/mnt/data-home/julian"
+    dst_path = pathlib.Path(dst_root) / pathlib.Path(json_path).stem 
+    dst_path.mkdir(exist_ok=True, parents=True)
+    os.chmod(dst_path, 0o777)
     copy_images_in_json(json_path, dst_path)
