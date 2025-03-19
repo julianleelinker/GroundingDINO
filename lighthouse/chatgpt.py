@@ -10,6 +10,7 @@ import os
 from collections import defaultdict
 from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
+from common import copy_images_in_json
 
 
 PROMPT_LIST = [
@@ -35,6 +36,11 @@ def make_parser():
         required=True,
         type=str,
         help="the json file path of image list",
+    )
+    parser.add_argument(
+        "--is_image_list",
+        action="store_true",
+        help="the json file is image list",
     )
     return parser.parse_args()
 
@@ -121,28 +127,28 @@ def generate_vlm_pretraining_annotation(id, image_name, prompt, response):
     }
     
 
-def create_path_name_mapping(image_path_list, mapping_file_path):
-    image_name_path_dict = defaultdict(list)
-    for image_path in image_path_list:
-        image_name_path_dict[image_path.name].append(image_path)
-    all_path_to_name = {}
-    if len(image_name_path_dict) == len(image_path_list):
-        all_path_to_name = {path_list[0]: name for name, path_list in image_name_path_dict.items()}
-        return all_path_to_name
+# def create_path_name_mapping(image_path_list, mapping_file_path):
+#     image_name_path_dict = defaultdict(list)
+#     for image_path in image_path_list:
+#         image_name_path_dict[image_path.name].append(image_path)
+#     all_path_to_name = {}
+#     if len(image_name_path_dict) == len(image_path_list):
+#         all_path_to_name = {path_list[0]: name for name, path_list in image_name_path_dict.items()}
+#         return all_path_to_name
 
-    renamed_path_name = {}
-    for image_name, image_path_list in image_name_path_dict.items():
-        if len(image_path_list) == 1:
-            all_path_to_name[image_path_list[0]] = image_name
-            continue
-        for i in range(len(image_path_list)):
-            new_image_name = f'{image_path_list[i].stem}-{i}{image_path_list[i].suffix}'
-            renamed_path_name[image_path_list[i]] = new_image_name
-    with open(mapping_file_path, 'w') as f:
-        for path, name in renamed_path_name.items():
-            f.write(f'"{name}","{path}"\n')
-    all_path_to_name.update(renamed_path_name)
-    return all_path_to_name
+#     renamed_path_name = {}
+#     for image_name, image_path_list in image_name_path_dict.items():
+#         if len(image_path_list) == 1:
+#             all_path_to_name[image_path_list[0]] = image_name
+#             continue
+#         for i in range(len(image_path_list)):
+#             new_image_name = f'{image_path_list[i].stem}-{i}{image_path_list[i].suffix}'
+#             renamed_path_name[image_path_list[i]] = new_image_name
+#     with open(mapping_file_path, 'w') as f:
+#         for path, name in renamed_path_name.items():
+#             f.write(f'"{name}","{path}"\n')
+#     all_path_to_name.update(renamed_path_name)
+#     return all_path_to_name
 
 
 if __name__=='__main__':
@@ -151,14 +157,11 @@ if __name__=='__main__':
     output_root = args.json_path.replace('data-curation', 'vlm-annotations').replace('.json', '')
     output_root = pathlib.Path(output_root)
     print(f'{output_root=}')
+    output_copied_root = output_root / 'copied'
+    output_copied_root.mkdir(exist_ok=True, parents=True)
+    os.chmod(output_copied_root, 0o777)
 
-    with open(args.json_path, 'r') as f:
-        json_data = json.load(f)
-    if 'image_path' in json_data[0]:
-        image_path_list = [pathlib.Path(image['image_path']) for image in json_data]
-    else:
-        image_path_list = [pathlib.Path(image) for image in json_data]
-
+    copy_images_in_json(args.json_path, output_copied_root, is_image_list=args.is_image_list)
 
     output_image_root = output_root / 'images'
     output_anno_root = output_root / 'annotations'
@@ -166,8 +169,6 @@ if __name__=='__main__':
     os.chmod(output_image_root, 0o777)
     output_anno_root.mkdir(exist_ok=True, parents=True)
     os.chmod(output_anno_root, 0o777)
-
-    path_to_name = create_path_name_mapping(image_path_list, output_root / 'rename_name_path.txt')
 
     anno_path = output_anno_root / 'vlm_annotations.json'
     prev_name_set, prev_annos_data = set(), []
@@ -181,24 +182,33 @@ if __name__=='__main__':
     image_id = len(prev_annos_data) + 1
     max_count, min_count = float('-inf'), float('inf')
     max_id, min_id = -1, -1
+    # list all files in the output_root using pathlib
+    # image_path_list = list(output_copied_root.glob('*'))
+    image_path_list = [f for f in output_copied_root.iterdir() if f.is_file() and f.name != "name_to_path.txt"]
+    # image_path_list = list(output_root.glob('*'))
     for image_path in tqdm.tqdm(image_path_list):
-        image_path = image_path.resolve()
-        new_image_name = path_to_name[image_path]
+        # image_path = image_path.resolve()
+        # new_image_name = path_to_name[image_path]
 
-        if new_image_name in prev_name_set:
-            print(f'{new_image_name} already exists')
+        # if new_image_name in prev_name_set:
+        #     print(f'{new_image_name} already exists')
+        #     continue
+        if image_path.name in prev_name_set:
+            print(f'{image_path.name} already exists')
             continue
 
         response, prompt = ask_chatgpt_describe_image_find_suitable_answer(AZURE_OPENAI_API_KEY, image_path, PROMPT_LIST, ansewer_length=50, try_limit=5)
         if not response:
             continue
 
-        annotation_list.append(generate_vlm_pretraining_annotation(image_id, new_image_name, prompt, response))
+        # annotation_list.append(generate_vlm_pretraining_annotation(image_id, new_image_name, prompt, response))
+        annotation_list.append(generate_vlm_pretraining_annotation(image_id, image_path.name, prompt, response))
         image_id += 1
         with open(anno_path, "w") as json_file:
             json.dump(annotation_list, json_file, indent=4, ensure_ascii=False)
-        dst_file = output_image_root / new_image_name
-        shutil.copy2(image_path, dst_file)
+        dst_file = output_image_root / image_path.name
+        # shutil.copy2(image_path, dst_file)
+        shutil.move(image_path, dst_file)
 
         # count response length
         word_count = len(response.split())
