@@ -5,6 +5,10 @@ import json
 import tqdm
 
 
+DATAVERSE_PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
+DATAVERSE_CKPT1_PROJECT_ID = 230 
+DATAVERSE_CKPT2_PROJECT_ID = 464 
+
 DEPART_MAP = {
     'China_Steel'           : '中鋼',          
     'Mass_Rapid_Transit'    : '捷運局',
