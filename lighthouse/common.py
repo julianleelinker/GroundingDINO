@@ -136,17 +136,11 @@ def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
     return new_id
 
 
-# TODO handle split
-def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt"):
-    with open(json_path, "r") as f:
-        json_data = json.load(f)
-
+def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, path_to_name = "name_to_path.txt"):
+    dst_root.mkdir(exist_ok=True, parents=True)
+    os.chmod(dst_root, 0o777)
     name_to_path_map = []
-    for data in tqdm.tqdm(json_data):
-        if is_image_list:
-            image_path = data
-        else:
-            image_path = data["image_path"]
+    for image_path in tqdm.tqdm(image_list):
         src_path = pathlib.Path(image_path)
         dst_path = pathlib.Path(dst_root) / src_path.name
 
@@ -163,6 +157,20 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
     with open(dst_root / path_to_name, "w") as f:
         f.write("\"copied_name","original_path\"\n")
         f.write("\n".join(name_to_path_map))
+
+
+def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0):
+    with open(json_path, "r") as f:
+        image_list = json.load(f)
+    if not is_image_list:
+        image_list = [data["image_path"] for data in image_list]
+    if split_size==0:
+        copy_images_in_image_list(image_list, dst_root, path_to_name)
+    else:
+        splited_image_list = [image_list[i:i + split_size] for i in range(0, len(image_list), split_size)]
+        for i, chunk in enumerate(splited_image_list):
+            copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name)
+
 
 
 '''
@@ -198,6 +206,4 @@ if __name__ == "__main__":
     json_path = "/mnt/data-home/mobility-multimodal/data-curation/China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json"
     dst_root = "/mnt/data-home/julian"
     dst_path = pathlib.Path(dst_root) / pathlib.Path(json_path).stem 
-    dst_path.mkdir(exist_ok=True, parents=True)
-    os.chmod(dst_path, 0o777)
     copy_images_in_json(json_path, dst_path)

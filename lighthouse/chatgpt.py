@@ -158,8 +158,6 @@ if __name__=='__main__':
     output_root = pathlib.Path(output_root)
     print(f'{output_root=}')
     output_copied_root = output_root / 'copied'
-    output_copied_root.mkdir(exist_ok=True, parents=True)
-    os.chmod(output_copied_root, 0o777)
 
     copy_images_in_json(args.json_path, output_copied_root, is_image_list=args.is_image_list)
 
