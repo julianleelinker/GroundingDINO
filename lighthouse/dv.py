@@ -15,6 +15,7 @@ assert client is get_connection("default")
 projects = client.list_projects(current_user = False,)
                                 # exclude_sensor_type=SensorType.LIDAR,
                                 # image_type= OntologyImageType._2D_BOUNDING_BOX)
+
 ckpt1_data_slice = client.list_dataslices(project_id=DATAVERSE_CKPT1_PROJECT_ID, client_alias=client.alias)
 ckpt2_data_slice = client.list_dataslices(project_id=DATAVERSE_CKPT2_PROJECT_ID, client_alias=client.alias)
 import ipdb; ipdb.set_trace()

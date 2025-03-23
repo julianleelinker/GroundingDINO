@@ -5,99 +5,115 @@ import json
 import tqdm
 
 
-DATAVERSE_PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
+DATAVERSE_PASSWORD = os.environ.get("DATAVERSE_PASSWORD")
 DATAVERSE_CKPT1_PROJECT_ID = 230 
 DATAVERSE_CKPT2_PROJECT_ID = 464 
 
 DEPART_MAP = {
-    'China_Steel'           : '中鋼',          
-    'Mass_Rapid_Transit'    : '捷運局',
-    'Ports_Corporation'     : '港務局',     
-    'Public_Works'          : '工務局',
-    'Sports_Development'    : '運發局',
-    'Taiwan_Power'          : '台電',            
-    'Transportation'        : '交通局',
-    'Water_Resources'       : '水利局', 
+    "China_Steel"           : "中鋼",          
+    "Mass_Rapid_Transit"    : "捷運局",
+    "Ports_Corporation"     : "港務局",     
+    "Public_Works"          : "工務局",
+    "Sports_Development"    : "運發局",
+    "Taiwan_Power"          : "台電",            
+    "Transportation"        : "交通局",
+    "Water_Resources"       : "水利局", 
 
-    'Kaohsiung-full-dataset': 'Linker',
-    'Linker_Vision_Data_V3' : 'LinkerV3',
+    "Kaohsiung-full-dataset": "Linker",
+    "Linker_Vision_Data_V3" : "LinkerV3",
 }
 
 #  英文名                     中文名       縮寫
-#  'China_Steel'             '中鋼',      cs      
-#  'Mass_Rapid_Transit'      '捷運局',    mrt
-#  'Ports_Corporation'       '港務局',     pc
-#  'Public_Works'            '工務局',     pw
-#  'Sports_Development'      '運發局',     sd
-#  'Taiwan_Power'            '台電',       tp      
-#  'Transportation'          '交通局',     tr
-#  'Water_Resources'         '水利局',     wr
-#  'Kaohsiung-full-dataset'  'Linker',    lk
-#  'Linker_Vision_Data_V3'   'LinkerV3',  lk3
+#  "China_Steel"             "中鋼",      cs      
+#  "Mass_Rapid_Transit"      "捷運局",    mrt
+#  "Ports_Corporation"       "港務局",     pc
+#  "Public_Works"            "工務局",     pw
+#  "Sports_Development"      "運發局",     sd
+#  "Taiwan_Power"            "台電",       tp      
+#  "Transportation"          "交通局",     tr
+#  "Water_Resources"         "水利局",     wr
+#  "Kaohsiung-full-dataset"  "Linker",    lk
+#  "Linker_Vision_Data_V3"   "LinkerV3",  lk3
 PARTS_CH = list(DEPART_MAP.values())
 DEPARTS_EN = list(DEPART_MAP.keys())
 
-VLM_ANNOTATION_ROOT = '/mnt/data-home/mobility-multimodal/vlm-annotations'
-DATA_CURATION_ROOT = '/mnt/data-home/mobility-multimodal/data-curation'
+VLM_ANNOTATION_ROOT = "/mnt/data-home/mobility-multimodal/vlm-annotations"
+DATA_CURATION_ROOT = "/mnt/data-home/mobility-multimodal/data-curation"
 
-CKPT1_LINKER_FOLDERS = [f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part{i}_{j}' for i in range(1, 6) for j in range(1, 5)]
-CKPT1_LINKER_FOLDERS.extend([f'Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_{j}' for j in range(1, 4)])
-CKPT1_LINKER_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in CKPT1_LINKER_FOLDERS]
+CKPT1_LINKER_FOLDERS = [f"Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part{i}_{j}" for i in range(1, 6) for j in range(1, 5)]
+CKPT1_LINKER_FOLDERS.extend([f"Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_{j}" for j in range(1, 4)])
+CKPT1_LINKER_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in CKPT1_LINKER_FOLDERS]
 
 VLM_CKPT1_FOLDERS = [
-    'Sports_Development/20241223/Sports_Development_20241223_curated_t7',
-    'Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_patch',
-    'Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full',
-    'Water_Resources/20250106/Water_Resources_20250106_curated_t5',
-    'Transportation/20250109/Transportation_20250109_curated_t7',
-    'Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95',
-    'Transportation/20241230/Transportation_20241230_curated_t7',
-    'Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95',
-    'Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95',
-    'Public_Works/20241230/Public_Works_20241230_curated_t5_part',
+    "Sports_Development/20241223/Sports_Development_20241223_curated_t7",
+    "Sports_Development/20241223/Sports_Development_20241223_curated_t5_VLA_patch",
+    "Sports_Development/20250109/Sports_Development_20250109_llava-onevision-0.5b-full",
+    "Water_Resources/20250106/Water_Resources_20250106_curated_t5",
+    "Transportation/20250109/Transportation_20250109_curated_t7",
+    "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95",
+    "Transportation/20241230/Transportation_20241230_curated_t7",
+    "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95",
+    "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95",
+    "Public_Works/20241230/Public_Works_20241230_curated_t5_part",
     #  patch data
-    'Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch', # remove union
-    'Transportation/20250115/Transportation_20250115_curated_t1', # remove union
-    'Transportation/20250120/Transportation_20250120_llava-onevision-0.5b-full',
-    'Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch', # remove union
-    'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split0',
-    'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split1',
-    'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split2',
-    'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split3',
+    "Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch", # remove union
+    "Transportation/20250115/Transportation_20250115_curated_t1", # remove union
+    "Transportation/20250120/Transportation_20250120_llava-onevision-0.5b-full",
+    "Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch", # remove union
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split0",
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split1",
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split2",
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split3",
 ]
-VLM_CKPT1_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in VLM_CKPT1_FOLDERS]
+VLM_CKPT1_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in VLM_CKPT1_FOLDERS]
 VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
 
 VLM_CKPT2_FOLDERS = [
-    'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised', 
-    'Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95',
-    'Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7',
-    'Public_Works/20250206/Public_Works_20250206_curated_t4',
+    "Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised", 
+    "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95",
+    "Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t7",
+    "Public_Works/20250206/Public_Works_20250206_curated_t4",
     ### re running gpt
-    'China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95',
-    'Water_Resources/20250213/Water_Resources_20250213_curated_t1',
-    'Transportation/20250115/Transportation_20250115_curated_t4', 
+    "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95",
+    "Water_Resources/20250213/Water_Resources_20250213_curated_t1",
+    "Transportation/20250115/Transportation_20250115_curated_t4", 
     ###
-    'Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t14',
-    'Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new',
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t14",
+    "Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new",
 ]
-VLM_CKPT2_FOLDERS = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in VLM_CKPT2_FOLDERS]
+VLM_CKPT2_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in VLM_CKPT2_FOLDERS]
 
-DINO_COCO_ROOT = '/mnt/lighthouseACD/ACD-gdino-COCO'
-DINO_COCO_FOLDERS = [
-    'Mass_Rapid_Transit_20250109_image_list_keep_0.95_0.30_0.35',
-    'Ports_Corporation_20250124_image_list_keep_0.95',
-    'Public_Works_20241230_image_list_keep_0.95',
-    'Public_Works_20250106_image_list_keep_0.95',
-    'Sports_Development_20241223_image_list_keep_0.95',
-    'Sports_Development_20250109_image_list_keep_0.95',
-    'Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35',
-    'Transportation_20241230_image_list_keep_0.95',
-    'Transportation_20250109_image_list_keep_0.95',
-    'Transportation_20250115_image_list_keep_0.95_rededuplicate',
-    'Water_Resources_20250106_image_list_keep_0.95',
+DINO_COCO_ROOT = "/mnt/lighthouseACD/ACD-gdino-COCO"
+DINO_COCO_DEPRECATED_FOLDERS = [
+    "Mass_Rapid_Transit_20250109_image_list_keep_0.95_0.30_0.35",
+    "Ports_Corporation_20250124_image_list_keep_0.95",
+    "Public_Works_20241230_image_list_keep_0.95",
+    "Public_Works_20250106_image_list_keep_0.95",
+    "Sports_Development_20241223_image_list_keep_0.95",
+    "Sports_Development_20250109_image_list_keep_0.95",
+    "Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35",
+    "Transportation_20241230_image_list_keep_0.95",
+    "Transportation_20250109_image_list_keep_0.95",
+    "Transportation_20250115_image_list_keep_0.95_rededuplicate",
+    "Water_Resources_20250106_image_list_keep_0.95",
+    # not used
+    # "linker_4M_image_list_keep_0.95" 
 ]
-DINO_COCO_FOLDERS = [pathlib.Path(f'{DINO_COCO_ROOT}/{folder}') for folder in DINO_COCO_FOLDERS]
+DINO_COCO_DEPRECATED_FOLDERS = [pathlib.Path(f"{DINO_COCO_ROOT}/{folder}") for folder in DINO_COCO_DEPRECATED_FOLDERS]
+
+AUGMENTED_CURATED_JSON_ROOT = "/mnt/data-home/mobility-multimodal/data-curation"
+AUGMENTED_CURATED_NEW_JSONS = [
+    "Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_image_list_keep_0.95.json",
+    "Ports_Corporation/20250226/Ports_Corporation_20250226_image_list_keep_0.95.json",
+    "Public_Works/20250206/Public_Works_20250206_image_list_keep_0.95.json",
+    "Sports_Development/20250226/Sports_Development_20250226_image_list_keep_0.95.json",
+    "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95.json",
+    "Transportation/20250120/Transportation_20250120_image_list_keep_0.95.json",
+    "Transportation/20250304/Transportation_20250304_image_list_keep_0.95.json",
+    "Water_Resources/20250213/Water_Resources_20250213_image_list_keep_0.95.json",
+]
+AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
+
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     for depart, depart_ch in DEPART_MAP.items():
@@ -108,21 +124,21 @@ def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     return None
 
 def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
-    anno_path = pathlib.Path(path) / 'annotations' / 'vlm_annotations.json'
+    anno_path = pathlib.Path(path) / "annotations" / "vlm_annotations.json"
     new_id = start_id
-    with anno_path.open('r') as f:
+    with anno_path.open("r") as f:
         anno_data = json.load(f)
     for data in anno_data:
-        data['id'] = new_id
+        data["id"] = new_id
         new_id += 1
-    with anno_path.open('w') as f:
+    with anno_path.open("w") as f:
         json.dump(anno_data, f, indent=4, ensure_ascii=False)
     return new_id
 
 
 # TODO handle split
-def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = 'name_to_path.txt'):
-    with open(json_path, 'r') as f:
+def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt"):
+    with open(json_path, "r") as f:
         json_data = json.load(f)
 
     name_to_path_map = []
@@ -130,24 +146,53 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         if is_image_list:
             image_path = data
         else:
-            image_path = data['image_path']
+            image_path = data["image_path"]
         src_path = pathlib.Path(image_path)
         dst_path = pathlib.Path(dst_root) / src_path.name
 
         count = 0
         rename_path = dst_path
         while rename_path.exists():
-            print(f'{rename_path} already exists')
+            print(f"{rename_path} already exists")
             count += 1
-            rename_path = rename_path.parent / (f'{dst_path.stem}_{count}{rename_path.suffix}')
+            rename_path = rename_path.parent / (f"{dst_path.stem}_{count}{rename_path.suffix}")
 
-        name_to_path_map.append(f'"{rename_path.name}","{src_path}"')
+        name_to_path_map.append(f"'{rename_path.name}','{src_path}'")
         shutil.copy2(src_path, rename_path)
 
-    with open(dst_root / path_to_name, 'w') as f:
-        f.write('"copied_name","original_path"\n')
-        f.write('\n'.join(name_to_path_map))
+    with open(dst_root / path_to_name, "w") as f:
+        f.write("\"copied_name","original_path\"\n")
+        f.write("\n".join(name_to_path_map))
 
+
+'''
+def copy_and_split_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, split_size: int, is_image_list: bool=True, path_to_name = "name_to_path.txt"):
+    with open(json_path, "r") as f:
+        json_data = json.load(f)
+
+    name_to_path_map = []
+    for data in tqdm.tqdm(json_data):
+        if is_image_list:
+            image_path = data
+        else:
+            image_path = data["image_path"]
+        src_path = pathlib.Path(image_path)
+        dst_path = pathlib.Path(dst_root) / src_path.name
+
+        count = 0
+        rename_path = dst_path
+        while rename_path.exists():
+            print(f"{rename_path} already exists")
+            count += 1
+            rename_path = rename_path.parent / (f"{dst_path.stem}_{count}{rename_path.suffix}")
+
+        name_to_path_map.append(f"'{rename_path.name}','{src_path}'")
+        shutil.copy2(src_path, rename_path)
+
+    with open(dst_root / path_to_name, "w") as f:
+        f.write("\"copied_name","original_path\"\n")
+        f.write("\n".join(name_to_path_map))
+'''
 
 if __name__ == "__main__":
     json_path = "/mnt/data-home/mobility-multimodal/data-curation/China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json"

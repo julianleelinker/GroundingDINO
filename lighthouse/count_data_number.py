@@ -1,5 +1,5 @@
 import tqdm
-from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, DEPARTS_EN, DINO_COCO_FOLDERS
+from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, DEPARTS_EN, DINO_COCO_DEPRECATED_FOLDERS
 from common import get_depart
 import pandas as pd
 
@@ -20,7 +20,7 @@ df["VLM ALL"] = df["VLM CKPT1"] + df["VLM CKPT2"]
 print(df.map(lambda x: f"{x:,}"))
 
 print("counting DINO COCO data...")
-for folder in tqdm.tqdm(DINO_COCO_FOLDERS):
+for folder in tqdm.tqdm(DINO_COCO_DEPRECATED_FOLDERS):
     splits = list(folder.glob("split*"))
     for split in splits:
         image_list = list((split/"images").glob("*"))
