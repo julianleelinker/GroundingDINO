@@ -113,6 +113,7 @@ AUGMENTED_CURATED_NEW_JSONS = [
     "Water_Resources/20250213/Water_Resources_20250213_image_list_keep_0.95.json",
 ]
 AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
+DINO_COCO_FOLDERS = [pathlib.Path(DINO_COCO_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
 
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
@@ -172,35 +173,6 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
             copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name)
 
 
-
-'''
-def copy_and_split_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, split_size: int, is_image_list: bool=True, path_to_name = "name_to_path.txt"):
-    with open(json_path, "r") as f:
-        json_data = json.load(f)
-
-    name_to_path_map = []
-    for data in tqdm.tqdm(json_data):
-        if is_image_list:
-            image_path = data
-        else:
-            image_path = data["image_path"]
-        src_path = pathlib.Path(image_path)
-        dst_path = pathlib.Path(dst_root) / src_path.name
-
-        count = 0
-        rename_path = dst_path
-        while rename_path.exists():
-            print(f"{rename_path} already exists")
-            count += 1
-            rename_path = rename_path.parent / (f"{dst_path.stem}_{count}{rename_path.suffix}")
-
-        name_to_path_map.append(f"'{rename_path.name}','{src_path}'")
-        shutil.copy2(src_path, rename_path)
-
-    with open(dst_root / path_to_name, "w") as f:
-        f.write("\"copied_name","original_path\"\n")
-        f.write("\n".join(name_to_path_map))
-'''
 
 if __name__ == "__main__":
     json_path = "/mnt/data-home/mobility-multimodal/data-curation/China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json"
