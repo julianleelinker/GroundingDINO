@@ -3,6 +3,7 @@ import shutil
 import pathlib
 import json
 import tqdm
+import pandas as pd
 
 
 DATAVERSE_PASSWORD = os.environ.get("DATAVERSE_PASSWORD")
@@ -172,6 +173,93 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         for i, chunk in tqdm.tqdm(enumerate(splited_image_list), total=len(splited_image_list)):
             copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name)
 
+
+def load_stats_fwf(file_path, numeric_cols):
+    with open(file_path.replace("txt", "json")) as f:
+        col_widths = json.load(f)
+
+    col_widths = list(col_widths.values())
+    colspecs = []
+    start = 0
+    for w in col_widths:
+        colspecs.append((start, start + w))
+        start += w + 2  # 2-space gap between columns from `save_fwf`
+
+    df_loaded = pd.read_fwf(
+        file_path,
+        colspecs=colspecs,
+        dtype={
+        "folder": "string",
+        "depart": "string", 
+        "split": "string",
+        "number": "string",
+        "annotated_number": "string",
+        "ckpt_data_number": "string",
+        "is_uploaded": "boolean",
+        "ckpt_status": "string",
+        "notes": "string",
+        "path": "string",
+    })
+
+    for col in numeric_cols:
+        df_loaded[col] = df_loaded[col].str.replace(",", "", regex=False)
+
+    df_loaded = df_loaded.astype({
+        "folder": "string",
+        "depart": "string", 
+        "split": "string",
+        "number": "Int64",
+        "annotated_number": "Int64",
+        "ckpt_data_number": "Int64",
+        "is_uploaded": "boolean",
+        "ckpt_status": "string",
+        "notes": "string",
+        "path": "string",
+    })
+    return df_loaded
+
+
+def save_stats_fwf(df, numeric_cols, save_name):
+    df_formatted = df.copy()
+    for col in numeric_cols:
+        df_formatted[col] = df_formatted[col].apply(lambda x: f"{x:,}")
+
+    # Convert all to strings for alignment
+    df_str = df_formatted.astype(str)
+
+    # Calculate max width considering both column names and formatted values
+    col_widths = {
+        col: int(max(df_str[col].map(len).max(), len(col)))
+        for col in df.columns
+    }
+    
+    # save column width for future loading
+    with open(save_name.replace("txt", "json"), "w") as f:
+        json.dump(col_widths, f)
+
+    # Align values: right for numbers, left for others
+    def align_column(col_name, series):
+        if col_name in numeric_cols:
+            return series.str.rjust(col_widths[col_name])
+        else:
+            return series.str.ljust(col_widths[col_name])
+
+    df_aligned = pd.DataFrame({
+        col: align_column(col, df_str[col])
+        for col in df.columns
+    })
+
+    # Create aligned header
+    header = "  ".join([
+        col.rjust(col_widths[col]) if col in numeric_cols else col.ljust(col_widths[col])
+        for col in df.columns
+    ])
+
+    # Write to text file
+    with open(save_name, "w", encoding="utf-8") as f:
+        f.write(header + "\n")
+        for _, row in df_aligned.iterrows():
+            f.write("  ".join(row) + "\n")
 
 
 if __name__ == "__main__":
