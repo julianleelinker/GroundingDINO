@@ -44,21 +44,17 @@ if __name__ == "__main__":
         done_splits = {split.name.split('_')[0]: split for split in done_splits}
         for split in splits:
             original_number = len(list(split.glob("*"))) -1 # excluding file name mapping txt
-            split_name = split.name
-            split_path = split
-            is_uploaded = False
             annotated_number = 0
+            is_uploaded = False
             if split.name in done_splits:
-                done_path = done_splits[split.name]
-                is_uploaded = (done_path/"uploaded").exists()
-                if (done_splits[split.name]/"done").exists():
-                    annotated_number = len(list((done_path/"images").glob("*")))
-                split_name = done_path.name
-                split_path = done_path
+                split = done_splits[split.name]
+                is_uploaded = (split/"uploaded").exists()
+                if (split/"done").exists():
+                    annotated_number = len(list((split/"images").glob("*")))
             row = {
                 "folder": folder_path.name,
                 "depart": get_depart(folder_path),
-                "split": split_name,
+                "split": split.name,
                 "number": original_number,
                 "annotated": annotated_number,
                 "qa_number": 0,
@@ -66,7 +62,7 @@ if __name__ == "__main__":
                 "dv": False,
                 "ckpt": 'ckpt2',
                 "notes": "no",
-                "path": split_path,
+                "path": split,
             }
             rows.append(row)
     
