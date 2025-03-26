@@ -114,7 +114,8 @@ AUGMENTED_CURATED_NEW_JSONS = [
     "Water_Resources/20250213/Water_Resources_20250213_image_list_keep_0.95.json",
 ]
 AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
-DINO_COCO_FOLDERS = [pathlib.Path(DINO_COCO_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
+DINO_COCO_SOURCE_ROOT = "/mnt/lighthouseACD/augmented-curated-data/"
+DINO_COCO_SOURCE_FOLDERS = [pathlib.Path(DINO_COCO_SOURCE_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
 
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:

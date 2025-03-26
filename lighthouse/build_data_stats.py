@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, VLM_ANNOTATION_ROOT
-from common import DINO_COCO_ROOT, DINO_COCO_FOLDERS, DINO_COCO_DEPRECATED_FOLDERS
+from common import DINO_COCO_ROOT, DINO_COCO_SOURCE_FOLDERS, DINO_COCO_DEPRECATED_FOLDERS
 from common import get_depart, load_stats_fwf, save_stats_fwf
 
 
@@ -13,10 +13,11 @@ if __name__ == "__main__":
         "depart": "string",
         "split": "string",
         "number": "Int64",               # nullable integer
-        "annotated_number": "Int64",
-        "ckpt_data_number": "Int64",
-        "is_uploaded": "boolean",
-        "ckpt_status": "string",
+        "annotated": "Int64",
+        "qa_number": "Int64",
+        "uploaded": "boolean",
+        "dv": "boolean",
+        "ckpt": "string",
         "notes": "string",
         "path": "string",
     }
@@ -37,28 +38,30 @@ if __name__ == "__main__":
                 "depart": get_depart(folder_path),
                 "split": split.name,
                 "number": original_number,
-                "annotated_number": annotated_number,
-                "ckpt_data_number": 0,
-                "is_uploaded": is_uploaded,
-                "ckpt_status": 'ckpt2',
+                "annotated": annotated_number,
+                "qa_number": 0,
+                "uploaded": is_uploaded,
+                "dv": is_uploaded,
+                "ckpt": 'ckpt2',
                 "notes": "deprecated",
                 "path": split,
             }
             rows.append(row)
     
-    for folder_path in tqdm.tqdm(DINO_COCO_FOLDERS):
+    for folder_path in tqdm.tqdm(DINO_COCO_SOURCE_FOLDERS):
         splits = list(folder_path.glob("split*"))
         for split in splits:
-            original_number = len(list(split.glob("*")))
+            original_number = len(list(split.glob("*"))) -1 # excluding file name mapping txt
             row = {
                 "folder": folder_path.name,
                 "depart": get_depart(folder_path),
                 "split": split.name,
                 "number": original_number,
-                "annotated_number": 0,
-                "ckpt_data_number": 0,
-                "is_uploaded": True,
-                "ckpt_status": 'ckpt2',
+                "annotated": 0,
+                "qa_number": 0,
+                "uploaded": False,
+                "dv": False,
+                "ckpt": 'ckpt2',
                 "notes": "no",
                 "path": split,
             }
@@ -66,7 +69,7 @@ if __name__ == "__main__":
     
     rows_df = pd.DataFrame(rows).astype(column_dtypes)
     df_dino_coco = pd.concat([df_dino_coco, rows_df], ignore_index=True)
-    numeric_cols = ["number", "annotated_number", "ckpt_data_number"]
+    numeric_cols = ["number", "annotated", "qa_number"]
     save_stats_fwf(df_dino_coco, numeric_cols, f"{DINO_COCO_ROOT}/dino_coco_data_stats.txt")
     print(f"saved to {DINO_COCO_ROOT}/dino_coco_data_stats.txt")
     df_dino_coco.to_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", index=False)
@@ -82,10 +85,11 @@ if __name__ == "__main__":
             "depart": get_depart(folder_path),
             "split": pd.NA,
             "number": pd.NA,
-            "annotated_number": original_number,
-            "ckpt_data_number": 0,
-            "is_uploaded": True,
-            "ckpt_status": 'ckpt1',
+            "annotated": original_number,
+            "qa_number": 0,
+            "uploaded": True,
+            "dv": True,
+            "ckpt": 'ckpt1',
             "notes": "deprecated",
             "path": folder_path,
         }
@@ -98,10 +102,11 @@ if __name__ == "__main__":
             "depart": get_depart(folder_path),
             "split": pd.NA,
             "number": pd.NA,
-            "annotated_number": original_number,
-            "ckpt_data_number": 0,
-            "is_uploaded": True,
-            "ckpt_status": 'ckpt2',
+            "annotated": original_number,
+            "qa_number": 0,
+            "uploaded": True,
+            "dv": True,
+            "ckpt": 'ckpt2',
             "notes": "deprecated",
             "path": folder_path,
         }
@@ -109,7 +114,7 @@ if __name__ == "__main__":
     
     rows_df = pd.DataFrame(rows).astype(column_dtypes)
     df_vlm = pd.concat([df_vlm, rows_df], ignore_index=True)
-    numeric_cols = ["number", "annotated_number", "ckpt_data_number"]
+    numeric_cols = ["number", "annotated", "qa_number"]
     save_stats_fwf(df_vlm, numeric_cols, f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.txt")
     print(f"saved to {VLM_ANNOTATION_ROOT}/vlm_data_stats.txt")
     df_vlm.to_csv(f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.csv", index=False)
