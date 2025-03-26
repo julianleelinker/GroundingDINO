@@ -39,6 +39,7 @@ if __name__ == "__main__":
     for folder_path in tqdm.tqdm(DINO_COCO_SOURCE_FOLDERS):
         splits = list(folder_path.glob("split*"))
         for split in splits:
+            import ipdb; ipdb.set_trace()
             original_number = len(list(split.glob("*"))) -1 # excluding file name mapping txt
             row = {
                 "folder": folder_path.name,
@@ -58,8 +59,8 @@ if __name__ == "__main__":
     rows_df = pd.DataFrame(rows).astype(STATS_COLUMN_DTYPES)
     df_dino_coco = pd.concat([df_dino_coco, rows_df], ignore_index=True)
     numeric_cols = ["number", "annotated", "qa_number"]
-    save_stats_fwf(df_dino_coco, numeric_cols, f"{DINO_COCO_ROOT}/dino_coco_data_stats.txt")
-    print(f"saved to {DINO_COCO_ROOT}/dino_coco_data_stats.txt")
+    # save_stats_fwf(df_dino_coco, numeric_cols, f"{DINO_COCO_ROOT}/dino_coco_data_stats.txt")
+    # print(f"saved to {DINO_COCO_ROOT}/dino_coco_data_stats.txt")
     df_dino_coco.to_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", index=False)
     print(f"saved to {DINO_COCO_ROOT}/dino_coco_data_stats.csv")
     
@@ -103,8 +104,8 @@ if __name__ == "__main__":
     rows_df = pd.DataFrame(rows).astype(STATS_COLUMN_DTYPES)
     df_vlm = pd.concat([df_vlm, rows_df], ignore_index=True)
     numeric_cols = ["number", "annotated", "qa_number"]
-    save_stats_fwf(df_vlm, numeric_cols, f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.txt")
-    print(f"saved to {VLM_ANNOTATION_ROOT}/vlm_data_stats.txt")
+    # save_stats_fwf(df_vlm, numeric_cols, f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.txt")
+    # print(f"saved to {VLM_ANNOTATION_ROOT}/vlm_data_stats.txt")
     df_vlm.to_csv(f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.csv", index=False)
     print(f"saved to {VLM_ANNOTATION_ROOT}/vlm_data_stats.csv")
     
