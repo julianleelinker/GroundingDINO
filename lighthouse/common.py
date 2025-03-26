@@ -174,6 +174,20 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         for i, chunk in tqdm.tqdm(enumerate(splited_image_list), total=len(splited_image_list)):
             copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name)
 
+STATS_COLUMN_DTYPES = {
+    "folder": "string",
+    "depart": "string",
+    "split": "string",
+    "number": "Int64",               # nullable integer
+    "annotated": "Int64",
+    "qa_number": "Int64",
+    "uploaded": "boolean",
+    "dv": "boolean",
+    "ckpt": "string",
+    "notes": "string",
+    "path": "string",
+}
+
 
 def load_stats_fwf(file_path, numeric_cols):
     with open(file_path.replace("txt", "json")) as f:
@@ -189,34 +203,15 @@ def load_stats_fwf(file_path, numeric_cols):
     df_loaded = pd.read_fwf(
         file_path,
         colspecs=colspecs,
-        dtype={
-        "folder": "string",
-        "depart": "string", 
-        "split": "string",
-        "number": "string",
-        "annotated_number": "string",
-        "ckpt_data_number": "string",
-        "is_uploaded": "boolean",
-        "ckpt_status": "string",
-        "notes": "string",
-        "path": "string",
-    })
+        dtype=STATS_COLUMN_DTYPES,
+    )
 
     for col in numeric_cols:
         df_loaded[col] = df_loaded[col].str.replace(",", "", regex=False)
 
-    df_loaded = df_loaded.astype({
-        "folder": "string",
-        "depart": "string", 
-        "split": "string",
-        "number": "Int64",
-        "annotated_number": "Int64",
-        "ckpt_data_number": "Int64",
-        "is_uploaded": "boolean",
-        "ckpt_status": "string",
-        "notes": "string",
-        "path": "string",
-    })
+    df_loaded = df_loaded.astype(
+        STATS_COLUMN_DTYPES
+    )
     return df_loaded
 
 
