@@ -21,6 +21,7 @@ from groundingdino.util.vl_utils import create_positive_map_from_span
 from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
 import pandas as pd
+from common import DINO_COCO_ROOT, STATS_COLUMN_DTYPES
 
 
 
@@ -793,7 +794,6 @@ if __name__ == "__main__":
         # image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
         # output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:3.2f}_io{args.ios_threshold:3.2f}')
         image_path_list = list(root_path.rglob("*"))
-        import ipdb; ipdb.set_trace()
         image_path_list = [x for x in image_path_list if x.suffix != '.txt']
         output_root_dir = pathlib.Path(output_dir).resolve() / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
     elif root_path.suffix == '.json':
@@ -805,13 +805,15 @@ if __name__ == "__main__":
         print(f'unsupported {root_path=}')
         exit(-1)
     output_root_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
+    os.chmod(output_root_dir.parent, 0o777)
     os.chmod(output_root_dir, 0o777)
     # print(TEXT_PROMPT_LIST)
     # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, merge_threshold=args.ios_threshold)
     image_path_list = image_path_list[:2]
     infer_images_text_list_save_gdino_coco_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, output_root_dir)
-    # dino_coco_loaded = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
-
+    dino_coco_loaded = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
     src_map_file = root_path / 'name_to_path.txt'
     dst_map_file = output_root_dir / 'name_to_path.txt'
     shutil.copy(src_map_file, dst_map_file)
+
+    import ipdb; ipdb.set_trace()
