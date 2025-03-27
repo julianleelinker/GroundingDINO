@@ -14,8 +14,10 @@ bbox_new.groupby("depart")["number"].sum()
 
 print("current done bbox data stats")
 print(bbox_depr_done.groupby("depart")["annotated"].sum().apply(lambda x: f"{x:,}"))
+print(f"{bbox_depr_done.groupby('depart')['annotated'].sum().sum():,}")
 print("current new bbox data stats")
 print(bbox_new.groupby("depart")["number"].sum().apply(lambda x: f"{x:,}"))
+print(f"{bbox_new.groupby('depart')['number'].sum().sum():,}")
 pc_new = bbox_new[bbox_new["depart"]=="Ports_Corporation"]
 sd_new = bbox_new[bbox_new["depart"]=="Sports_Development"]
 mrt_new = bbox_new[bbox_new["depart"]=="Mass_Rapid_Transit"]

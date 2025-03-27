@@ -1,3 +1,5 @@
+import os 
+import pathlib
 from dataverse_sdk import *
 from dataverse_sdk.connections import get_connection
 from export_dataslice_large import export_dataslice_to_local
@@ -18,6 +20,7 @@ if __name__ == "__main__":
                                     # exclude_sensor_type=SensorType.LIDAR,
                                     # image_type= OntologyImageType._2D_BOUNDING_BOX)
 
+
     # exporting vlm dataslices
     vlm_ckpt1_slices = client.list_dataslices(project_id=DATAVERSE_CKPT1_PROJECT_ID, client_alias=client.alias)
     vlm_ckpt2_slices = client.list_dataslices(project_id=DATAVERSE_CKPT2_PROJECT_ID, client_alias=client.alias)
@@ -31,10 +34,13 @@ if __name__ == "__main__":
         "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1": vlm_ckpt1_slices,
         "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2": vlm_ckpt2_slices,
     }
+    import ipdb; ipdb.set_trace()
     for target_root, vlm_slices in target_root_to_ckpt.items():
         for dataslice in vlm_slices:
             dataslice_id = dataslice['id']
-            target_folder = f"{target_root}/{dataslice["name"]}"
+            target_folder = f"{target_root}/{dataslice['name']}"
+            pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)
+            os.chmod(target_folder, 0o777) 
             export_dataslice_to_local(
                 host=host,
                 email=email,
@@ -46,6 +52,7 @@ if __name__ == "__main__":
                 annotation_name=anno,
                 export_format=export_format,
             )
+    exit(0)
 
 
     # exporting lvm300k dataslices
@@ -59,7 +66,9 @@ if __name__ == "__main__":
     target_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox"
     for dataslice in lvm300k_slices:
         dataslice_id = dataslice['id']
-        target_folder = f"{target_root}/{dataslice["name"]}"
+        target_folder = f"{target_root}/{dataslice['name']}"
+        pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)
+        os.chmod(target_folder, 0o777) 
         export_dataslice_to_local(
             host=host,
             email=email,
