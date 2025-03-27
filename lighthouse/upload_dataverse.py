@@ -18,10 +18,18 @@ CKPT_SERVICE_ID = "697aa90b-00d0-4455-8863-bd2ad70a93e7"
 #     'Sports_Development/20241223/Sports_Development_20241223_curated_t4-revised',
 # ]
 # folder_list = [pathlib.Path(f'{VLM_ANNOTATION_ROOT}/{folder}') for folder in folder_list]
-folder_list = [
-    "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_1"
-]
-folder_list = [pathlib.Path(folder) for folder in folder_list]
+# folder_list = [
+#     "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_1"
+# ]
+# folder_list = [pathlib.Path(folder) for folder in folder_list]
+folder_list = VLM_CKPT1_FOLDERS + VLM_CKPT2_FOLDERS
+# "/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part5_2'"
+# "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part4_1"
+folder_list = [pathlib.Path(str(x).replace("/vlm-annotations/", "/checkpoint/vlm/hand/")) for x in folder_list]
+for x in folder_list:
+    print(x)
+    assert x.exists(), f"{x} not exist"
+# import ipdb; ipdb.set_trace()
 
 # check folder exit
 for folder in folder_list:

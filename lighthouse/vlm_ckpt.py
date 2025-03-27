@@ -58,7 +58,6 @@ slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
 accumulate_count = 0
 new_anno_list_dict = {}
 for slice_folder in tqdm.tqdm(slice_folder_list):
-    slice_folder = pathlib.Path("/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1/lk-241231-p6-s1s2s3s4")
     image_list = list((slice_folder / "images").glob("*"))
     anno_path = slice_folder / "annotations" / "vlm_annotation.json"
     with open(anno_path, 'r') as f:
@@ -74,11 +73,14 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
         if len(vlm_de_dict[image.name]) == 1:
             org_image_path = vlm_de_dict[image.name][0]
         elif len(vlm_de_dict[image.name]) == 2:
+            print(f"{image.name=} has dupliacted")
             org_image_path = dupl_name_to_path[slice_folder.name]
         accumulate_count += 1
         dst_image_path = pathlib.Path(org_image_path.replace("/mnt/data-home/mobility-multimodal/vlm-annotations", output_root))
         dst_image_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(org_image_path, dst_image_path)
+        # print(f"{dst_image_path=}")
+
         # new_anno_folder = dst_image_path.parent.parent / "annotations"
         # new_anno_folder.mkdir(parents=True, exist_ok=True)
         # new_anno_file = new_anno_folder / "vlm_annotation.json"
