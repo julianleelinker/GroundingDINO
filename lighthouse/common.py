@@ -9,6 +9,7 @@ import pandas as pd
 DATAVERSE_PASSWORD = os.environ.get("DATAVERSE_PASSWORD")
 DATAVERSE_CKPT1_PROJECT_ID = 230 
 DATAVERSE_CKPT2_PROJECT_ID = 464 
+DATAVERSE_LVM300K_PROJECT_ID = 225
 
 DEPART_MAP = {
     "China_Steel"           : "中鋼",          
