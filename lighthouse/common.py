@@ -128,7 +128,7 @@ def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     return None
 
 def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
-    anno_path = pathlib.Path(path) / "annotations" / "vlm_annotations.json"
+    anno_path = pathlib.Path(path) / "annotations" / "vlm_annotation.json"
     new_id = start_id
     with anno_path.open("r") as f:
         anno_data = json.load(f)

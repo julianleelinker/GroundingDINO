@@ -33,8 +33,7 @@ for key, value in vlm_de_dict.items():
     if len(value) > 1:
         print(key, value)
 
-# handle duplicated
-# 1725874761.74193668.jpg ['/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part3_3/images/1725874761.74193668.jpg', '/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part4_3/images/1725874761.74193668.jpg']
+# handle duplicated image
 dupl_name_to_path = {
  "lk-241231-p3-s1s2s3s4": "/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part3_3/images/1725874761.74193668.jpg", 
  "lk-241231-p4-s1s2s3s4": "/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part4_3/images/1725874761.74193668.jpg",
@@ -81,27 +80,14 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
         shutil.copy(org_image_path, dst_image_path)
         # print(f"{dst_image_path=}")
 
-        # new_anno_folder = dst_image_path.parent.parent / "annotations"
-        # new_anno_folder.mkdir(parents=True, exist_ok=True)
-        # new_anno_file = new_anno_folder / "vlm_annotation.json"
         new_anno_file = dst_image_path.parent.parent / "annotations" / "vlm_annotation.json"
 
         if new_anno_file in new_anno_list_dict:
-            cur_anno_list = new_anno_list_dict[new_anno_file]
-            # with open(new_anno_folder /"vlm_annotation.json", 'r') as f:
-            #     new_anno_list = json.load(f)
+            new_anno_list_dict[new_anno_file].append(anno_dict[image.name])
         else: 
-            curr_anno_list = []
-            new_anno_list_dict[new_anno_file] = curr_anno_list
-            # new_anno_list = []  
-        # new_anno_list.append(anno_dict[image.name])
-        curr_anno_list.append(anno_dict[image.name])
-        # with open(new_anno_file, 'w') as f:
-        #     json.dump(new_anno_list, f)
+            new_anno_list_dict[new_anno_file] = [anno_dict[image.name]]
 
-        # import ipdb; ipdb.set_trace()
     print(f"{accumulate_count=}")
-    # TODO check consistency and update number
 
 for anno_path, anno_list in new_anno_list_dict.items():
     anno_path.parent.mkdir(parents=True, exist_ok=True)

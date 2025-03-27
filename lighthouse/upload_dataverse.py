@@ -22,21 +22,26 @@ CKPT_SERVICE_ID = "697aa90b-00d0-4455-8863-bd2ad70a93e7"
 #     "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_1"
 # ]
 # folder_list = [pathlib.Path(folder) for folder in folder_list]
-folder_list = VLM_CKPT1_FOLDERS + VLM_CKPT2_FOLDERS
+folder_list = VLM_CKPT1_FOLDERS
+# folder_list = VLM_CKPT1_FOLDERS + VLM_CKPT2_FOLDERS
 # "/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part5_2'"
 # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part4_1"
 folder_list = [pathlib.Path(str(x).replace("/vlm-annotations/", "/checkpoint/vlm/hand/")) for x in folder_list]
-for x in folder_list:
-    print(x)
-    assert x.exists(), f"{x} not exist"
-# import ipdb; ipdb.set_trace()
+print(len(folder_list))
+folder_list = [x for x in folder_list if str(x) != "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_1"]
+print(len(folder_list))
+folder_list = [x for x in folder_list if x.exists()]
+print(len(folder_list))
+import ipdb; ipdb.set_trace()
 
 # check folder exit
 for folder in folder_list:
     assert pathlib.Path(folder).exists(), f"{folder} not exist"
 
 count = 0
-for folder in folder_list:
+iii = 14
+for folder in folder_list[iii:]:
+    print(iii)
     # if not (folder / 'done').exists():
     #     continue
     # if (folder / 'uploaded').exists():
@@ -69,4 +74,5 @@ for folder in folder_list:
     subprocess.run(command, check=True)
     (folder / 'uploaded').touch()
     count += 1
+    iii += 1
 print(f'total {count} data upload')
