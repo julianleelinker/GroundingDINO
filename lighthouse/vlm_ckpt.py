@@ -50,12 +50,16 @@ output_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand"
     # else create new_anno
     # save new anno to new folder
     # update number
-slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1"
+slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2"
 slice_folder_list = pathlib.Path(slice_root).glob("*")
 slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
+slice_folder_list = [x for x in slice_folder_list if x.name in ["tr-250115"]]
+import ipdb; ipdb.set_trace()
 
 accumulate_count = 0
 new_anno_list_dict = {}
+dry_run = False
+
 for slice_folder in tqdm.tqdm(slice_folder_list):
     image_list = list((slice_folder / "images").glob("*"))
     anno_path = slice_folder / "annotations" / "vlm_annotation.json"
@@ -65,7 +69,6 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
     for image in tqdm.tqdm(image_list):
         if not image.name in vlm_de_dict:
             continue
-        # import ipdb; ipdb.set_trace()
         bad_condition = len(anno_dict[image.name]["conversations"]) == 0
         if bad_condition:
             continue    
@@ -77,8 +80,8 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
         accumulate_count += 1
         dst_image_path = pathlib.Path(org_image_path.replace("/mnt/data-home/mobility-multimodal/vlm-annotations", output_root))
         dst_image_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(org_image_path, dst_image_path)
-        # print(f"{dst_image_path=}")
+        if not dry_run:
+            shutil.copy(org_image_path, dst_image_path)
 
         new_anno_file = dst_image_path.parent.parent / "annotations" / "vlm_annotation.json"
 
@@ -89,8 +92,9 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
 
     print(f"{accumulate_count=}")
 
-for anno_path, anno_list in new_anno_list_dict.items():
-    anno_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(anno_path, 'w') as f:
-        json.dump(anno_list, f)
-    print(f"{anno_path=}, {len(anno_list)=}")
+if not dry_run:
+    for anno_path, anno_list in new_anno_list_dict.items():
+        anno_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(anno_path, 'w') as f:
+            json.dump(anno_list, f)
+        print(f"{anno_path=}, {len(anno_list)=}")

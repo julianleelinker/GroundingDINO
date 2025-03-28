@@ -1,5 +1,6 @@
 import os 
 import pathlib
+import tqdm
 from dataverse_sdk import *
 from dataverse_sdk.connections import get_connection
 from export_dataslice_large import export_dataslice_to_local
@@ -31,10 +32,9 @@ if __name__ == "__main__":
     export_format = "vlm"
     anno = "groundtruth"
     target_root_to_ckpt = {
-        "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1": vlm_ckpt1_slices,
+        # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1": vlm_ckpt1_slices,
         "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2": vlm_ckpt2_slices,
     }
-    import ipdb; ipdb.set_trace()
     for target_root, vlm_slices in target_root_to_ckpt.items():
         for dataslice in vlm_slices:
             dataslice_id = dataslice['id']
@@ -57,14 +57,15 @@ if __name__ == "__main__":
 
     # exporting lvm300k dataslices
     lvm300k_slices = client.list_dataslices(project_id=DATAVERSE_LVM300K_PROJECT_ID, client_alias=client.alias)
+    import ipdb; ipdb.set_trace()
     host = "https://visionai.linkervision.ai/dataverse/curation"
     email = "julianlee@linkervision.com"
     password = DATAVERSE_PASSWORD
     service_id = "2bd928e5-a98f-4aae-a093-8545c57c103f"
     export_format = "coco"
     anno = "groundtruth"
-    target_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox"
-    for dataslice in lvm300k_slices:
+    target_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices"
+    for dataslice in tqdm.tqdm(lvm300k_slices):
         dataslice_id = dataslice['id']
         target_folder = f"{target_root}/{dataslice['name']}"
         pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)

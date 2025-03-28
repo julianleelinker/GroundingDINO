@@ -127,6 +127,12 @@ def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
             return depart
     return None
 
+def get_depart_date(path: str | pathlib.Path, ch: bool=False) -> tuple[str | None, str | None]:
+    depart = get_depart(path)
+    date = str(path).split(f"{depart}_")[1]
+    depart = get_depart(path, ch)
+    return depart, date
+
 def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
     anno_path = pathlib.Path(path) / "annotations" / "vlm_annotation.json"
     new_id = start_id

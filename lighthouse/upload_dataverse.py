@@ -28,20 +28,33 @@ folder_list = VLM_CKPT1_FOLDERS
 # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part4_1"
 folder_list = [pathlib.Path(str(x).replace("/vlm-annotations/", "/checkpoint/vlm/hand/")) for x in folder_list]
 print(len(folder_list))
-folder_list = [x for x in folder_list if str(x) != "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_1"]
+folder_list = [x for x in folder_list if str(x) == "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part6_1"]
 print(len(folder_list))
 folder_list = [x for x in folder_list if x.exists()]
 print(len(folder_list))
-import ipdb; ipdb.set_trace()
+
+remaining_list = [
+    # ckpt2
+    "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Water_Resources/20250213/Water_Resources_20250213_curated_t1",
+    # ckpt1 remaining
+    "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch",
+    "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Transportation/20250120/Transportation_20250120_llava-onevision-0.5b-full",
+    "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch",
+    # patch ckpt2
+    "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Transportation/20250115/Transportation_20250115_curated_t4"
+]
+folder_list = [pathlib.Path(x) for x in remaining_list]
+
 
 # check folder exit
 for folder in folder_list:
     assert pathlib.Path(folder).exists(), f"{folder} not exist"
 
 count = 0
-iii = 14
+iii = 0
+print(len(folder_list))
 for folder in folder_list[iii:]:
-    print(iii)
+    print(f"xxxxxxxxxxxxxxx={iii}")
     # if not (folder / 'done').exists():
     #     continue
     # if (folder / 'uploaded').exists():
