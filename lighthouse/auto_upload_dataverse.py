@@ -2,6 +2,7 @@ import pathlib
 import time
 import subprocess
 import os
+import tqdm
 from common import get_depart_date
 
 
@@ -55,26 +56,31 @@ def check_and_execute(data_path, command):
 if __name__ == "__main__":
     print("Starting auto upload to dataverse")
     wait_time = 600
-    coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
-    file_root_list = [
-        # 'Sports_Development_20241223_image_list_keep_0.95', # done remove
-        # 'Transportation_20241230_image_list_keep_0.95', # done remove
-        # 'Transportation_20250109_image_list_keep_0.95', # done remove
-        'Public_Works_20241230_image_list_keep_0.95',
-    ]
-    file_root_list = [f'{coco_root}/{x}' for x in file_root_list]
-    file_path_list = []
-    for file_root in file_root_list:
-        file_path_list.extend([p for p in pathlib.Path(file_root).glob('*split*') if p.is_dir()])
-    file_path_list = [x for x in file_path_list if not (x / 'uploaded').exists()]
+    # coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
+    coco_root = '/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand'
     file_path_list =[
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Transportation_20250109_image_list_keep_0.95/split15_0.30_0.35",
-        "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split30_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split30_0.30_0.35",
+        # p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Sports_Development_20241223_image_list_keep_0.95/split2_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split18_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split31_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split49_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split50_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split51_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split58_0.30_0.35",
+        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split63_0.30_0.35",
+
+        "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split21_0.30_0.35",
+        "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split55_0.30_0.35",
     ]
     file_path_list = [pathlib.Path(x) for x in file_path_list]
+    import ipdb; ipdb.set_trace()
     while True:
-        for file_path in file_path_list:
-            print(str(file_path))
+        i = 0
+        for file_path in tqdm.tqdm(file_path_list):
+            print(f"xxxxxxxxxxxx {i}")
+            i += 1
             # token = str(file_path).split('/checkpoint/bbox/hand/')[1].split('/')[0]
             # depart = token_list[0]
             # date = token_list[1]
