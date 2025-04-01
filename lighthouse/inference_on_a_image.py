@@ -159,6 +159,61 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold=No
     return boxes_filt, pred_phrases, scores # Added scores to return
 
 
+def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold, token_spans):
+    # load image
+    image_pil, image = load_image(image_path) # Uses imported load_image
+
+    # run model
+    boxes_filt, pred_phrase, scores = get_grounding_output( # Uses imported get_grounding_output
+        model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
+    )
+    # visualize pred
+    size = image_pil.size
+    pred_dict = {
+        "boxes": boxes_filt,
+        "size": [size[1], size[0]],  # H,W
+        "labels": pred_phrase,
+    }
+    return image_pil, pred_dict
+
+
+def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_span):
+    # load image
+    image_pil, image = load_image(image_path) # Uses imported load_image
+
+    # run model
+    boxes_filt_list, pred_phrases_concat = [], []
+    for text_prompt in text_prompt_list:
+        # print(f'infering {image_path} with {text_prompt}')
+        boxes_filt, pred_phrases, scores = get_grounding_output( # Uses imported get_grounding_output
+            model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
+        )
+        # import ipdb; ipdb.set_trace()
+        # print(scores)
+        # print(pred_phrases)
+        # print(boxes_filt)
+        if text_prompt in higher_class_list:
+            for i in range(len(boxes_filt)):
+                if scores[i] > high_threshold:
+                    boxes_filt_list.append(boxes_filt[i])
+                    pred_phrases_concat.append(pred_phrases[i])
+        else:
+            boxes_filt_list.append(boxes_filt)
+            pred_phrases_concat.extend(pred_phrases)
+        # import ipdb; ipdb.set_trace()
+    boxes_filt = torch.vstack(boxes_filt_list)
+    # import ipdb; ipdb.set_trace()
+
+    # visualize pred
+    size = image_pil.size
+    pred_dict = {
+        "boxes": boxes_filt,
+        "size": [size[1], size[0]],  # H,W
+        "labels": pred_phrases_concat,
+    }
+    return image_pil, pred_dict
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Grounding DINO example", add_help=True)

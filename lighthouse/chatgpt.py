@@ -6,7 +6,7 @@ import json
 import random
 import tqdm
 import argparse
-import os
+import io
 from collections import defaultdict
 from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
@@ -48,6 +48,14 @@ def make_parser():
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
+
+
+def convert_pil_to_base64(image_pil):
+    image_byte_array = io.BytesIO()
+    image_pil.save(image_byte_array, format='PNG')
+    image_byte_array = image_byte_array.getvalue()
+    image_base64 = base64.b64encode(image_byte_array).decode('utf-8')
+    return image_base64
 
 
 def ask_chatgpt_describe_image(azure_openai_api_key, image_path, prompt="Please briefly describe the image.\n"):
