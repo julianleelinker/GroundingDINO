@@ -4,7 +4,7 @@ import pandas as pd
 import pathlib
 
 from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, VLM_ANNOTATION_ROOT
-from common import DINO_COCO_ROOT, DINO_COCO_SOURCE_FOLDERS, DINO_COCO_DEPRECATED_FOLDERS, DINO_COCO_SOURCE_ROOT
+from common import DINO_COCO_TARGET_ROOT, DINO_COCO_SOURCE_FOLDERS, DINO_COCO_DEPRECATED_FOLDERS, DINO_COCO_SOURCE_ROOT
 from common import get_depart, load_stats_fwf, save_stats_fwf
 from common import STATS_COLUMN_DTYPES
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     
     for folder_path in tqdm.tqdm(DINO_COCO_SOURCE_FOLDERS):
         splits = list(folder_path.glob("split*"))
-        result_folder = pathlib.Path(str(folder_path).replace(DINO_COCO_SOURCE_ROOT, DINO_COCO_ROOT))
+        result_folder = pathlib.Path(str(folder_path).replace(DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT))
         done_splits = list(result_folder.glob("split*"))
         done_splits = {split.name.split('_')[0]: split for split in done_splits}
         for split in splits:
@@ -71,8 +71,8 @@ if __name__ == "__main__":
     numeric_cols = ["number", "annotated", "qa_number"]
     # save_stats_fwf(df_dino_coco, numeric_cols, f"{DINO_COCO_ROOT}/dino_coco_data_stats.txt")
     # print(f"saved to {DINO_COCO_ROOT}/dino_coco_data_stats.txt")
-    df_dino_coco.to_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", index=False)
-    print(f"saved to {DINO_COCO_ROOT}/dino_coco_data_stats.csv")
+    df_dino_coco.to_csv(f"{DINO_COCO_TARGET_ROOT}/dino_coco_stats.csv", index=False)
+    print(f"saved to {DINO_COCO_TARGET_ROOT}/dino_coco_data_stats.csv")
     
     
     df_vlm = pd.DataFrame({col: pd.Series(dtype=dtype) for col, dtype in STATS_COLUMN_DTYPES.items()})
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     df_vlm.to_csv(f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.csv", index=False)
     print(f"saved to {VLM_ANNOTATION_ROOT}/vlm_data_stats.csv")
     
-    dino_coco_loaded = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
+    dino_coco_loaded = pd.read_csv(f"{DINO_COCO_TARGET_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
     vlm_loaded = pd.read_csv(f"{VLM_ANNOTATION_ROOT}/vlm_data_stats.csv", dtype=STATS_COLUMN_DTYPES)
     
     # dino_coco_loaded = load_stats_fwf(f"{DINO_COCO_ROOT}/dino_coco_data_stats.txt", numeric_cols)

@@ -85,7 +85,7 @@ VLM_CKPT2_FOLDERS = [
 ]
 VLM_CKPT2_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in VLM_CKPT2_FOLDERS]
 
-DINO_COCO_ROOT = "/mnt/lighthouseACD/ACD-gdino-COCO"
+DINO_COCO_TARGET_ROOT = "/mnt/lighthouseACD/ACD-gdino-COCO"
 DINO_COCO_DEPRECATED_FOLDERS = [
     "Mass_Rapid_Transit_20250109_image_list_keep_0.95_0.30_0.35",
     "Ports_Corporation_20250124_image_list_keep_0.95",
@@ -101,7 +101,7 @@ DINO_COCO_DEPRECATED_FOLDERS = [
     # not used
     # "linker_4M_image_list_keep_0.95" 
 ]
-DINO_COCO_DEPRECATED_FOLDERS = [pathlib.Path(f"{DINO_COCO_ROOT}/{folder}") for folder in DINO_COCO_DEPRECATED_FOLDERS]
+DINO_COCO_DEPRECATED_FOLDERS = [pathlib.Path(f"{DINO_COCO_TARGET_ROOT}/{folder}") for folder in DINO_COCO_DEPRECATED_FOLDERS]
 
 AUGMENTED_CURATED_JSON_ROOT = "/mnt/data-home/mobility-multimodal/data-curation"
 AUGMENTED_CURATED_NEW_JSONS = [
@@ -117,6 +117,7 @@ AUGMENTED_CURATED_NEW_JSONS = [
 AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
 DINO_COCO_SOURCE_ROOT = "/mnt/lighthouseACD/augmented-curated-data"
 DINO_COCO_SOURCE_FOLDERS = [pathlib.Path(DINO_COCO_SOURCE_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
+DINO_COCO_TARGERT_FOLDERS = [pathlib.Path(DINO_COCO_TARGET_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
 
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:

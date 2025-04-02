@@ -1,8 +1,8 @@
-from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, DINO_COCO_ROOT, VLM_ANNOTATION_ROOT
+from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, DINO_COCO_TARGET_ROOT, VLM_ANNOTATION_ROOT
 import pandas as pd
 
 
-bbox = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv")
+bbox = pd.read_csv(f"{DINO_COCO_TARGET_ROOT}/dino_coco_stats.csv")
 bbox_depr = bbox[bbox["notes"] == "deprecated"]
 bbox_uploaded = bbox[(bbox["uploaded"] == True) & (bbox["notes"] == "deprecated")]
 bbox_depr_done = bbox_depr[bbox_depr["annotated"]!=0]
