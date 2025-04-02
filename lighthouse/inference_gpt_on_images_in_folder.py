@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 # Import shared functions
-from .inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image, infer_an_image, infer_an_image_text_list
+from inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image, infer_an_image, infer_an_image_text_list
 from chatgpt import encode_image, ask_chatgpt_describe_image, ask_chatgpt_describe_image_find_suitable_answer, convert_pil_to_base64, generate_vlm_pretraining_annotation
 from infer_settings import AZURE_OPENAI_API_KEY, DINO_INFER_CLASSES, EASY_CLASSES_LIST, HARD_CLASSES_LIST
 from box_utils import xywh_to_xyxy, fix_boundary, merge_by_ios

@@ -165,7 +165,7 @@ def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold
 
     # run model
     boxes_filt, pred_phrase, scores = get_grounding_output( # Uses imported get_grounding_output
-        model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
+        model, image, text_prompt, box_threshold, text_threshold, token_spans=token_spans
     )
     # visualize pred
     size = image_pil.size
@@ -186,7 +186,7 @@ def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold,
     for text_prompt in text_prompt_list:
         # print(f'infering {image_path} with {text_prompt}')
         boxes_filt, pred_phrases, scores = get_grounding_output( # Uses imported get_grounding_output
-            model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
+            model, image, text_prompt, box_threshold, text_threshold, token_spans=token_span
         )
         # import ipdb; ipdb.set_trace()
         # print(scores)
