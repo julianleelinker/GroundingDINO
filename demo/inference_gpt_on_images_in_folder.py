@@ -22,6 +22,8 @@ from openai import AzureOpenAI
 from openai import BadRequestError, InternalServerError
 import pandas as pd
 
+# Import shared functions
+from .inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image
 
 
 AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
@@ -254,11 +256,12 @@ LOW_CLASS_LIST = [
 ]
 HIGHER_CLASS_LIST = [ cat for cat in TEXT_PROMPT_LIST if cat not in LOW_CLASS_LIST]
 
+
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-
+# Kept local function: ask_chatgpt_describe_image
 def ask_chatgpt_describe_image(azure_openai_api_key, image_base64, prompt="Please briefly describe the image.\n"):
     config = {
                 "azure_endpoint": "https://azure-openai-vision-platform.openai.azure.com/",
@@ -302,154 +305,13 @@ def ask_chatgpt_describe_image(azure_openai_api_key, image_base64, prompt="Pleas
     return(completion.choices[0].message.content)
 
 
-def plot_boxes_to_image(image_pil, tgt, show_id=True, color=None):
-    image_result = image_pil.copy()
-    H, W = tgt["size"]
-    boxes = tgt["boxes"]
-    labels = tgt["labels"]
-    assert len(boxes) == len(labels), "boxes and labels must have same length"
-
-    draw = ImageDraw.Draw(image_result)
-    mask = Image.new("L", image_result.size, 0)
-    mask_draw = ImageDraw.Draw(mask)
-
-    # draw boxes and masks
-    random_color = color is None
-    for id, (box, label) in enumerate(zip(boxes, labels)):
-        if show_id:
-            label_text = f'{id}|{str(label)}'
-        else:
-            label_text = str(label)
-        # from 0..1 to 0..W, 0..H
-        box = box * torch.Tensor([W, H, W, H])
-        # from xywh to xyxy
-        box[:2] -= box[2:] / 2
-        box[2:] += box[:2]
-        # random color
-        if random_color:
-            color = tuple(np.random.randint(0, 128, size=3).tolist())
-        # draw
-        x0, y0, x1, y1 = box
-        x0, y0, x1, y1 = int(x0), int(y0), int(x1), int(y1)
-        print(x0, y0, x1, y1)
-
-        draw.rectangle([x0, y0, x1, y1], outline=color, width=2)
-        # draw.text((x0, y0), str(label), fill=color)
-
-        font = ImageFont.load_default()
-        if hasattr(font, "getbbox"):
-            bbox = draw.textbbox((x0, y0), label_text, font)
-        else:
-            w, h = draw.textsize(str(label), font)
-            bbox = (x0, y0, w + x0, y0 + h)
-        # bbox = draw.textbbox((x0, y0), str(label))
-        draw.rectangle(bbox, fill=color)
-        draw.text((x0, y0), label_text, fill="white")
-
-        mask_draw.rectangle([x0, y0, x1, y1], fill=255, width=6)
-
-    return image_result, mask
-
-
-def load_image(image_path):
-    # load image
-    image_pil = Image.open(image_path).convert("RGB")  # load image
-
-    transform = T.Compose(
-        [
-            T.RandomResize([800], max_size=1333),
-            T.ToTensor(),
-            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ]
-    )
-    image, _ = transform(image_pil, None)  # 3, h, w
-    return image_pil, image
-
-
-def load_model(model_config_path, model_checkpoint_path, cpu_only=False):
-    args = SLConfig.fromfile(model_config_path)
-    args.device = "cuda" if not cpu_only else "cpu"
-    model = build_model(args)
-    checkpoint = torch.load(model_checkpoint_path, map_location="cpu")
-    load_res = model.load_state_dict(clean_state_dict(checkpoint["model"]), strict=False)
-    # print(load_res)
-    _ = model.eval()
-    return model
-
-
-def get_grounding_output(model, image, caption, box_threshold, text_threshold=None, with_logits=True, cpu_only=False, token_spans=None):
-    assert text_threshold is not None or token_spans is not None, "text_threshould and token_spans should not be None at the same time!"
-    caption = caption.lower()
-    caption = caption.strip()
-    if not caption.endswith("."):
-        caption = caption + "."
-    device = "cuda" if not cpu_only else "cpu"
-    model = model.to(device)
-    image = image.to(device)
-    with torch.no_grad():
-        outputs = model(image[None], captions=[caption])
-    logits = outputs["pred_logits"].sigmoid()[0]  # (nq, 256)
-    boxes = outputs["pred_boxes"][0]  # (nq, 4)
-
-    # filter output
-    if token_spans is None:
-        logits_filt = logits.cpu().clone()
-        boxes_filt = boxes.cpu().clone()
-        filt_mask = logits_filt.max(dim=1)[0] > box_threshold
-        logits_filt = logits_filt[filt_mask]  # num_filt, 256
-        boxes_filt = boxes_filt[filt_mask]  # num_filt, 4
-
-        # get phrase
-        tokenlizer = model.tokenizer
-        tokenized = tokenlizer(caption)
-        # build pred
-        pred_phrases = []
-        scores = []
-        for logit, box in zip(logits_filt, boxes_filt):
-            pred_phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenlizer)
-            if with_logits:
-                scores.append(logit.max().item())
-                pred_phrases.append(pred_phrase + f"({str(logit.max().item())[:4]})")
-            else:
-                pred_phrases.append(pred_phrase)
-    else:
-        # given-phrase mode
-        positive_maps = create_positive_map_from_span(
-            model.tokenizer(text_prompt),
-            token_span=token_spans
-        ).to(image.device) # n_phrase, 256
-
-        logits_for_phrases = positive_maps @ logits.T # n_phrase, nq
-        all_logits = []
-        all_phrases = []
-        all_boxes = []
-        for (token_span, logit_phr) in zip(token_spans, logits_for_phrases):
-            # get phrase
-            phrase = ' '.join([caption[_s:_e] for (_s, _e) in token_span])
-            # get mask
-            filt_mask = logit_phr > box_threshold
-            # filt box
-            all_boxes.append(boxes[filt_mask])
-            # filt logits
-            all_logits.append(logit_phr[filt_mask])
-            if with_logits:
-                logit_phr_num = logit_phr[filt_mask]
-                all_phrases.extend([phrase + f"({str(logit.item())[:4]})" for logit in logit_phr_num])
-            else:
-                all_phrases.extend([phrase for _ in range(len(filt_mask))])
-        boxes_filt = torch.cat(all_boxes, dim=0).cpu()
-        pred_phrases = all_phrases
-
-
-    return boxes_filt, pred_phrases, scores
-
-
+# Kept local function: infer_an_image (Not present in inference_on_a_image.py)
 def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold, token_spans):
     # load image
-    image_pil, image = load_image(image_path)
+    image_pil, image = load_image(image_path) # Uses imported load_image
 
     # run model
-    boxes_filt, pred_phrase, scores = get_grounding_output(
+    boxes_filt, pred_phrase, scores = get_grounding_output( # Uses imported get_grounding_output
         model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
     )
     # visualize pred
@@ -457,20 +319,20 @@ def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold
     pred_dict = {
         "boxes": boxes_filt,
         "size": [size[1], size[0]],  # H,W
-        "labels": pred_phrases,
+        "labels": pred_phrase,
     }
     return image_pil, pred_dict
 
-
+# Kept local function: infer_an_image_text_list
 def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_span):
     # load image
-    image_pil, image = load_image(image_path)
+    image_pil, image = load_image(image_path) # Uses imported load_image
 
     # run model
     boxes_filt_list, pred_phrases_concat = [], []
     for text_prompt in text_prompt_list:
         # print(f'infering {image_path} with {text_prompt}')
-        boxes_filt, pred_phrases, scores = get_grounding_output(
+        boxes_filt, pred_phrases, scores = get_grounding_output( # Uses imported get_grounding_output
             model, image, text_prompt, box_threshold, text_threshold, cpu_only=args.cpu_only
         )
         # import ipdb; ipdb.set_trace()
@@ -498,13 +360,12 @@ def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold,
     }
     return image_pil, pred_dict
 
-
+# Kept local helper functions
 def xywh_to_xyxy(bboxes):
     results = bboxes.clone()
     results[:, :2] -= results[:, 2:] / 2
     results[:, 2:] += results[:, :2]
     return results
-
 
 def xyxy_to_xywh(bboxes):
     results = bboxes.clone()
@@ -512,14 +373,12 @@ def xyxy_to_xywh(bboxes):
     results[:, :2] += results[:, 2:] / 2
     return results
 
-
 def fix_boundary(bboxes):
     results = bboxes.clone()
     results = xywh_to_xyxy(results)
     results = torch.clamp(results, 0., 1.)
     results = xyxy_to_xywh(results)
     return results
-
 
 def compute_intersection_over_self(bboxes1, bboxes2=None):
     if bboxes2 is None:
@@ -545,12 +404,10 @@ def compute_intersection_over_self(bboxes1, bboxes2=None):
     ios = intersection_area / (area1+area2) # iou
     return ios
 
-
 def merge_two_bbox(bbox1, bbox2):
     result = torch.max(bbox1, bbox2)
     result[:2] = torch.min(bbox1, bbox2)[:2]
     return result
-
 
 def merge_by_ios(bboxes, image_size, threshold):
     if len(bboxes) == 0:
@@ -572,14 +429,12 @@ def merge_by_ios(bboxes, image_size, threshold):
     bboxes = xyxy_to_xywh(bboxes)
     return bboxes, labels
         
-
 def convert_pil_to_base64(image_pil):
     image_byte_array = io.BytesIO()
     image_pil.save(image_byte_array, format='PNG')
     image_byte_array = image_byte_array.getvalue()
     image_base64 = base64.b64encode(image_byte_array).decode('utf-8')
     return image_base64
-
 
 def generate_vlm_pretraining_annotation(id, image_name, prompt, response):
     return {
@@ -596,7 +451,7 @@ def generate_vlm_pretraining_annotation(id, image_name, prompt, response):
         ]
     }
 
-
+# Kept local function: infer_images_text_list_save_gdino_coco_result
 def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans, output_root_dir):
     coco_anno = {
         "images": [],
@@ -657,7 +512,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
             coco_anno['annotations'].append(box_anno)
         # print(coco_anno)
         # import ipdb; ipdb.set_trace()
-        # image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0]
+        # image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0] # Uses imported plot_boxes_to_image
         # output_image_path = pathlib.Path(output_root_dir) / f"{image_path.name}"
         # output_text_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.json"
         # save coco_anno to output_text_path
@@ -678,7 +533,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
     #     f.write('\n'.join(label_text))
     # import ipdb; ipdb.set_trace()
 
-
+# Kept local function: infer_images_text_list_save_gpt_result
 def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans, scale=1.5, merge_threshold=0.5):
     for image_path in image_path_list:
         image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
@@ -690,7 +545,7 @@ def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_l
             continue
         annotation_list.append(generate_vlm_pretraining_annotation(1, image_path.name, FULL_IMAGE_PROMPT, response))
         print(f'{response=}')
-        image_tmp = plot_boxes_to_image(image_pil, pred_dict, color=(255, 0, 0))[0]
+        image_tmp = plot_boxes_to_image(image_pil, pred_dict, color=(255, 0, 0))[0] # Uses imported plot_boxes_to_image
         print(pred_dict['labels'])
         print(f'raw    {len(pred_dict["boxes"])=}')
         pred_dict["boxes"][:, 2:] *= scale
@@ -719,7 +574,7 @@ def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_l
 
         image_pil.save(pathlib.Path(output_root_dir) / f"{image_path.name}")
         output_image_path = pathlib.Path(output_root_dir) / f"{image_path.stem}-result.jpg"
-        image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0]
+        image_with_box = plot_boxes_to_image(image_tmp, pred_dict, show_id=False)[0] # Uses imported plot_boxes_to_image
         output_text_path = pathlib.Path(output_root_dir) / f"{image_path.stem}.txt"
         image_with_box.save(output_image_path)
         # write label_txt to output_image_path
@@ -775,7 +630,7 @@ if __name__ == "__main__":
     # TEXT_PROMPT_LIST = [args.text_prompt]
 
     # load model
-    model = load_model(config_file, checkpoint_path, cpu_only=args.cpu_only)
+    model = load_model(config_file, checkpoint_path, cpu_only=args.cpu_only) # Uses imported load_model
 
     # make dir
     os.makedirs(output_dir, exist_ok=True)
