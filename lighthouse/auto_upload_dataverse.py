@@ -57,24 +57,16 @@ if __name__ == "__main__":
     print("Starting auto upload to dataverse")
     wait_time = 600
     # coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
-    coco_root = '/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand'
+    # coco_root = '/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand'
+    # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/datasets"
+    coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated"
     file_path_list =[
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Transportation_20250109_image_list_keep_0.95/split15_0.30_0.35",
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split30_0.30_0.35",
-        # p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Sports_Development_20241223_image_list_keep_0.95/split2_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split18_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split31_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split49_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split50_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split51_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split58_0.30_0.35",
-        # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split63_0.30_0.35",
-
-        "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split21_0.30_0.35",
-        "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split55_0.30_0.35",
+        p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
+        # "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate",
     ]
-    file_path_list = [pathlib.Path(x) for x in file_path_list]
+    file_path_list = file_path_list[1:]
     import ipdb; ipdb.set_trace()
     while True:
         i = 0
@@ -84,11 +76,12 @@ if __name__ == "__main__":
             # token = str(file_path).split('/checkpoint/bbox/hand/')[1].split('/')[0]
             # depart = token_list[0]
             # date = token_list[1]
-            depart, date = get_depart_date(file_path, ch=True)
-            dataset_name = f"{depart}_{date}"
+            depart, split = get_depart_date(file_path, ch=True)
+            # dataset_name = f"{depart}_{date}"
+            dataset_name = f"upload0408_{depart}_{split}"
             # for checkpoint
-            command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
-            # command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
+            # command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+            command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
             # command = [
             #     'conda', 'run', '-n' lighthouse python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
