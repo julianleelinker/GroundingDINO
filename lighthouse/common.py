@@ -147,10 +147,12 @@ def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
     return new_id
 
 
-def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, path_to_name = "name_to_path.txt"):
+def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, path_to_name = "name_to_path.txt", always_save_mapping: bool = False):
     dst_root.mkdir(exist_ok=True, parents=True)
     os.chmod(dst_root, 0o777)
     name_to_path_map = []
+
+    save_path_map = False
     for image_path in tqdm.tqdm(image_list):
         src_path = pathlib.Path(image_path)
         dst_path = pathlib.Path(dst_root) / src_path.name
@@ -158,6 +160,7 @@ def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, pa
         count = 0
         rename_path = dst_path
         while rename_path.exists():
+            save_path_map = True
             print(f"{rename_path} already exists")
             count += 1
             rename_path = rename_path.parent / (f"{dst_path.stem}_{count}{rename_path.suffix}")
@@ -165,9 +168,10 @@ def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, pa
         name_to_path_map.append(f"'{rename_path.name}','{src_path}'")
         shutil.copy2(src_path, rename_path)
 
-    with open(dst_root / path_to_name, "w") as f:
-        f.write("\"copied_name\",\"original_path\"\n")
-        f.write("\n".join(name_to_path_map))
+    if always_save_mapping or save_path_map:
+        with open(dst_root / path_to_name, "w") as f:
+            f.write("\"copied_name\",\"original_path\"\n")
+            f.write("\n".join(name_to_path_map))
 
 
 def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0):
@@ -180,7 +184,7 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
     else:
         splited_image_list = [image_list[i:i + split_size] for i in range(0, len(image_list), split_size)]
         for i, chunk in tqdm.tqdm(enumerate(splited_image_list), total=len(splited_image_list)):
-            copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name)
+            copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name, always_save_mapping=True)
 
 STATS_COLUMN_DTYPES = {
     "folder": "string",
