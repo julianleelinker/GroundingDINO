@@ -57,3 +57,8 @@ all_json_list = [
     "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json",
     # "Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json",
 ]
+
+
+# no duplicate
+
+"Ports_Corporation_20250124_image_list_keep_0.95"

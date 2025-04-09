@@ -167,7 +167,8 @@ if __name__=='__main__':
     print(f'{output_root=}')
     output_copied_root = output_root / 'copied'
 
-    copy_images_in_json(args.json_path, output_copied_root, is_image_list=args.is_image_list)
+    if not output_copied_root.exists():
+        copy_images_in_json(args.json_path, output_copied_root, is_image_list=args.is_image_list)
 
     output_image_root = output_root / 'images'
     output_anno_root = output_root / 'annotations'

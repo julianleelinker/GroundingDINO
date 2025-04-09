@@ -22,37 +22,37 @@ if __name__ == "__main__":
                                     # image_type= OntologyImageType._2D_BOUNDING_BOX)
 
 
-    # exporting vlm dataslices
-    vlm_ckpt1_slices = client.list_dataslices(project_id=DATAVERSE_CKPT1_PROJECT_ID, client_alias=client.alias)
-    vlm_ckpt2_slices = client.list_dataslices(project_id=DATAVERSE_CKPT2_PROJECT_ID, client_alias=client.alias)
-    host = "https://visionai.linkervision.ai/dataverse/curation"
-    email = "julianlee@linkervision.com"
-    password = DATAVERSE_PASSWORD
-    service_id = "2bd928e5-a98f-4aae-a093-8545c57c103f"
-    export_format = "vlm"
-    anno = "groundtruth"
-    target_root_to_ckpt = {
-        # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1": vlm_ckpt1_slices,
-        "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2": vlm_ckpt2_slices,
-    }
-    for target_root, vlm_slices in target_root_to_ckpt.items():
-        for dataslice in vlm_slices:
-            dataslice_id = dataslice['id']
-            target_folder = f"{target_root}/{dataslice['name']}"
-            pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)
-            os.chmod(target_folder, 0o777) 
-            export_dataslice_to_local(
-                host=host,
-                email=email,
-                password=password,
-                service_id=service_id,
-                dataslice_id=dataslice_id,
-                target_folder=target_folder,
-                sequential=False,
-                annotation_name=anno,
-                export_format=export_format,
-            )
-    exit(0)
+    ## exporting vlm dataslices
+    # vlm_ckpt1_slices = client.list_dataslices(project_id=DATAVERSE_CKPT1_PROJECT_ID, client_alias=client.alias)
+    # vlm_ckpt2_slices = client.list_dataslices(project_id=DATAVERSE_CKPT2_PROJECT_ID, client_alias=client.alias)
+    # host = "https://visionai.linkervision.ai/dataverse/curation"
+    # email = "julianlee@linkervision.com"
+    # password = DATAVERSE_PASSWORD
+    # service_id = "2bd928e5-a98f-4aae-a093-8545c57c103f"
+    # export_format = "vlm"
+    # anno = "groundtruth"
+    # target_root_to_ckpt = {
+    #     # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1": vlm_ckpt1_slices,
+    #     "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2": vlm_ckpt2_slices,
+    # }
+    # for target_root, vlm_slices in target_root_to_ckpt.items():
+    #     for dataslice in vlm_slices:
+    #         dataslice_id = dataslice['id']
+    #         target_folder = f"{target_root}/{dataslice['name']}"
+    #         pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)
+    #         os.chmod(target_folder, 0o777) 
+    #         export_dataslice_to_local(
+    #             host=host,
+    #             email=email,
+    #             password=password,
+    #             service_id=service_id,
+    #             dataslice_id=dataslice_id,
+    #             target_folder=target_folder,
+    #             sequential=False,
+    #             annotation_name=anno,
+    #             export_format=export_format,
+    #         )
+    # exit(0)
 
 
     # exporting lvm300k dataslices
