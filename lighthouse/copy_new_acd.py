@@ -8,4 +8,4 @@ for json_path in AUGMENTED_CURATED_NEW_JSONS:
     dst.mkdir(exist_ok=True, parents=True)
     os.chmod(dst, 0o777)
     print(dst)
-    copy_images_in_json(json_path, dst, is_image_list=True, split_size=5000)
+    copy_images_in_json(json_path, dst, is_image_list=True, split_size=10000)
