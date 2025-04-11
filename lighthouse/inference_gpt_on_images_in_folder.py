@@ -232,10 +232,10 @@ if __name__ == "__main__":
     os.chmod(output_root_dir, 0o777)
     # print(TEXT_PROMPT_LIST)
     # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, merge_threshold=args.ios_threshold)
-    image_path_list = image_path_list[:2]
-    infer_images_text_list_save_gdino_coco_result(image_path_list, model, DINO_INFER_CLASSES, box_threshold, text_threshold, HARD_CLASSES_LIST, high_threshold, token_spans, output_root_dir)
-    # dino_coco_loaded = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
-
+    # image_path_list = image_path_list[:2]
     src_map_file = root_path / 'name_to_path.txt'
     dst_map_file = output_root_dir / 'name_to_path.txt'
     shutil.copy(src_map_file, dst_map_file)
+    infer_images_text_list_save_gdino_coco_result(image_path_list, model, DINO_INFER_CLASSES, box_threshold, text_threshold, HARD_CLASSES_LIST, high_threshold, token_spans, output_root_dir)
+    # dino_coco_loaded = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
+
