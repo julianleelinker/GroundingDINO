@@ -2,6 +2,7 @@ import pathlib
 import subprocess
 import os
 from common import DEPART_MAP, VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS, VLM_ANNOTATION_ROOT, DATAVERSE_PASSWORD, DATAVERSE_CKPT1_PROJECT_ID, DATAVERSE_CKPT2_PROJECT_ID
+from common import get_depart, get_depart_date
 
 
 # DATAVERSE_PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
@@ -62,11 +63,13 @@ for folder in folder_list[iii:]:
     # token_list = str(folder).split('/vlm-annotations/')[1].split('/')
     # for ckpt
     token_list = str(folder).split('/checkpoint/vlm/hand/')[1].split('/')
-    depart = token_list[0]
-    date = token_list[1]
-    subfolder = token_list[-1]
+    # depart = token_list[0]
+    # date = token_list[1]
+    # subfolder = token_list[-1]
+    depart, subfolder = get_depart_date(folder, ch=True)
 
-    dataset_name = f"{DEPART_MAP[depart]}_{date}-{subfolder}"
+    # dataset_name = f"{DEPART_MAP[depart]}_{date}-{subfolder}"
+    dataset_name = f"{depart}_{subfolder}"
     print(folder)
     print(f'{dataset_name=}\n')
     # continue

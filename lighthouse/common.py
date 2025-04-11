@@ -12,17 +12,17 @@ DATAVERSE_CKPT2_PROJECT_ID = 464
 DATAVERSE_LVM300K_PROJECT_ID = 225
 
 DEPART_MAP = {
-    "China_Steel"           : "中鋼",          
-    "Mass_Rapid_Transit"    : "捷運局",
-    "Ports_Corporation"     : "港務局",     
-    "Public_Works"          : "工務局",
-    "Sports_Development"    : "運發局",
-    "Taiwan_Power"          : "台電",            
-    "Transportation"        : "交通局",
-    "Water_Resources"       : "水利局", 
+    "China_Steel"           : ("China_Steel"       , "中鋼", ),
+    "Mass_Rapid_Transit"    : ("Mass_Rapid_Transit", "捷運局",),
+    "Ports_Corporation"     : ("Ports_Corporation" , "港務局",),
+    "Public_Works"          : ("Public_Works"      , "工務局",),
+    "Sports_Development"    : ("Sports_Development", "運發局",),
+    "Taiwan_Power"          : ("Taiwan_Power"      , "台電",  ),
+    "Transportation"        : ("Transportation"    , "交通局",),
+    "Water_Resources"       : ("Water_Resources"   , "水利局",),
 
-    "Kaohsiung-full-dataset": "Linker",
-    "Linker_Vision_Data_V3" : "LinkerV3",
+    "Kaohsiung-full-dataset": ("Linker"            , "Linker",),
+    "Linker_Vision_Data_V3" : ("Linker"            , "Linker",),
 }
 
 #  英文名                     中文名       縮寫
@@ -36,8 +36,16 @@ DEPART_MAP = {
 #  "Water_Resources"         "水利局",     wr
 #  "Kaohsiung-full-dataset"  "Linker",    lk
 #  "Linker_Vision_Data_V3"   "LinkerV3",  lk3
-PARTS_CH = list(DEPART_MAP.values())
-DEPARTS_EN = list(DEPART_MAP.keys())
+
+seen = [set(), set()]
+DEPARTS = [[], []]
+for x in DEPART_MAP.values():
+    for i in range(2):
+        if x[i] not in seen[i]:
+            seen[i].add(x[i])
+            DEPARTS[i].append(x[i])
+DEPARTS_EN, DEPARTS_CH = DEPARTS[0], DEPARTS[1]
+
 
 VLM_ANNOTATION_ROOT = "/mnt/data-home/mobility-multimodal/vlm-annotations"
 DATA_CURATION_ROOT = "/mnt/data-home/mobility-multimodal/data-curation"
@@ -121,18 +129,21 @@ DINO_COCO_TARGERT_FOLDERS = [pathlib.Path(DINO_COCO_TARGET_ROOT)/f.stem for f in
 
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
-    for depart, depart_ch in DEPART_MAP.items():
+    for depart, (depart_en, depart_ch) in DEPART_MAP.items():
         if depart in str(path):
             if ch:
                 return depart_ch
-            return depart
+            return depart_en
     return None
+
 
 def get_depart_date(path: str | pathlib.Path, ch: bool=False) -> tuple[str | None, str | None]:
     depart = get_depart(path)
     date = str(path).split(f"{depart}_")[1]
-    depart = get_depart(path, ch)
-    return depart, date
+    if not ch:
+        return depart, date
+    return get_depart(path, ch=True), date
+
 
 def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
     anno_path = pathlib.Path(path) / "annotations" / "vlm_annotation.json"
