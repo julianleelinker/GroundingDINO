@@ -1,6 +1,7 @@
 import subprocess
 import time
 import pathlib
+from common import DINO_COCO_SOURCE_ROOT
 
 
 def get_gpu_memory():
@@ -27,7 +28,7 @@ def get_gpu_memory():
 CONDA_ENV = "lighthouse"
 # DATASET = 'Public_Works_20241230_image_list_keep_0.95'
 DATASET = 'Mass_Rapid_Transit_20250213_image_list_keep_0.95'
-DATA_ROOT = '/mnt/lighthouseACD/augmented-curated-data/'
+DATA_ROOT = DINO_COCO_SOURCE_ROOT
 THRESHOLD = 4000
 WAIT_TIME = 300
 SKIP_LIST = [0,]

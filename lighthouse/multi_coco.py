@@ -1,5 +1,6 @@
 import subprocess
 import argparse
+from common import DINO_COCO_SOURCE_ROOT
 
 
 # Define the Conda environment
@@ -57,7 +58,7 @@ if __name__=="__main__":
         # "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/Transportation_20250109_image_list_keep_0.95-split_{i}"
         # "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/Sports_Development_20241223_image_list_keep_0.95-split_{i}"
         # "-i /mnt/data-home/julian/lighthouse/augmented-curated-data/{dataset}/split{i} "
-        "-i /mnt/lighthouseACD/augmented-curated-data/{dataset}/split{i} "
+        "-i {DINO_COCO_SOURCE_ROOT}/{dataset}/split{i} "
         "> {dataset}-{i}.log 2>&1 &"
     )
 

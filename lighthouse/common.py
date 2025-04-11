@@ -123,10 +123,56 @@ AUGMENTED_CURATED_NEW_JSONS = [
     "Water_Resources/20250213/Water_Resources_20250213_image_list_keep_0.95.json",
 ]
 AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
-DINO_COCO_SOURCE_ROOT = "/mnt/lighthouseACD/augmented-curated-data"
+DINO_COCO_SOURCE_ROOT = "/mnt/lighthouseACD/augmented-curated-data-new"
 DINO_COCO_SOURCE_FOLDERS = [pathlib.Path(DINO_COCO_SOURCE_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
 DINO_COCO_TARGERT_FOLDERS = [pathlib.Path(DINO_COCO_TARGET_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
 
+
+AUGMENTED_CURATED_EXCLUDED_JSONS = {
+    "Public_Works/20241230/split_image_list_keep/part_0_image_list_keep_0.95_llava-onevision-0.5b-part.json",
+    "Public_Works/20241230/split_image_list_keep/part_0_image_list_keep_0.95.json",
+    "Public_Works/20241230/split_image_list_keep/part_0_image_list_keep_0.95_llava-onevision-0.5b-full.json",
+    "Public_Works/20241230/split_image_list_keep/part_1_image_list_keep_0.95_llava-onevision-0.5b-full.json",
+    "Public_Works/20241230/split_image_list_keep/part_1_image_list_keep_0.95_llava-onevision-0.5b-part.json",
+    "Public_Works/20241230/split_image_list_keep/part_1_image_list_keep_0.95.json",
+    "Public_Works/20241230/Public_Works_20241230_final_image_list_keep_0.95.json",
+    "Public_Works/20241230/Public_Works_20241230_image_list_keep_0.95.json",
+    "Public_Works/20241230/Public_Works_20241230_image_list_keep_0.95_rededuplicate.json",
+    "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95.json",
+    "Public_Works/20250106/Public_Works_20250106_image_list_keep_0.95_rededuplicate.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_8.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_9.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_6.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_7.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_2.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_1.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_4.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_0.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_3.json",
+    "Public_Works/20250206/raw_data/Public_Works_20250206_image_list_keep_0.95_part_5.json",
+    "Water_Resources/20250106/Water_Resources_20250106_image_list_keep_0.95_rededuplicate.json",
+    "Water_Resources/20250106/Water_Resources_20250106_image_list_keep_0.95.json",
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_image_list_keep_0.95.json",
+    "Transportation/20241230/Transportation_20241230_image_list_keep_0.95.json",
+    "Transportation/20241230/Transportation_20241230_image_list_keep_0.95_rededuplicate.json",
+    "Transportation/20250115/Transportation_20250115_image_list_keep_0.95_rededuplicate.json",
+    "Transportation/20250115/Transportation_20250115_image_list_keep_0.95.json",
+    "Transportation/20250109/Transportation_20250109_image_list_keep_0.95.json",
+    "Transportation/20250109/Transportation_20250109_image_list_keep_0.95_rededuplicate.json",
+    "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95_rededuplicate.json",
+    "Mass_Rapid_Transit/20250109/Mass_Rapid_Transit_20250109_image_list_keep_0.95.json",
+    "Sports_Development/20241223/Sports_Development_20241223_image_list_keep_0.95_rededuplicate.json",
+    "Sports_Development/20241223/Sports_Development_20241223_image_list_keep_0.95.json",
+    "Sports_Development/20250109/Sports_Development_20250109_image_list_keep_0.95_rededuplicate.json",
+    "Sports_Development/20250109/Sports_Development_20250109_image_list_keep_0.95.json",
+    "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95.json",
+    "Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95_rededuplicate.json",
+    "Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95.json",
+    "Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95_full.json",
+    "Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95_deprecated.json",
+    "Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json",
+}
+AUGMENTED_CURATED_EXCLUDED_JSONS = {pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{x}") for x in AUGMENTED_CURATED_EXCLUDED_JSONS}
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     for depart, (depart_en, depart_ch) in DEPART_MAP.items():
@@ -196,6 +242,7 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         splited_image_list = [image_list[i:i + split_size] for i in range(0, len(image_list), split_size)]
         for i, chunk in tqdm.tqdm(enumerate(splited_image_list), total=len(splited_image_list)):
             copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name, always_save_mapping=True)
+
 
 STATS_COLUMN_DTYPES = {
     "folder": "string",
