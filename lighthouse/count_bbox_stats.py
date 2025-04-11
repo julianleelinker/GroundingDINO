@@ -1,6 +1,7 @@
 import pathlib
 import pandas as pd
-from common import get_depart, DEPARTS_EN
+import json
+from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_JSON_ROOT, AUGMENTED_CURATED_RUNNING_JSONS
 
 
 data_root_map = {
@@ -15,7 +16,7 @@ data_name_map = {
     "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate": "trans_250115",
 }
 
-column_names = ["deduplicated", "datasets", "trans_250115", "bbox all"]
+column_names = ["deduplicated", "datasets", "trans_250115", "bbox all", "new data"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
@@ -27,7 +28,21 @@ for data_root, pattern in data_root_map.items():
         df.loc[get_depart(folder), data_name] += len(image_list)
 
 df["bbox all"] = df["deduplicated"] + df["datasets"] + df["trans_250115"]
+
+
+all_json_path = AUGMENTED_CURATED_RUNNING_JSONS
+for json_path in all_json_path:
+    with open(json_path, 'r') as f:
+        image_list = json.load(f)
+    if get_depart(json_path) == "Transportation":
+        print(json_path, len(image_list))
+    df.loc[get_depart(json_path), 'new data'] += len(image_list)
+
+df["expected total"] = df["bbox all"] + df["new data"]
+
+
 df.loc["total"] = df.sum(axis=0)
 df_formatted = df.map(lambda x: f"{x:,}")
 print(df_formatted)
+
 import ipdb; ipdb.set_trace()
