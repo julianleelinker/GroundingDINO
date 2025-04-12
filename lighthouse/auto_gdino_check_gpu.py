@@ -37,7 +37,7 @@ def rsync_copy(remote_user, remote_host, remote_path, local_path):
         print(f"Rsync failed with return code {e.returncode}")
 
 
-def get_gpu_memory():
+def get_gpu_memory(skip_gpu_list=[]):
     try:
         command = "nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -49,6 +49,7 @@ def get_gpu_memory():
                 total_memory, used_memory = map(int, line.split(", "))  # Convert to integers
                 print(f"GPU {idx}: {used_memory}MB / {total_memory}MB")
                 result[idx] = total_memory - used_memory
+            result = {k: v for k, v in result.items() if k not in skip_gpu_list}
             return result
         else:
             print("Error running nvidia-smi:", result.stderr)
@@ -90,16 +91,17 @@ def main():
 
     while True:
         dataset_list = []
+
         for json_path in json_list:
             dst = dst_root / json_path.stem
             dataset_list.extend(list(dst.glob('split*')))
         dataset_list = [x for x in dataset_list if not (x/"runned").exists()]
         dataset_list = sorted(dataset_list, key=lambda x: int(str(x).split('split')[-1]))
 
-        result = get_gpu_memory()
-        running_number = len(result) - len(skip_gpu_list)
-        import ipdb; ipdb.set_trace()
-        for (gpu_id, memory), data_path in zip(result.items(), dataset_list[:running_number]):
+        result = get_gpu_memory(skip_gpu_list=skip_gpu_list)
+        # running_number = len(result) - len(skip_gpu_list)
+        # import ipdb; ipdb.set_trace()
+        for (gpu_id, memory), data_path in zip(result.items(), dataset_list[:len(result)]):
             if gpu_id in skip_gpu_list:
                 continue
             if memory > mem_thres:
