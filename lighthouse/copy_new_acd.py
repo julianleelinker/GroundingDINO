@@ -1,11 +1,24 @@
 import os
 import pathlib
-from common import AUGMENTED_CURATED_NEW_JSONS, DINO_COCO_TARGET_ROOT, copy_images_in_json
+import tqdm
+from common import AUGMENTED_CURATED_RUNNING_JSONS, DINO_COCO_SOURCE_ROOT, copy_images_in_json
 
 
-for json_path in AUGMENTED_CURATED_NEW_JSONS:
-    dst = pathlib.Path(DINO_COCO_TARGET_ROOT) / json_path.stem
-    dst.mkdir(exist_ok=True, parents=True)
-    os.chmod(dst, 0o777)
-    print(dst)
-    copy_images_in_json(json_path, dst, is_image_list=True, split_size=10000)
+def main():
+    json_list = AUGMENTED_CURATED_RUNNING_JSONS
+    json_list = [x for x in json_list if "China_Steel" in str(x)]
+
+    dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
+    dst_root.mkdir(exist_ok=True, parents=True)
+    os.chmod(dst_root, 0o777)
+
+    print("Copying images from json files to target folder...")
+    for json_path in tqdm.tqdm(json_list):
+        dst = dst_root / json_path.stem
+        dst.mkdir(exist_ok=True, parents=True)
+        os.chmod(dst, 0o777)
+        copy_images_in_json(json_path, dst, is_image_list=True, split_size=10000)
+
+
+if __name__ == "__main__":
+    main()

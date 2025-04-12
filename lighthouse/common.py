@@ -125,7 +125,6 @@ AUGMENTED_CURATED_NEW_JSONS = [
 AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
 DINO_COCO_SOURCE_ROOT = "/mnt/lighthouseACD/augmented-curated-data-new"
 DINO_COCO_SOURCE_FOLDERS = [pathlib.Path(DINO_COCO_SOURCE_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
-DINO_COCO_TARGERT_FOLDERS = [pathlib.Path(DINO_COCO_TARGET_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
 
 
 AUGMENTED_CURATED_EXCLUDED_JSONS = {
@@ -185,11 +184,10 @@ AUGMENTED_CURATED_RUNNING_JSONS = {
     "Sports_Development/20250226/Sports_Development_20250226_image_list_keep_0.95.json",
     "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95.json",
     "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json",
-    "Transportation/20250304/Transportation_20250304_image_list_keep_0.95.json",
-    "Transportation/20250120/Transportation_20250120_image_list_keep_0.95.json",
 }
 AUGMENTED_CURATED_RUNNING_JSONS = {pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{x}") for x in AUGMENTED_CURATED_RUNNING_JSONS}
 AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS | AUGMENTED_CURATED_RUNNING_JSONS
+DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     for depart, (depart_en, depart_ch) in DEPART_MAP.items():
