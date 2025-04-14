@@ -218,6 +218,7 @@ def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
 
 
 def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, path_to_name = "name_to_path.txt", always_save_mapping: bool = False):
+    assert not dst_root.exists(), "dst_root already exists"
     dst_root.mkdir(exist_ok=True, parents=True)
     os.chmod(dst_root, 0o777)
     name_to_path_map = []
