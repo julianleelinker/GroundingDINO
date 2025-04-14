@@ -20,9 +20,11 @@ column_names = ["deduplicated", "datasets", "trans_250115", "bbox all", "new dat
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
+all_uploaded_folders = []
 for data_root, pattern in data_root_map.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     data_name = data_name_map[data_root]
+    all_uploaded_folders.extend(folder_list)
     for folder in folder_list:
         image_list = list((folder/"images").glob("*"))
         df.loc[get_depart(folder), data_name] += len(image_list)

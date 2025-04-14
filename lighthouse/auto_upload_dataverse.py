@@ -66,7 +66,7 @@ if __name__ == "__main__":
         p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate",
     ]
-    file_path_list = file_path_list[1:]
+    # file_path_list = file_path_list[1:]
     import ipdb; ipdb.set_trace()
     while True:
         i = 0

@@ -41,9 +41,10 @@ seen = [set(), set()]
 DEPARTS = [[], []]
 for x in DEPART_MAP.values():
     for i in range(2):
-        if x[i] not in seen[i]:
-            seen[i].add(x[i])
-            DEPARTS[i].append(x[i])
+        if x[i] in seen[i]:
+            continue
+        seen[i].add(x[i])
+        DEPARTS[i].append(x[i])
 DEPARTS_EN, DEPARTS_CH = DEPARTS[0], DEPARTS[1]
 
 
@@ -92,6 +93,17 @@ VLM_CKPT2_FOLDERS = [
     "Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new",
 ]
 VLM_CKPT2_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in VLM_CKPT2_FOLDERS]
+
+VLM_ADDDED_0407_FOLDERS = [
+    "Sports_Development/20250226/Sports_Development_20250226_curated_t20",
+    "Water_Resources/20250213/Water_Resources_20250213_curated_t2",
+    "Water_Resources/20250324/Water_Resources_20250324_image_list_keep_0.95",
+    "Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_curated_t50",
+    "Ports_Corporation/20250226/Ports_Corporation_20250226_curated_t11",
+    "Transportation/20250304/Transportation_20250304_curated_t4",
+    "Linker_Vision_Data_V3/20250408/Linker_Vision_Data_V3_curated_t26",
+]
+VLM_ADDDED_0407_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in VLM_ADDDED_0407_FOLDERS]
 
 DINO_COCO_TARGET_ROOT = "/mnt/lighthouseACD/ACD-gdino-COCO"
 DINO_COCO_DEPRECATED_FOLDERS = [

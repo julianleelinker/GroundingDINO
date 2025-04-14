@@ -1,7 +1,7 @@
 import os
 import pathlib
 import pandas as pd
-from common import get_depart, DEPARTS_EN, VLM_CKPT2_FOLDERS
+from common import get_depart, DEPARTS_EN, VLM_CKPT2_FOLDERS, VLM_ADDDED_0407_FOLDERS
 
 def find_depth3_subfolders(start_folder_path: str | pathlib.Path) -> list[pathlib.Path]:
     start_path = pathlib.Path(start_folder_path).resolve()
@@ -29,7 +29,7 @@ def get_depart_image_numbers_vlm(folder: str | pathlib.Path) -> dict[str, int]:
 
 
 if __name__ == "__main__":
-    column_names = ["VLM CKPT1", "VLM CKPT2", "VLM ALL"]
+    column_names = ["VLM CKPT1", "VLM CKPT2", "VLM ALL", "NEW 0407", "EXPECTED"]
     row_names = DEPARTS_EN + ["total"]
     df = pd.DataFrame(0, index=row_names, columns=column_names)
     vlm_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand"
@@ -45,6 +45,13 @@ if __name__ == "__main__":
     vlm_2_folders = [x for x in vlm_2_folders if x.name not in vlm_2_to_1_names]
     vlm_2_folders = vlm_2_folders + vlm_2_handed_fodlers
 
+    for folder in VLM_ADDDED_0407_FOLDERS[:-1]:
+    # for folder in VLM_ADDDED_0407_FOLDERS:
+        depart, image_number = get_depart_image_numbers_vlm(folder)
+        df.loc[depart, "NEW 0407"] += image_number
+    
+    df.loc["Linker", "NEW 0407"] += 38_379
+
     for folder in vlm_1_folders:
         depart, image_number = get_depart_image_numbers_vlm(folder)
         df.loc[depart, "VLM CKPT1"] += image_number
@@ -54,8 +61,9 @@ if __name__ == "__main__":
         df.loc[depart, "VLM CKPT2"] += image_number
 
     df["VLM ALL"] = df["VLM CKPT1"] + df["VLM CKPT2"]
+    df["EXPECTED"] = df["VLM ALL"] + df["NEW 0407"]
+
     df.loc["total"] = df.sum(axis=0)
-    df_formatted = df.map(lambda x: f"{x:,}")
     print(df.map(lambda x: f"{x:,}"))
 
     import ipdb; ipdb.set_trace()
