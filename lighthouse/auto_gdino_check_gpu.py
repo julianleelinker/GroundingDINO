@@ -6,37 +6,6 @@ import tqdm
 from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_RUNNING_JSONS, copy_images_in_json
 
 
-def rsync_copy(remote_user, remote_host, remote_path, local_path):
-    """
-    Copies a file (or directory) from a remote server to a local path using rsync.
-    """
-    # Example rsync options:
-    #   -a : archive mode
-    #   -v : verbose
-    #   -z : compress file data during the transfer
-    # You can customize or remove these flags as needed.
-    
-    command = [
-        "rsync",
-        "-avz",  # or remove flags you don't need
-        f"{remote_user}@{remote_host}:{remote_path}",
-        local_path
-    ]
-    
-    try:
-        # Execute the rsync command
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
-        
-        # If successful, you can read any output as:
-        print("STDOUT:", result.stdout)
-        print("File transfer completed successfully!")
-        
-    except subprocess.CalledProcessError as e:
-        # Handle errors
-        print("STDERR:", e.stderr)
-        print(f"Rsync failed with return code {e.returncode}")
-
-
 def get_gpu_memory(skip_gpu_list=[]):
     try:
         command = "nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits"
@@ -61,7 +30,6 @@ def get_gpu_memory(skip_gpu_list=[]):
 
 def main():
     json_list = AUGMENTED_CURATED_RUNNING_JSONS
-    json_list = [x for x in json_list if "China_Steel" in str(x)]
 
     dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
 
@@ -95,7 +63,7 @@ def main():
         for json_path in json_list:
             dst = dst_root / json_path.stem
             dataset_list.extend(list(dst.glob('split*')))
-        dataset_list = [x for x in dataset_list if not (x/"runned").exists()]
+        dataset_list = [x for x in dataset_list if not (x/"runned.txt").exists()]
         dataset_list = sorted(dataset_list, key=lambda x: int(str(x).split('split')[-1]))
 
         result = get_gpu_memory(skip_gpu_list=skip_gpu_list)
@@ -108,14 +76,14 @@ def main():
                 # dataset_list = pathlib.Path(f'{DATA_ROOT}/{dataset_name}').glob('split*')
                 # dataset_list = sorted(dataset_list, key=lambda x: int(str(x).split('split')[-1]))
                 # for data_path in dataset_list:
-                #     if not (data_path / 'runned').exists():
+                #     if not (data_path / 'runned.txt').exists():
                 #         break
                 split_index = int(str(data_path).split('split')[-1])
                 command = base_command.format(i=split_index, conda_env=conda_env, source_root=source_root, dataset=data_path.parent.name, gpu_id=gpu_id, target_root=DINO_COCO_TARGET_ROOT_NEW)
                 print(f"GPU {gpu_id} has enough memory, running inference on {data_path}")
                 print(f"Executing: {command}")
                 subprocess.run(command, shell=True, executable="/bin/bash")
-                (data_path / 'runned').touch()
+                (data_path / 'runned.txt').touch()
             else:
                 print(f"GPU {gpu_id} doesn't have enough memory, check later")
         print(f'Waiting for {wait_time} seconds...\n')

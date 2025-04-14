@@ -216,7 +216,7 @@ if __name__ == "__main__":
     if root_path.is_dir():
         # image_path_list = list(root_path.rglob("*.jpg")) + list(root_path.rglob("*.png"))
         # output_root_dir = pathlib.Path(output_dir).resolve() / model_name / (root_path.name + '_' + args.text_prompt + f'_en{args.enlarge_scale:3.2f}_io{args.ios_threshold:3.2f}')
-        image_path_list = list(root_path.rglob("*"))
+        image_path_list = list(root_path.rglob("./*"))
         image_path_list = [x for x in image_path_list if x.suffix != '.txt']
         # import ipdb; ipdb.set_trace()
         output_root_dir = pathlib.Path(output_dir).resolve() / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
