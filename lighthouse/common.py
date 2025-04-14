@@ -123,21 +123,7 @@ DINO_COCO_DEPRECATED_FOLDERS = [
 ]
 DINO_COCO_DEPRECATED_FOLDERS = [pathlib.Path(f"{DINO_COCO_TARGET_ROOT}/{folder}") for folder in DINO_COCO_DEPRECATED_FOLDERS]
 
-AUGMENTED_CURATED_JSON_ROOT = "/mnt/data-home/mobility-multimodal/data-curation"
-AUGMENTED_CURATED_NEW_JSONS = [
-    "Mass_Rapid_Transit/20250213/Mass_Rapid_Transit_20250213_image_list_keep_0.95.json",
-    "Ports_Corporation/20250226/Ports_Corporation_20250226_image_list_keep_0.95.json",
-    "Public_Works/20250206/Public_Works_20250206_image_list_keep_0.95.json",
-    "Sports_Development/20250226/Sports_Development_20250226_image_list_keep_0.95.json",
-    "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95.json",
-    "Transportation/20250120/Transportation_20250120_image_list_keep_0.95.json",
-    "Transportation/20250304/Transportation_20250304_image_list_keep_0.95.json",
-    "Water_Resources/20250213/Water_Resources_20250213_image_list_keep_0.95.json",
-]
-AUGMENTED_CURATED_NEW_JSONS = [pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{folder}") for folder in AUGMENTED_CURATED_NEW_JSONS]
 DINO_COCO_SOURCE_ROOT = "/mnt/lighthouseACD/augmented-curated-data-new"
-DINO_COCO_SOURCE_FOLDERS = [pathlib.Path(DINO_COCO_SOURCE_ROOT)/f.stem for f in AUGMENTED_CURATED_NEW_JSONS]
-
 
 AUGMENTED_CURATED_EXCLUDED_JSONS = {
     "Public_Works/20241230/split_image_list_keep/part_0_image_list_keep_0.95_llava-onevision-0.5b-part.json",
@@ -183,7 +169,7 @@ AUGMENTED_CURATED_EXCLUDED_JSONS = {
     "Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95_deprecated.json",
     "Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json",
 }
-AUGMENTED_CURATED_EXCLUDED_JSONS = {pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{x}") for x in AUGMENTED_CURATED_EXCLUDED_JSONS}
+AUGMENTED_CURATED_EXCLUDED_JSONS = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_EXCLUDED_JSONS}
 AUGMENTED_CURATED_RUNNING_JSONS = {
     # running 250411
     "Water_Resources/20250324/Water_Resources_20250324_image_list_keep_0.95.json",
@@ -197,7 +183,7 @@ AUGMENTED_CURATED_RUNNING_JSONS = {
     "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95.json",
     "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json",
 }
-AUGMENTED_CURATED_RUNNING_JSONS = {pathlib.Path(f"{AUGMENTED_CURATED_JSON_ROOT}/{x}") for x in AUGMENTED_CURATED_RUNNING_JSONS}
+AUGMENTED_CURATED_RUNNING_JSONS = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_RUNNING_JSONS}
 AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS | AUGMENTED_CURATED_RUNNING_JSONS
 DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
 

@@ -1,7 +1,7 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_JSON_ROOT, AUGMENTED_CURATED_RUNNING_JSONS
+from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS
 
 
 data_root_map = {
