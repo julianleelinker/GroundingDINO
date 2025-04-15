@@ -1,5 +1,6 @@
 import os
 import pathlib
+import tqdm
 import pandas as pd
 from common import get_depart, DEPARTS_EN, VLM_CKPT2_FOLDERS, VLM_ADDDED_0407_FOLDERS
 
@@ -45,20 +46,16 @@ if __name__ == "__main__":
     vlm_2_folders = [x for x in vlm_2_folders if x.name not in vlm_2_to_1_names]
     vlm_2_folders = vlm_2_folders + vlm_2_handed_fodlers
 
-    for folder in VLM_ADDDED_0407_FOLDERS[:-1]:
-    # for folder in VLM_ADDDED_0407_FOLDERS:
-        depart, image_number = get_depart_image_numbers_vlm(folder)
-        df.loc[depart, "NEW 0407"] += image_number
-    
-    df.loc["Linker", "NEW 0407"] += 38_379
-
-    for folder in vlm_1_folders:
-        depart, image_number = get_depart_image_numbers_vlm(folder)
-        df.loc[depart, "VLM CKPT1"] += image_number
-
-    for folder in vlm_2_folders:
-        depart, image_number = get_depart_image_numbers_vlm(folder)
-        df.loc[depart, "VLM CKPT2"] += image_number
+    # for folder in VLM_ADDDED_0407_FOLDERS[:-1]:
+    name_to_list = {
+        "NEW 0407": VLM_ADDDED_0407_FOLDERS,
+        "VLM CKPT1": vlm_1_folders,
+        "VLM CKPT2": vlm_2_folders,
+    }
+    for name, folder_list in tqdm.tqdm(name_to_list.items()):
+        for folder in tqdm.tqdm(folder_list):
+            depart, image_number = get_depart_image_numbers_vlm(folder)
+            df.loc[depart, name] += image_number
 
     df["VLM ALL"] = df["VLM CKPT1"] + df["VLM CKPT2"]
     df["EXPECTED"] = df["VLM ALL"] + df["NEW 0407"]
