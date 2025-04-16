@@ -186,6 +186,9 @@ AUGMENTED_CURATED_RUNNING_JSONS = {
 AUGMENTED_CURATED_RUNNING_JSONS = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_RUNNING_JSONS}
 AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS | AUGMENTED_CURATED_RUNNING_JSONS
 DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
+DINO_COCO_RUNNING_FOLDERS =[
+   pathlib.Path(DINO_COCO_TARGET_ROOT_NEW) / pathlib.Path(x).stem for x in AUGMENTED_CURATED_RUNNING_JSONS
+]
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     for depart, (depart_en, depart_ch) in DEPART_MAP.items():

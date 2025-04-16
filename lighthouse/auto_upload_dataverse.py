@@ -3,10 +3,9 @@ import time
 import subprocess
 import os
 import tqdm
-from common import get_depart_date
+import fire
+from common import get_depart_date, DINO_COCO_RUNNING_FOLDERS
 
-
-PASSWORD = os.environ.get('DATAVERSE_PASSWORD')
 
 def execute(data_path, command):
     print(command)
@@ -53,40 +52,40 @@ def check_and_execute(data_path, command):
         print(f"COCO {data_path} not done yet.")
 
 
-if __name__ == "__main__":
+def main(password, conda_env, prefix):
     print("Starting auto upload to dataverse")
     wait_time = 600
     # coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
     # coco_root = '/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand'
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/datasets"
-    coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated"
+    # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated"
     file_path_list =[
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Transportation_20250109_image_list_keep_0.95/split15_0.30_0.35",
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split30_0.30_0.35",
-        p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
+        # p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate",
+        # upload 0415
+        # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split0_0.30_0.35"
+        "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split1_0.30_0.35"
     ]
-    # file_path_list = file_path_list[1:]
     import ipdb; ipdb.set_trace()
     while True:
-        i = 0
-        for file_path in tqdm.tqdm(file_path_list):
-            print(f"xxxxxxxxxxxx {i}")
-            i += 1
-            # token = str(file_path).split('/checkpoint/bbox/hand/')[1].split('/')[0]
-            # depart = token_list[0]
-            # date = token_list[1]
+        for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
+            print(f"dataset number {i}")
             depart, split = get_depart_date(file_path, ch=True)
-            # dataset_name = f"{depart}_{date}"
-            dataset_name = f"upload0408_{depart}_{split}"
+            dataset_name = f"{prefix}_{depart}_{split}"
+
             # for checkpoint
             # command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
-            command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
-            # command = [
-            #     'conda', 'run', '-n' lighthouse python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {file_path.parent.name}/{file_path.name} -type annotated_data -anno coco'
-            # ]
+            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {password} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+
             execute(file_path, command)
             # check_and_execute(file_path, command)
+
         print(f"Waiting for {wait_time} seconds")
         time.sleep(wait_time)
+
+
+if __name__ == "__main__":
+    fire.Fire(main)
