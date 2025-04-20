@@ -4,7 +4,7 @@ import subprocess
 import os
 import tqdm
 import fire
-from common import get_depart_date, DINO_COCO_RUNNING_FOLDERS
+from common import get_depart_date, DINO_COCO_RUNNING_FOLDERS, DATAVERSE_PASSWORD
 
 
 def execute(data_path, command):
@@ -52,7 +52,7 @@ def check_and_execute(data_path, command):
         print(f"COCO {data_path} not done yet.")
 
 
-def main(password, conda_env, prefix):
+def main(conda_env, prefix):
     print("Starting auto upload to dataverse")
     wait_time = 600
     # coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
@@ -68,6 +68,10 @@ def main(password, conda_env, prefix):
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split0_0.30_0.35"
         "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split1_0.30_0.35"
     ]
+    
+    file_path_list = []
+    for file_folder in DINO_COCO_RUNNING_FOLDERS:
+        file_path_list.extend(list(pathlib.Path(file_folder).glob("split*")))
     import ipdb; ipdb.set_trace()
     while True:
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
@@ -78,10 +82,10 @@ def main(password, conda_env, prefix):
             # for checkpoint
             # command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
-            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {password} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project 225 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
-            execute(file_path, command)
-            # check_and_execute(file_path, command)
+            # execute(file_path, command)
+            check_and_execute(file_path, command)
 
         print(f"Waiting for {wait_time} seconds")
         time.sleep(wait_time)
