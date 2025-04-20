@@ -189,6 +189,12 @@ DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
 DINO_COCO_RUNNING_FOLDERS =[
    pathlib.Path(DINO_COCO_TARGET_ROOT_NEW) / pathlib.Path(x).stem for x in AUGMENTED_CURATED_RUNNING_JSONS
 ]
+DINO_COCO_RUNNING_SPLITS = []
+for folder in DINO_COCO_RUNNING_FOLDERS:
+    if folder.is_dir():
+        split_list = list(folder.glob("split*"))
+    DINO_COCO_RUNNING_SPLITS.extend(split_list)
+
 
 def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
     for depart, (depart_en, depart_ch) in DEPART_MAP.items():

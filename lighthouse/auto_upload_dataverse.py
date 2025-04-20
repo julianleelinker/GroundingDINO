@@ -10,8 +10,7 @@ from common import get_depart_date, DINO_COCO_RUNNING_FOLDERS, DATAVERSE_PASSWOR
 def execute(data_path, command):
     print(command)
     try:
-        result = subprocess.run(command, shell=True, check=True, text=True, 
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable="/bin/bash")
+        result = subprocess.run(command, shell=True, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable="/bin/bash")
             
         # Print both stdout and stderr
         print("=== Command Output ===")
@@ -66,7 +65,10 @@ def main(conda_env, prefix):
         # "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate",
         # upload 0415
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split0_0.30_0.35"
-        "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split1_0.30_0.35"
+        # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split1_0.30_0.35"
+
+        # failed and reupload
+        "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated/Public_Works_20241230_image_list_keep_0.95/split136_0.30_0.35",
     ]
     
     file_path_list = []
@@ -78,6 +80,7 @@ def main(conda_env, prefix):
             print(f"dataset number {i}")
             depart, split = get_depart_date(file_path, ch=True)
             dataset_name = f"{prefix}_{depart}_{split}"
+            import ipdb; ipdb.set_trace()
 
             # for checkpoint
             # command = f'conda run -n dataverse-sdk python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'

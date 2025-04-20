@@ -1,7 +1,7 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS
+from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS, DINO_COCO_RUNNING_SPLITS
 
 
 data_root_map = {
@@ -16,9 +16,16 @@ data_name_map = {
     "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate": "trans_250115",
 }
 
-column_names = ["deduplicated", "datasets", "trans_250115", "bbox all", "new data"]
+column_names = ["deduplicated", "datasets", "trans_250115", "bbox all", "new data", "result"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
+
+
+print(f"{len(DINO_COCO_RUNNING_SPLITS)=}")
+for folder in DINO_COCO_RUNNING_SPLITS:
+    if (folder / "done").exists() and (folder / "uploaded").exists():
+        df.loc[get_depart(folder), "result"] += len(list((folder / "images").glob("*")))
+
 
 all_uploaded_folders = []
 for data_root, pattern in data_root_map.items():
@@ -40,7 +47,7 @@ for json_path in all_json_path:
         print(json_path, len(image_list))
     df.loc[get_depart(json_path), 'new data'] += len(image_list)
 
-df["expected total"] = df["bbox all"] + df["new data"]
+df["total"] = df["bbox all"] + df["result"]
 
 
 df.loc["total"] = df.sum(axis=0)
