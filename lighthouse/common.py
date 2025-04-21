@@ -10,6 +10,10 @@ DATAVERSE_PASSWORD = os.environ.get("DATAVERSE_PASSWORD")
 DATAVERSE_CKPT1_PROJECT_ID = 230 
 DATAVERSE_CKPT2_PROJECT_ID = 464 
 DATAVERSE_LVM300K_PROJECT_ID = 225
+DATAVERSE_CURATION_HOST = "https://visionai.linkervision.ai/dataverse/curation"
+DATAVERSE_EMAIL = "julianlee@linkervision.com"
+DATAVERSE_SERVICE_ID_QA = "2bd928e5-a98f-4aae-a093-8545c57c103f"
+DATAVERSE_SERVICE_ID_HAND = "697aa90b-00d0-4455-8863-bd2ad70a93e7"
 
 DEPART_MAP = {
     "China_Steel"           : ("China_Steel"       , "中鋼", ),
