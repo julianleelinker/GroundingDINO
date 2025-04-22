@@ -30,37 +30,40 @@ def get_depart_image_numbers_vlm(folder: str | pathlib.Path) -> dict[str, int]:
 
 
 if __name__ == "__main__":
-    column_names = ["VLM CKPT1", "VLM CKPT2", "VLM ALL", "NEW 0407", "EXPECTED"]
+    new_data_col_name = "NEW 0407"
+    column_names = ["gov checked", "uploaded not QA", new_data_col_name, "TOTAL"]
     row_names = DEPARTS_EN + ["total"]
     df = pd.DataFrame(0, index=row_names, columns=column_names)
-    vlm_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand"
+    vlm_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/gov0415"
     vlm_2_handed_fodlers = [
         "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Water_Resources/20250213/Water_Resources_20250213_curated_t1",
         "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Transportation/20250115/Transportation_20250115_curated_t4"
     ]
     vlm_2_handed_fodlers = [pathlib.Path(x) for x in vlm_2_handed_fodlers]
     vlm_2_to_1_names = [x.name for x in vlm_2_handed_fodlers]
-    vlm_1_folders = find_depth3_subfolders(vlm_root)
-    vlm_1_folders = [x for x in vlm_1_folders if x not in vlm_2_handed_fodlers]
-    vlm_2_folders = VLM_CKPT2_FOLDERS
-    vlm_2_folders = [x for x in vlm_2_folders if x.name not in vlm_2_to_1_names]
-    vlm_2_folders = vlm_2_folders + vlm_2_handed_fodlers
+    qa_and_gov_folders = find_depth3_subfolders(vlm_root)
+    print(f"{len(qa_and_gov_folders)=}")
+    uploaded_not_qa_folders = VLM_CKPT2_FOLDERS
+    uploaded_not_qa_folders = [x for x in uploaded_not_qa_folders if x.name not in vlm_2_to_1_names]
+    import ipdb; ipdb.set_trace()
 
     # for folder in VLM_ADDDED_0407_FOLDERS[:-1]:
     name_to_list = {
-        "NEW 0407": VLM_ADDDED_0407_FOLDERS,
-        "VLM CKPT1": vlm_1_folders,
-        "VLM CKPT2": vlm_2_folders,
+        new_data_col_name: VLM_ADDDED_0407_FOLDERS,
+        "gov checked": qa_and_gov_folders,
+        "uploaded not QA": uploaded_not_qa_folders,
     }
     for name, folder_list in tqdm.tqdm(name_to_list.items()):
         for folder in tqdm.tqdm(folder_list):
             depart, image_number = get_depart_image_numbers_vlm(folder)
             df.loc[depart, name] += image_number
 
-    df["VLM ALL"] = df["VLM CKPT1"] + df["VLM CKPT2"]
-    df["EXPECTED"] = df["VLM ALL"] + df["NEW 0407"]
+    df["TOTAL"] = df["gov checked"] + df["uploaded not QA"] + df[new_data_col_name]
 
     df.loc["total"] = df.sum(axis=0)
-    print(df.map(lambda x: f"{x:,}"))
+
+    df_formatted = df.map(lambda x: f"{x:,}")
+    df_formatted = df_formatted.rename_axis('depart', axis='columns')
+    print(df_formatted)
 
     import ipdb; ipdb.set_trace()
