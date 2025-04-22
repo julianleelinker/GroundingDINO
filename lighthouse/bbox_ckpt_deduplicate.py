@@ -6,10 +6,55 @@ from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
 import shutil
 
 
-output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand-0422"
-slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices-0422"
+vlm_json = "/mnt/data-home/mobility-multimodal/vlm-annotations/ckpt1_ckpt2_image_list.json"
+vlm_de_json = "/mnt/data-home/chungan/curation/checkpoint_1_and_2_image_list_keep_0.95.json"
+
+acd_json = "/mnt/data-home/mobility-multimodal/gdino-coco/acd_ckpt1_image_list.json"
+acd_de_json = "/mnt/data-home/chungan/acd_ckpt1_image_list_keep_0.95.json"
+
+with open(acd_json, 'r') as f:
+    acd_list = json.load(f)
+
+
+with open(acd_de_json, 'r') as f:
+    acd_de_list = json.load(f)
+
+acd_de_dict = defaultdict(list)
+for x in acd_de_list:
+    acd_de_dict[pathlib.Path(x).name].append(x)
+for key, value in acd_de_dict.items():
+    if len(value) > 1:
+        print(key, value)
+
+# with open(vlm_de_json, 'r') as f:
+#     vlm_de_list = json.load(f)
+
+# vlm_de_dict = defaultdict(list)
+# for x in vlm_de_list:
+#     vlm_de_dict[pathlib.Path(x).name].append(x)
+# for key, value in vlm_de_dict.items():
+#     if len(value) > 1:
+        # print(key, value)
+
+
+
+# load anno, iterated over all images and annos
+    # find orginal image path, check if its in de_list, if not do nothing
+    # if anno not exist, do nothing
+    # copy image to new folder, 
+    # if new_anno exist, append anno to new_anno
+    # else create new_anno
+    # save new anno to new folder
+    # update number
+
+
+output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand"
+slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices"
 slice_folder_list = pathlib.Path(slice_root).glob("*")
 slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
+# slice_folder_list = slice_folder_list[:1]
+print(str(slice_folder_list[0]))
+exit(0)
 
 accumulate_count = 0
 new_anno_list_dict = {}
@@ -37,12 +82,26 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
 
     orginal_number = len(image_list)
     image_qa_id_set = {x['image_id'] for x in anno_annos}
-    image_final_id_set = image_qa_id_set 
+    image_keep_id_set = {x['id'] for x in image_annos if x['file_name'] in acd_de_dict}
+    image_final_id_set = image_qa_id_set & image_keep_id_set
     image_final_id_map = {x: i for i, x in enumerate(image_final_id_set)}
     count["orginal"] += orginal_number
     count["qa"] += len(image_qa_id_set)
-    # count["deduplicated"] += len(image_keep_id_set)
+    count["deduplicated"] += len(image_keep_id_set)
     count["final"] += len(image_final_id_set)
+
+    # image_new_annos = []
+    # anno_new_annos = []
+    # for x in image_annos:
+    #     if x['id'] not in image_final_id_set:
+    #         continue
+    #     x['id'] = image_final_id_map[x['id']]
+    #     image_new_annos.append(x)
+    # for x in anno_annos:
+    #     if x['image_id'] not in image_final_id_set:
+    #         continue
+    #     x['image_id'] = image_final_id_map[x['image_id']]
+    #     anno_new_annos.append(x)
 
     image_new_annos = [x for x in image_annos if x['id'] in image_final_id_set]
     anno_new_annos = [x for x in anno_annos if x['image_id'] in image_final_id_set]
@@ -51,11 +110,8 @@ for slice_folder in tqdm.tqdm(slice_folder_list):
     for x in anno_new_annos:
         x['image_id'] = image_final_id_map[x['image_id']]
 
-    
-
     for image in tqdm.tqdm(image_new_annos):
-        # org_image_path = acd_de_dict[image['file_name']][0]
-        import ipdb; ipdb.set_trace()
+        org_image_path = acd_de_dict[image['file_name']][0]
         dst_image_path = pathlib.Path(org_image_path.replace('/mnt/lighthouseACD/ACD-gdino-COCO', output_root))
         dst_image_path.parent.mkdir(parents=True, exist_ok=True)
         if not dry_run:

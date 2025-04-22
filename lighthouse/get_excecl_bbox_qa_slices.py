@@ -6,7 +6,7 @@ import fire
 from dataverse_sdk import *
 from dataverse_sdk.connections import get_connection
 from export_project_dataslices import export_dataslice_to_local
-from common import DATAVERSE_PASSWORD, DATAVERSE_LVM300K_PROJECT_ID, DATAVERSE_CURATION_HOST, DATAVERSE_EMAIL, DATAVERSE_SERVICE_ID_QA
+from common import DATAVERSE_PASSWORD, DATAVERSE_LVM300K_PROJECT_ID, DATAVERSE_CURATION_HOST, DATAVERSE_EMAIL, DATAVERSE_SERVICE_ID_QA, get_depart
 
 
 def get_new_data_slices_set(new_excel_path, old_excel_path=None):
@@ -24,8 +24,9 @@ def get_new_data_slices_set(new_excel_path, old_excel_path=None):
 
     filtered_df = df[df["QA完成"].isin(["V", "v"])]
     filtered_df = filtered_df[filtered_df["data slice 名稱"].isin(old_slices) == False]
-    new_slices_set = set(filtered_df["data slice 名稱"])
-    return new_slices_set
+    # new_slices_to_name = set(filtered_df["data slice 名稱"])
+    new_slices_to_name = dict(zip(filtered_df["data slice 名稱"], filtered_df["dataset"]))
+    return new_slices_to_name
 
 
 def main(new_excel, save_root, old_excel=None):
@@ -41,11 +42,14 @@ def main(new_excel, save_root, old_excel=None):
     # projects = client.list_projects(current_user = False,)
     lvm300k_slices = client.list_dataslices(project_id=DATAVERSE_LVM300K_PROJECT_ID, client_alias=client.alias)
 
-    new_slices_set = get_new_data_slices_set(new_excel_path=new_excel, old_excel_path=old_excel)
-    new_slices = [x for x in lvm300k_slices if x["name"] in new_slices_set]
+    new_slices_to_name = get_new_data_slices_set(new_excel_path=new_excel, old_excel_path=old_excel)
+    new_slices = [x for x in lvm300k_slices if x["name"] in new_slices_to_name]
     for dataslice in tqdm.tqdm(new_slices, total=len(new_slices)):
         dataslice_id = dataslice['id']
-        target_folder = f"{save_root}/{dataslice['name']}"
+        dataset_name = new_slices_to_name[dataslice["name"]]
+        depart = get_depart(dataset_name, chin=True)
+        folder_name = f"{depart}_{('_').join(dataset_name.split('_')[2:])}"
+        target_folder = f"{save_root}/{folder_name}"
         pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)
         os.chmod(target_folder, 0o777) 
         export_dataslice_to_local(

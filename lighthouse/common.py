@@ -200,10 +200,11 @@ for folder in DINO_COCO_RUNNING_FOLDERS:
     DINO_COCO_RUNNING_SPLITS.extend(split_list)
 
 
-def get_depart(path: str | pathlib.Path, ch: bool=False) -> str | None:
+def get_depart(path: str | pathlib.Path, chout: bool=False, chin: bool=False) -> str | None:
     for depart, (depart_en, depart_ch) in DEPART_MAP.items():
-        if depart in str(path):
-            if ch:
+        depart_check = depart_ch if chin else depart
+        if depart_check in str(path):
+            if chout:
                 return depart_ch
             return depart_en
     return None
@@ -214,7 +215,7 @@ def get_depart_date(path: str | pathlib.Path, ch: bool=False) -> tuple[str | Non
     date = str(path).split(f"{depart}_")[1]
     if not ch:
         return depart, date
-    return get_depart(path, ch=True), date
+    return get_depart(path, chout=True), date
 
 
 def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
