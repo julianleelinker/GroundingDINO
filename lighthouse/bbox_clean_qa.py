@@ -8,8 +8,8 @@ from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
 
 
 def main(slice_root, output_root, actuall_run=False):
-    # output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand-0422"
-    # slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices-0422"
+    # output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422"
+    # slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices0422"
     slice_folder_list = pathlib.Path(slice_root).glob("*/*")
     slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
 
@@ -55,6 +55,7 @@ def main(slice_root, output_root, actuall_run=False):
         if actuall_run:
             new_folder = output_root / slice_folder.relative_to(slice_root)
             new_folder.mkdir(parents=True, exist_ok=True)
+            (new_folder / "done").touch()
             (new_folder / "images").mkdir(parents=True, exist_ok=True)
             (new_folder / "annotations").mkdir(parents=True, exist_ok=True)
             os.chmod(new_folder, 0o777)
