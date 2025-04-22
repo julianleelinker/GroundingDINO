@@ -74,13 +74,12 @@ def main(conda_env, prefix):
     # for file_folder in DINO_COCO_RUNNING_FOLDERS:
     #     file_path_list.extend(list(pathlib.Path(file_folder).glob("split*")))
 
-    file_path_list = file_path_list[:1]
+    # file_path_list = file_path_list[:1]
     while True:
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
             print(f"dataset number {i}")
             depart, split = get_depart_date(file_path, ch=True)
             dataset_name = f"{prefix}_{depart}_{split}"
-            import ipdb; ipdb.set_trace()
 
             # for checkpoint
             # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
