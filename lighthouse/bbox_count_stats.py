@@ -4,54 +4,66 @@ import json
 from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS, DINO_COCO_RUNNING_SPLITS
 
 
-data_root_map = {
+def get_split_name(folder):
+    return ('/').join(str(folder).split('/')[-2:])
+
+
+uploaded_root_to_pattern = {
     "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated": "*/*",
     "/mnt/data-home/mobility-multimodal/revised_bbox/datasets": "*/*",
     "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate": "*",
 }
+qa_root, qa_pattern = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422/", "*/*"
 
-data_name_map = {
-    "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated": "deduplicated",
-    "/mnt/data-home/mobility-multimodal/revised_bbox/datasets": "datasets",
-    "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate": "trans_250115",
-}
-
-column_names = ["deduplicated", "datasets", "trans_250115", "bbox all", "new data", "result"]
+column_names = ["uploaded not QA", "uploaded done QA", "uploaded pass QA", "new json", "new infered"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
-
-print(f"{len(DINO_COCO_RUNNING_SPLITS)=}")
-for folder in DINO_COCO_RUNNING_SPLITS:
-    if (folder / "done").exists() and (folder / "uploaded").exists():
-        df.loc[get_depart(folder), "result"] += len(list((folder / "images").glob("*")))
-
-
-all_uploaded_folders = []
-for data_root, pattern in data_root_map.items():
+# check all uploaded stats
+prev_uploaded_folders = []
+for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
-    data_name = data_name_map[data_root]
-    all_uploaded_folders.extend(folder_list)
+    prev_uploaded_folders.extend(folder_list)
+
+qa_passed_folder_list = list(pathlib.Path(qa_root).glob(qa_pattern))
+qa_passed_folder_set = [get_split_name(x) for x in qa_passed_folder_list]
+
+unqa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in qa_passed_folder_set]
+qa_done_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in qa_passed_folder_set]
+col_name_to_folder_list = {
+    "uploaded not QA": unqa_folder_list,
+    "uploaded pass QA": qa_passed_folder_list,
+    "uploaded done QA": qa_done_folder_list,
+}
+
+for col_name, folder_list in col_name_to_folder_list.items():
     for folder in folder_list:
         image_list = list((folder/"images").glob("*"))
-        df.loc[get_depart(folder), data_name] += len(image_list)
+        df.loc[get_depart(folder), col_name] += len(image_list)
 
-df["bbox all"] = df["deduplicated"] + df["datasets"] + df["trans_250115"]
-
-
+# check newly add stats
 all_json_path = AUGMENTED_CURATED_RUNNING_JSONS
 for json_path in all_json_path:
     with open(json_path, 'r') as f:
         image_list = json.load(f)
-    if get_depart(json_path) == "Transportation":
-        print(json_path, len(image_list))
-    df.loc[get_depart(json_path), 'new data'] += len(image_list)
+    df.loc[get_depart(json_path), 'new json'] += len(image_list)
 
-df["total"] = df["bbox all"] + df["result"]
+# import ipdb; ipdb.set_trace()
+
+# check recent running stats
+print(f"{len(DINO_COCO_RUNNING_SPLITS)=}")
+for folder in DINO_COCO_RUNNING_SPLITS:
+    if (folder / "done").exists() and (folder / "uploaded").exists():
+        df.loc[get_depart(folder), "new infered"] += len(list((folder / "images").glob("*")))
 
 
+df["total"] = df["uploaded not QA"] + df["uploaded pass QA"] + df["new infered"]
 df.loc["total"] = df.sum(axis=0)
+
 df_formatted = df.map(lambda x: f"{x:,}")
+df_formatted = df_formatted.rename_axis('depart', axis='columns')
 print(df_formatted)
+df_showed = df_formatted[["uploaded not QA", "uploaded done QA", "uploaded pass QA", "new infered", "total"]]
+print(df_showed)
 
 import ipdb; ipdb.set_trace()
