@@ -47,7 +47,7 @@ def main(new_excel, save_root, old_excel=None):
     for dataslice in tqdm.tqdm(new_slices, total=len(new_slices)):
         dataslice_id = dataslice['id']
         dataset_name = new_slices_to_name[dataslice["name"]]
-        depart = get_depart(dataset_name, chin=True)
+        depart = get_depart(dataset_name)
         folder_name = f"{depart}_{('_').join(dataset_name.split('_')[2:])}"
         target_folder = f"{save_root}/{folder_name}"
         pathlib.Path(target_folder).mkdir(parents=True, exist_ok=True)

@@ -202,8 +202,7 @@ for folder in DINO_COCO_RUNNING_FOLDERS:
 
 def get_depart(path: str | pathlib.Path, chout: bool=False, chin: bool=False) -> str | None:
     for depart, (depart_en, depart_ch) in DEPART_MAP.items():
-        depart_check = depart_ch if chin else depart
-        if depart_check in str(path):
+        if (depart in str(path)) or (depart_ch in str(path)):
             if chout:
                 return depart_ch
             return depart_en
@@ -357,6 +356,7 @@ def save_stats_fwf(df, numeric_cols, save_name):
 
 
 if __name__ == "__main__":
+    import ipdb; ipdb.set_trace()
     json_path = "/mnt/data-home/mobility-multimodal/data-curation/China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json"
     dst_root = "/mnt/data-home/julian"
     dst_path = pathlib.Path(dst_root) / pathlib.Path(json_path).stem 
