@@ -13,7 +13,10 @@ uploaded_root_to_pattern = {
     "/mnt/data-home/mobility-multimodal/revised_bbox/datasets": "*/*",
     "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate": "*",
 }
-qa_root, qa_pattern = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422/", "*/*"
+qa_root_to_pattern = { 
+    "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422/": "*/*",
+    "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423/": "*/*",
+}
 
 column_names = ["uploaded not QA", "uploaded done QA", "uploaded pass QA", "new json", "new infered"]
 row_names = DEPARTS_EN + ["total"]
@@ -25,11 +28,28 @@ for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     prev_uploaded_folders.extend(folder_list)
 
-qa_passed_folder_list = list(pathlib.Path(qa_root).glob(qa_pattern))
-qa_passed_folder_set = [get_split_name(x) for x in qa_passed_folder_list]
+qa_passed_folder_list = []
+for data_root, pattern in qa_root_to_pattern.items():
+    folder_list = list(pathlib.Path(data_root).glob(pattern))
+    qa_passed_folder_list.extend(folder_list)
+qa_done_split_set = {get_split_name(x) for x in qa_passed_folder_list}
+print(f"{len(qa_passed_folder_list)=}")
+print(f"{len(qa_done_split_set)=}")
 
-unqa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in qa_passed_folder_set]
-qa_done_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in qa_passed_folder_set]
+print(f"{len(prev_uploaded_folders)=}")
+unqa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in qa_done_split_set]
+print(f"{len(unqa_folder_list)=}")
+qa_done_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in qa_done_split_set]
+# tmp = {}
+# for x in prev_uploaded_folders:
+#     if get_split_name(x) in qa_done_split_set:
+#         if get_split_name(x) in tmp:
+#             print(tmp[get_split_name(x)])
+#             print(x)
+#         else:
+#             tmp[get_split_name(x)] = x
+print(f"{len(qa_done_folder_list)=}")
+import ipdb; ipdb.set_trace()
 col_name_to_folder_list = {
     "uploaded not QA": unqa_folder_list,
     "uploaded pass QA": qa_passed_folder_list,

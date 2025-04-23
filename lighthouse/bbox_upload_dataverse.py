@@ -59,7 +59,8 @@ def main(conda_env, prefix):
     # coco_root = '/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand'
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/datasets"
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated"
-    coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422"
+    # coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422"
+    coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423"
     file_path_list =[
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Transportation_20250109_image_list_keep_0.95/split15_0.30_0.35",
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split30_0.30_0.35",
