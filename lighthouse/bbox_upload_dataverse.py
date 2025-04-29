@@ -60,7 +60,8 @@ def main(conda_env, prefix):
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/datasets"
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated"
     # coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422"
-    coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423"
+    # coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423"
+    coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0428"
     file_path_list =[
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Transportation_20250109_image_list_keep_0.95/split15_0.30_0.35",
         # "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand/Public_Works_20241230_image_list_keep_0.95/split30_0.30_0.35",
@@ -76,6 +77,7 @@ def main(conda_env, prefix):
     #     file_path_list.extend(list(pathlib.Path(file_folder).glob("split*")))
 
     # file_path_list = file_path_list[:1]
+    import ipdb; ipdb.set_trace()
     while True:
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
             print(f"dataset number {i}")

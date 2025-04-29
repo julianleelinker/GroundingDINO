@@ -1,7 +1,7 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS, DINO_COCO_RUNNING_SPLITS
+from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS, DINO_COCO_SPLITS_0418
 
 
 def get_split_name(folder):
@@ -16,14 +16,16 @@ uploaded_root_to_pattern = {
 qa_root_to_pattern = { 
     "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422/": "*/*",
     "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423/": "*/*",
+    "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0428/": "*/*",
 }
 
-column_names = ["uploaded not QA", "uploaded done QA", "uploaded pass QA", "new json", "new infered"]
+column_names = ["not QA", "done QA", "pass QA", "new json", "new infered"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
 # check all uploaded stats
-prev_uploaded_folders = []
+prev_uploaded_folders = \
+    DINO_COCO_SPLITS_0418
 for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     prev_uploaded_folders.extend(folder_list)
@@ -32,28 +34,25 @@ qa_passed_folder_list = []
 for data_root, pattern in qa_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     qa_passed_folder_list.extend(folder_list)
-qa_done_split_set = {get_split_name(x) for x in qa_passed_folder_list}
+qa_passed_split_set = {get_split_name(x) for x in qa_passed_folder_list}
 print(f"{len(qa_passed_folder_list)=}")
-print(f"{len(qa_done_split_set)=}")
+print(f"{len(qa_passed_split_set)=}")
 
+not_qa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in qa_passed_split_set]
+done_qa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in qa_passed_split_set]
 print(f"{len(prev_uploaded_folders)=}")
-unqa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in qa_done_split_set]
-print(f"{len(unqa_folder_list)=}")
-qa_done_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in qa_done_split_set]
-# tmp = {}
-# for x in prev_uploaded_folders:
-#     if get_split_name(x) in qa_done_split_set:
-#         if get_split_name(x) in tmp:
-#             print(tmp[get_split_name(x)])
-#             print(x)
-#         else:
-#             tmp[get_split_name(x)] = x
-print(f"{len(qa_done_folder_list)=}")
+print(f"{len(not_qa_folder_list)=}")
+print(f"{len(done_qa_folder_list)=}")
+
+
+for x in qa_passed_folder_list:
+    if not any(get_split_name(x) in str(s) for s in prev_uploaded_folders):
+        print(x)
 import ipdb; ipdb.set_trace()
 col_name_to_folder_list = {
-    "uploaded not QA": unqa_folder_list,
-    "uploaded pass QA": qa_passed_folder_list,
-    "uploaded done QA": qa_done_folder_list,
+    "not QA": not_qa_folder_list,
+    "pass QA": qa_passed_folder_list,
+    "done QA": done_qa_folder_list,
 }
 
 for col_name, folder_list in col_name_to_folder_list.items():
@@ -71,19 +70,20 @@ for json_path in all_json_path:
 # import ipdb; ipdb.set_trace()
 
 # check recent running stats
-print(f"{len(DINO_COCO_RUNNING_SPLITS)=}")
-for folder in DINO_COCO_RUNNING_SPLITS:
+new_infer_folders = []
+print(f"{len(new_infer_folders)=}")
+for folder in new_infer_folders:
     if (folder / "done").exists() and (folder / "uploaded").exists():
         df.loc[get_depart(folder), "new infered"] += len(list((folder / "images").glob("*")))
 
 
-df["total"] = df["uploaded not QA"] + df["uploaded pass QA"] + df["new infered"]
+df["total"] = df["not QA"] + df["pass QA"] + df["new infered"]
 df.loc["total"] = df.sum(axis=0)
 
 df_formatted = df.map(lambda x: f"{x:,}")
 df_formatted = df_formatted.rename_axis('depart', axis='columns')
 print(df_formatted)
-df_showed = df_formatted[["uploaded not QA", "uploaded done QA", "uploaded pass QA", "new infered", "total"]]
+df_showed = df_formatted[["not QA", "done QA", "pass QA", "new infered", "total"]]
 print(df_showed)
 
 import ipdb; ipdb.set_trace()
