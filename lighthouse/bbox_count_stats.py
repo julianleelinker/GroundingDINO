@@ -1,12 +1,17 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_JSONS_0418, DINO_COCO_SPLITS_0418
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, AUGMENTED_CURATED_EXCLUDED_JSONS
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
+new_infer_folders = []
+new_json_list = []
+new_json_list = [path for path in pathlib.Path(DATA_CURATION_ROOT).rglob('*image_list_keep*') if path.is_file()]
+new_json_list = [x for x in new_json_list if x not in AUGMENTED_CURATED_EXCLUDED_JSONS]
+new_json_list = [x for x in new_json_list if get_depart(x) is not None]
 
 uploaded_root_to_pattern = {
     "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated": "*/*",
@@ -61,16 +66,15 @@ for col_name, folder_list in col_name_to_folder_list.items():
         df.loc[get_depart(folder), col_name] += len(image_list)
 
 # check newly add stats
-all_json_path = AUGMENTED_CURATED_JSONS_0418
-for json_path in all_json_path:
+for json_path in new_json_list:
     with open(json_path, 'r') as f:
         image_list = json.load(f)
+    print(get_depart(json_path))
     df.loc[get_depart(json_path), 'new json'] += len(image_list)
 
 # import ipdb; ipdb.set_trace()
 
 # check recent running stats
-new_infer_folders = []
 print(f"{len(new_infer_folders)=}")
 for folder in new_infer_folders:
     if (folder / "done").exists() and (folder / "uploaded").exists():
