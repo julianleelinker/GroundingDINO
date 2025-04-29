@@ -174,7 +174,7 @@ AUGMENTED_CURATED_EXCLUDED_JSONS = {
     "Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json",
 }
 AUGMENTED_CURATED_EXCLUDED_JSONS = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_EXCLUDED_JSONS}
-AUGMENTED_CURATED_RUNNING_JSONS = {
+AUGMENTED_CURATED_JSONS_0418 = {
     # running 250411
     "Water_Resources/20250324/Water_Resources_20250324_image_list_keep_0.95.json",
     "Water_Resources/20250213/Water_Resources_20250213_image_list_keep_0.95.json",
@@ -187,17 +187,19 @@ AUGMENTED_CURATED_RUNNING_JSONS = {
     "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95.json",
     "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json",
 }
-AUGMENTED_CURATED_RUNNING_JSONS = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_RUNNING_JSONS}
-AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS | AUGMENTED_CURATED_RUNNING_JSONS
-DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
-DINO_COCO_RUNNING_FOLDERS =[
-   pathlib.Path(DINO_COCO_TARGET_ROOT_NEW) / pathlib.Path(x).stem for x in AUGMENTED_CURATED_RUNNING_JSONS
-]
+AUGMENTED_CURATED_JSONS_0418 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0418}
 DINO_COCO_SPLITS_0418 = []
-for folder in DINO_COCO_RUNNING_FOLDERS:
+DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
+DINO_COCO_FOLDERS_0418 =[
+   pathlib.Path(DINO_COCO_TARGET_ROOT_NEW) / pathlib.Path(x).stem for x in AUGMENTED_CURATED_JSONS_0418
+]
+for folder in DINO_COCO_FOLDERS_0418:
     if folder.is_dir():
         split_list = list(folder.glob("split*"))
     DINO_COCO_SPLITS_0418.extend(split_list)
+
+AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS \
+    | AUGMENTED_CURATED_JSONS_0418
 
 
 def get_depart(path: str | pathlib.Path, chout: bool=False, chin: bool=False) -> str | None:

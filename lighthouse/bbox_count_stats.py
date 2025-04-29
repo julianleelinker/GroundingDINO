@@ -1,7 +1,7 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_RUNNING_JSONS, DINO_COCO_SPLITS_0418
+from common import get_depart, DEPARTS_EN, AUGMENTED_CURATED_JSONS_0418, DINO_COCO_SPLITS_0418
 
 
 def get_split_name(folder):
@@ -61,7 +61,7 @@ for col_name, folder_list in col_name_to_folder_list.items():
         df.loc[get_depart(folder), col_name] += len(image_list)
 
 # check newly add stats
-all_json_path = AUGMENTED_CURATED_RUNNING_JSONS
+all_json_path = AUGMENTED_CURATED_JSONS_0418
 for json_path in all_json_path:
     with open(json_path, 'r') as f:
         image_list = json.load(f)

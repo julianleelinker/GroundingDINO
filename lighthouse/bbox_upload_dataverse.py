@@ -4,7 +4,7 @@ import subprocess
 import os
 import tqdm
 import fire
-from common import get_depart_date, DINO_COCO_RUNNING_FOLDERS, DATAVERSE_PASSWORD
+from common import get_depart_date, DINO_COCO_FOLDERS_0418, DATAVERSE_PASSWORD
 
 
 def execute(data_path, command):
@@ -72,10 +72,6 @@ def main(conda_env, prefix):
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Mass_Rapid_Transit_20250213_image_list_keep_0.95/split1_0.30_0.35"
     ]
     
-    # file_path_list = []
-    # for file_folder in DINO_COCO_RUNNING_FOLDERS:
-    #     file_path_list.extend(list(pathlib.Path(file_folder).glob("split*")))
-
     # file_path_list = file_path_list[:1]
     import ipdb; ipdb.set_trace()
     while True:
