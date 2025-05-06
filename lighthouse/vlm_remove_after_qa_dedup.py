@@ -3,7 +3,6 @@ import pathlib
 import tqdm
 import json
 from collections import defaultdict
-from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
 import shutil
 import fire
 

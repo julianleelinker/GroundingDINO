@@ -1,6 +1,6 @@
 import pathlib
 import json
-from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
+from common import VLM_CKPT1_FOLDERS
 
 
 folder_list = VLM_CKPT1_FOLDERS

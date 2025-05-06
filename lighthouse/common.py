@@ -79,6 +79,8 @@ VLM_CKPT1_FOLDERS = [
     "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split1",
     "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split2",
     "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t17_split3",
+    "Water_Resources/20250213/Water_Resources_20250213_curated_t1",
+    "Transportation/20250115/Transportation_20250115_curated_t4", 
 ]
 VLM_CKPT1_FOLDERS = [pathlib.Path(f"{VLM_ANNOTATION_ROOT}/{folder}") for folder in VLM_CKPT1_FOLDERS]
 VLM_CKPT1_FOLDERS.extend(CKPT1_LINKER_FOLDERS)
@@ -90,8 +92,6 @@ VLM_CKPT2_FOLDERS = [
     "Public_Works/20250206/Public_Works_20250206_curated_t4",
     ### re running gpt
     "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95",
-    "Water_Resources/20250213/Water_Resources_20250213_curated_t1",
-    "Transportation/20250115/Transportation_20250115_curated_t4", 
     ###
     "Ports_Corporation/20250124/Ports_Corporation_20250124_curated_t14",
     "Linker_Vision_Data_V3/Linker_Vision_Data_V3_curated_t6_new",

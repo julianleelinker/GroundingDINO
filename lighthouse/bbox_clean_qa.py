@@ -4,7 +4,6 @@ import tqdm
 import json
 import fire
 import shutil
-from common import VLM_CKPT1_FOLDERS, VLM_CKPT2_FOLDERS
 
 
 def main(slice_root, output_root, actuall_run=False):
