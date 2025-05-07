@@ -1,13 +1,13 @@
 import pathlib
 import subprocess
 import fire
-from common import DEPART_MAP, VLM_ANNOTATION_ROOT, DATAVERSE_PASSWORD, DATAVERSE_CKPT1_PROJECT_ID, DATAVERSE_CKPT2_PROJECT_ID, VLM_ADDDED_0407_FOLDERS, DATAVERSE_SERVICE_ID_QA, DATAVERSE_SERVICE_ID_HAND
+from common import DATAVERSE_PASSWORD, DATAVERSE_CKPT2_PROJECT_ID, DATAVERSE_SERVICE_ID_HAND, DATAVERSE_VLM_HAND_PROJECT_ID
 from common import get_depart_date
 
 
 def main(folder, prefix):
     service_id = DATAVERSE_SERVICE_ID_HAND
-    project_id = DATAVERSE_CKPT2_PROJECT_ID
+    project_id = DATAVERSE_VLM_HAND_PROJECT_ID
     # folder_list = VLM_ADDDED_0407_FOLDERS
     folder_list = list(pathlib.Path(folder).glob("*"))
 
@@ -26,7 +26,7 @@ def main(folder, prefix):
         print(f"uploading data idx {data_idx}")
         print(folder)
         print(f'{dataset_name=}\n')
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
 
         # command = [
         #     "conda", "run", "-n", "dataverse-sdk", "python", "tools/import_vqa.py",
