@@ -37,7 +37,6 @@ DINO_INFER_CLASSES = [
     'pipeline',
     'road marking',
     'ruler',
-    # 'seat',
     'sidewalk',
     'smoke',
     'solar panel',
@@ -49,18 +48,32 @@ DINO_INFER_CLASSES = [
     'truck',
     'vest',
     'weapon',
+    'seat',
 ]
 
-EASY_CLASSES_LIST = [
-    'algae',
-    'drain',
-    'faregate',
-    'fire',
-    'guardrail',
-    'palanquin',
-    'solar panel',
-    'storage tank',
-    'weapon',
-]
+BOX_THRESHOLD = 0.36
+TEXT_THRESHOLD = 0.28
+medium_threshold = 0.4
+high_threshold = 0.5
+HARD_CLASSES_TO_THRESHOLD = {
+    'algae': medium_threshold,
+    'faregate': medium_threshold,
+    'fire': medium_threshold,
+    'guardrail': medium_threshold,
+    'solar panel': medium_threshold,
+    'weapon': medium_threshold,
 
-HARD_CLASSES_LIST = [ cat for cat in DINO_INFER_CLASSES if cat not in EASY_CLASSES_LIST]
+    "animal": high_threshold,
+    "junk": high_threshold,
+    "litter": high_threshold,
+    "barricade": high_threshold,
+    "parking lot": high_threshold,
+    "human": high_threshold,
+    "palanquin": high_threshold,
+    "drain": high_threshold,
+    "manhole": high_threshold,
+    "lane": high_threshold,
+    "storage tank": high_threshold,
+    "excavator": high_threshold,
+}
+

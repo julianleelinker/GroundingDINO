@@ -3,7 +3,7 @@ import time
 import pathlib
 import os
 import tqdm
-from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0418, copy_images_in_json
+from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0508, copy_images_in_json
 
 
 def get_gpu_memory(skip_gpu_list=[]):
@@ -29,32 +29,26 @@ def get_gpu_memory(skip_gpu_list=[]):
 
 
 def main():
-    json_list = AUGMENTED_CURATED_JSONS_0418
+    json_list = AUGMENTED_CURATED_JSONS_0508
 
     dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
 
     conda_env = "lighthouse"
-    # DATASET = 'Public_Works_20241230_image_list_keep_0.95'
-    # dataset_name = 'Mass_Rapid_Transit_20250213_image_list_keep_0.95'
 
     source_root = DINO_COCO_SOURCE_ROOT
     mem_thres = 4000
     wait_time = 300
-    skip_gpu_list = [0,]
+    # skip_gpu_list = [0,]
+    # skip_gpu_list = [1,2,3]
+    skip_gpu_list = []
 
     base_command = (
         "CUDA_VISIBLE_DEVICES={gpu_id} nohup conda run -n {conda_env} python lighthouse/inference_gpt_on_images_in_folder.py "
         "-c groundingdino/config/GroundingDINO_SwinT_OGC.py "
         "-p weights/groundingdino_swint_ogc.pth "
-        "-o {target_root}/{dataset} "
-        "--box_threshold 0.4 "
-        "--text_threshold 0.3 "
-        "--high_threshold 0.35 "
-        "-t 'all' "
-        "--enlarge_scale 1.4 "
-        "--ios_threshold 0.3 "
+        "-o {target_root}/{dataset}/split{i} "
         "-i {source_root}/{dataset}/split{i} "
-        "> {dataset}-{i}.log 2>&1 &"
+        "> logs/{dataset}-{i}.log 2>&1 &"
     )
 
     while True:
@@ -67,17 +61,10 @@ def main():
         dataset_list = sorted(dataset_list, key=lambda x: int(str(x).split('split')[-1]))
 
         result = get_gpu_memory(skip_gpu_list=skip_gpu_list)
-        # running_number = len(result) - len(skip_gpu_list)
-        # import ipdb; ipdb.set_trace()
         for (gpu_id, memory), data_path in zip(result.items(), dataset_list[:len(result)]):
             if gpu_id in skip_gpu_list:
                 continue
             if memory > mem_thres:
-                # dataset_list = pathlib.Path(f'{DATA_ROOT}/{dataset_name}').glob('split*')
-                # dataset_list = sorted(dataset_list, key=lambda x: int(str(x).split('split')[-1]))
-                # for data_path in dataset_list:
-                #     if not (data_path / 'runned.txt').exists():
-                #         break
                 split_index = int(str(data_path).split('split')[-1])
                 command = base_command.format(i=split_index, conda_env=conda_env, source_root=source_root, dataset=data_path.parent.name, gpu_id=gpu_id, target_root=DINO_COCO_TARGET_ROOT_NEW)
                 print(f"GPU {gpu_id} has enough memory, running inference on {data_path}")

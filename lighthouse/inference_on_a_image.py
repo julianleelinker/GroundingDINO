@@ -177,7 +177,7 @@ def infer_an_image(image_path, model, text_prompt, box_threshold, text_threshold
     return image_pil, pred_dict
 
 
-def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_span):
+def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_classes_to_threshold, token_span):
     # load image
     image_pil, image = load_image(image_path) # Uses imported load_image
 
@@ -192,9 +192,9 @@ def infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold,
         # print(scores)
         # print(pred_phrases)
         # print(boxes_filt)
-        if text_prompt in higher_class_list:
+        if text_prompt in higher_classes_to_threshold:
             for i in range(len(boxes_filt)):
-                if scores[i] > high_threshold:
+                if scores[i] > higher_classes_to_threshold[text_prompt]:
                     boxes_filt_list.append(boxes_filt[i])
                     pred_phrases_concat.append(pred_phrases[i])
         else:

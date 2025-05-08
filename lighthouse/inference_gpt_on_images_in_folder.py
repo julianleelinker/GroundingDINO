@@ -14,14 +14,14 @@ import torch
 # Import shared functions
 from inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image, infer_an_image, infer_an_image_text_list
 from chatgpt import encode_image, ask_chatgpt_describe_image, ask_chatgpt_describe_image_find_suitable_answer, convert_pil_to_base64, generate_vlm_pretraining_annotation
-from infer_settings import AZURE_OPENAI_API_KEY, DINO_INFER_CLASSES, EASY_CLASSES_LIST, HARD_CLASSES_LIST
+from infer_settings import AZURE_OPENAI_API_KEY, DINO_INFER_CLASSES, HARD_CLASSES_TO_THRESHOLD, BOX_THRESHOLD, TEXT_THRESHOLD
 from box_utils import xywh_to_xyxy, fix_boundary, merge_by_ios
 
 
 FULL_IMAGE_PROMPT = 'Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.'
 
 
-def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans, output_root_dir):
+def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_prompt_list, box_threshold, text_threshold, hard_classes_to_threshold, token_spans, output_root_dir):
     coco_anno = {
         "images": [],
         "annotations": [],
@@ -54,7 +54,7 @@ def infer_images_text_list_save_gdino_coco_result(image_path_list, model, text_p
     for path_id, image_path in enumerate(image_path_list):
         image_id = path_id + start_image_id
         print(f'{image_id=}, {len(image_path_list)=}')
-        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, higher_class_list, high_threshold, token_spans)
+        image_pil, pred_dict = infer_an_image_text_list(image_path, model, text_prompt_list, box_threshold, text_threshold, hard_classes_to_threshold, token_spans)
         H, W = image_pil.size[1], image_pil.size[0]
         image_anno = {
             "id": image_id,
@@ -166,18 +166,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
-    parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
-    parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
-    parser.add_argument("--high_threshold", type=float, default=0.28, help="text threshold")
+    # parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
+    # parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
+    # parser.add_argument("--high_threshold", type=float, default=0.28, help="text threshold")
     parser.add_argument("--token_spans", type=str, default=None, help=
                         "The positions of start and end positions of phrases of interest. \
                         For example, a caption is 'a cat and a dog', \
                         if you would like to detect 'cat', the token_spans should be '[[[2, 5]], ]', since 'a cat and a dog'[2:5] is 'cat'. \
                         if you would like to detect 'a cat', the token_spans should be '[[[0, 1], [2, 5]], ]', since 'a cat and a dog'[0:1] is 'a', and 'a cat and a dog'[2:5] is 'cat'. \
                         ")
-    parser.add_argument("--text_prompt", "-t", type=str, required=True, help="text prompt")
-    parser.add_argument("--ios_threshold", type=float, required=True, help="box threshold")
-    parser.add_argument("--enlarge_scale", type=float, required=True, help="box threshold")
+    # parser.add_argument("--text_prompt", "-t", type=str, required=True, help="text prompt")
+    # parser.add_argument("--ios_threshold", type=float, required=True, help="box threshold")
+    # parser.add_argument("--enlarge_scale", type=float, required=True, help="box threshold")
 
     parser.add_argument("--cpu-only", action="store_true", help="running on cpu only!, default=False")
     # parser.add_argument("--prefix", type=str, default='pred', help="prefix of saved predicted filename")
@@ -188,10 +188,8 @@ if __name__ == "__main__":
     checkpoint_path = args.checkpoint_path  # change the path of the model
     image_root = args.image_path
     output_dir = args.output_dir
-    box_threshold = args.box_threshold
-    text_threshold = args.text_threshold
     token_spans = args.token_spans
-    high_threshold = args.high_threshold
+    # high_threshold = args.high_threshold
     if 'SwinB' in config_file:
         model_name = 'SwinB'
     else:
@@ -206,7 +204,7 @@ if __name__ == "__main__":
 
     # # set the text_threshold to None if token_spans is set.
     if token_spans is not None:
-        text_threshold = None
+        TEXT_THRESHOLD = None
         print("Using token_spans. Set the text_threshold to None.")
 
     print(f'{image_root=}')
@@ -219,23 +217,34 @@ if __name__ == "__main__":
         image_path_list = list(root_path.rglob("./*"))
         image_path_list = [x for x in image_path_list if x.suffix != '.txt']
         # import ipdb; ipdb.set_trace()
-        output_root_dir = pathlib.Path(output_dir).resolve() / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
+        output_root_dir = pathlib.Path(output_dir).resolve()
+
     elif root_path.suffix == '.json':
         with open(root_path, "r") as file:
             image_path_list = json.load(file)
         image_path_list = [pathlib.Path(image_path) for image_path in image_path_list]
-        output_root_dir = pathlib.Path(output_dir).resolve() / (root_path.name + f'_{args.text_threshold:3.2f}_{args.high_threshold:3.2f}')
+        output_root_dir = pathlib.Path(output_dir).resolve()
     else:
         print(f'unsupported {root_path=}')
         exit(-1)
     output_root_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
     os.chmod(output_root_dir, 0o777)
+    config_path = output_root_dir / 'config.json'
+    config_json = {
+        "box_threshold": BOX_THRESHOLD,
+        "text_threshold": TEXT_THRESHOLD,
+        "HARD_CLASSES_TO_THRESHOLD": HARD_CLASSES_TO_THRESHOLD,
+    }
+    with open(config_path, 'w') as f:
+        json.dump(config_json, f, indent=4, ensure_ascii=False)
     # print(TEXT_PROMPT_LIST)
     # infer_images_text_list_save_gpt_result(image_path_list, model, TEXT_PROMPT_LIST, box_threshold, text_threshold, HIGHER_CLASS_LIST, high_threshold, token_spans, scale=args.enlarge_scale, merge_threshold=args.ios_threshold)
     # image_path_list = image_path_list[:2]
     src_map_file = root_path / 'name_to_path.txt'
-    dst_map_file = output_root_dir / 'name_to_path.txt'
-    shutil.copy(src_map_file, dst_map_file)
-    infer_images_text_list_save_gdino_coco_result(image_path_list, model, DINO_INFER_CLASSES, box_threshold, text_threshold, HARD_CLASSES_LIST, high_threshold, token_spans, output_root_dir)
+    # check if src_map_file exists
+    if src_map_file.exists():
+        dst_map_file = output_root_dir / 'name_to_path.txt'
+        shutil.copy(src_map_file, dst_map_file)
+    infer_images_text_list_save_gdino_coco_result(image_path_list, model, DINO_INFER_CLASSES, BOX_THRESHOLD, TEXT_THRESHOLD, HARD_CLASSES_TO_THRESHOLD, token_spans, output_root_dir)
     # dino_coco_loaded = pd.read_csv(f"{DINO_COCO_ROOT}/dino_coco_stats.csv", dtype=STATS_COLUMN_DTYPES)
 
