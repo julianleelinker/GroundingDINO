@@ -173,6 +173,7 @@ AUGMENTED_CURATED_EXCLUDED_JSONS = {
     "Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95_full.json",
     "Linker_Vision_Data_V2/linker_4M_image_list_keep_0.95_deprecated.json",
     "Kaohsiung_Data_V2/Kaohsiung_Data_V2_image_list_keep_0.95.json",
+    "Water_Resources/20250106/Water_Resources_20250106_image_list_keep_0.95_rededuplicate_new.json",
 }
 AUGMENTED_CURATED_EXCLUDED_JSONS = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_EXCLUDED_JSONS}
 AUGMENTED_CURATED_JSONS_0418 = {
@@ -187,6 +188,14 @@ AUGMENTED_CURATED_JSONS_0418 = {
     "Sports_Development/20250226/Sports_Development_20250226_image_list_keep_0.95.json",
     "Sports_Development/20250213/Sports_Development_20250213_image_list_keep_0.95.json",
     "China_Steel/20250226/China_Steel_20250226_image_list_keep_0.95.json",
+}
+AUGMENTED_CURATED_JSONS_0508 = {
+    "Public_Works/20250319/Public_Works_20250319_image_list_keep_0.95.json",
+    "Transportation/20250319/Transportation_20250319_image_list_keep_0.95.json",
+    "Mass_Rapid_Transit/20250402/Mass_Rapid_Transit_20250402_image_list_keep_0.95.json",
+}
+AUGMENTED_CURATED_JSONS_0509 = {
+    "Public_Works/20250206/Public_Works_20250206_image_list_keep_0.95.json",
 }
 AUGMENTED_CURATED_JSONS_0418 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0418}
 DINO_COCO_SPLITS_0418 = []
