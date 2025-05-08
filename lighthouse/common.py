@@ -210,13 +210,15 @@ def get_dino_coco_folders_and_splits(dino_coco_target_root, augmented_curated_js
     for folder in dino_coco_folders:
         if folder.is_dir():
             split_list = list(folder.glob("split*"))
-            print(f"{len(split_list)=}")
             dino_coco_splits.extend(split_list)
     return dino_coco_folders, dino_coco_splits
 
 DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0418 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0418)
 DINO_COCO_FOLDERS_0508, DINO_COCO_SPLITS_0508 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0508)
 DINO_COCO_FOLDERS_0509, DINO_COCO_SPLITS_0509 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0509)
+
+
+# import ipdb; ipdb.set_trace()
 # DINO_COCO_FOLDERS_0418 =[
 #    pathlib.Path(DINO_COCO_TARGET_ROOT_NEW) / pathlib.Path(x).stem for x in AUGMENTED_CURATED_JSONS_0418
 # ]

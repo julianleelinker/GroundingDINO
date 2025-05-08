@@ -1,13 +1,16 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_FOLDERS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
+import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
 new_infer_folders = DINO_COCO_FOLDERS_0508
+# new_infer_folders = DINO_COCO_SPLITS_0418
+print(f"{len(new_infer_folders)=}")
 new_json_list = []
 new_json_list = [path for path in pathlib.Path(DATA_CURATION_ROOT).rglob('*image_list_keep*') if path.is_file()]
 new_json_list = [x for x in new_json_list if x not in AUGMENTED_CURATED_EXCLUDED_JSONS]
@@ -24,13 +27,14 @@ qa_root_to_pattern = {
     "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0428/": "*/*",
 }
 
-column_names = ["not QA", "done QA", "pass QA", "new json", "new infered"]
+column_names = ["not QA", "done QA", "pass QA", "new json", "new infered done", "new infered uploaded"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
 # check all uploaded stats
-prev_uploaded_folders = \
-    DINO_COCO_SPLITS_0418
+prev_uploaded_folders = copy.deepcopy(
+    DINO_COCO_FOLDERS_0418
+)
 for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     prev_uploaded_folders.extend(folder_list)
@@ -50,9 +54,9 @@ print(f"{len(not_qa_folder_list)=}")
 print(f"{len(done_qa_folder_list)=}")
 
 
-for x in qa_passed_folder_list:
-    if not any(get_split_name(x) in str(s) for s in prev_uploaded_folders):
-        print(x)
+# for x in qa_passed_folder_list:
+#     if not any(get_split_name(x) in str(s) for s in prev_uploaded_folders):
+#         print(x)
 # import ipdb; ipdb.set_trace()
 col_name_to_folder_list = {
     "not QA": not_qa_folder_list,
@@ -68,6 +72,13 @@ for json_path in new_json_list:
     print(json_path)
     print(f"{len(image_list)=}\n")
     df.loc[get_depart(json_path), 'new json'] += len(image_list)
+
+# check recent running stats
+for folder in new_infer_folders:
+    if (folder / "done").exists():
+        df.loc[get_depart(folder), "new infered done"] += len(list((folder / "images").glob("*")))
+        if (folder / "uploaded").exists():
+            df.loc[get_depart(folder), "new infered uploaded"] += len(list((folder / "images").glob("*")))
 print(df.map(lambda x: f"{x:,}"))
 import ipdb; ipdb.set_trace()
 
@@ -78,12 +89,6 @@ for col_name, folder_list in col_name_to_folder_list.items():
         df.loc[get_depart(folder), col_name] += len(image_list)
 
 # import ipdb; ipdb.set_trace()
-
-# check recent running stats
-print(f"{len(new_infer_folders)=}")
-for folder in new_infer_folders:
-    if (folder / "done").exists() and (folder / "uploaded").exists():
-        df.loc[get_depart(folder), "new infered"] += len(list((folder / "images").glob("*")))
 
 
 df["total"] = df["not QA"] + df["pass QA"] + df["new infered"]
