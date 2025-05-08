@@ -1,13 +1,13 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, AUGMENTED_CURATED_EXCLUDED_JSONS
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-new_infer_folders = []
+new_infer_folders = DINO_COCO_FOLDERS_0508
 new_json_list = []
 new_json_list = [path for path in pathlib.Path(DATA_CURATION_ROOT).rglob('*image_list_keep*') if path.is_file()]
 new_json_list = [x for x in new_json_list if x not in AUGMENTED_CURATED_EXCLUDED_JSONS]
