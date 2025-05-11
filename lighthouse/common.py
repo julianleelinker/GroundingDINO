@@ -289,7 +289,7 @@ def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, pa
             f.write("\n".join(name_to_path_map))
 
 
-def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0):
+def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0, split_number: int=0):
     with open(json_path, "r") as f:
         image_list = json.load(f)
     if not is_image_list:
@@ -298,7 +298,11 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         copy_images_in_image_list(image_list, dst_root, path_to_name)
     else:
         splited_image_list = [image_list[i:i + split_size] for i in range(0, len(image_list), split_size)]
-        for i, chunk in tqdm.tqdm(enumerate(splited_image_list), total=len(splited_image_list)):
+        if split_number > 0:
+            split_number = min(split_number, len(splited_image_list))
+        else:
+            split_number = len(splited_image_list)
+        for i, chunk in tqdm.tqdm(enumerate(splited_image_list[:split_number]), total=split_number):
             copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name, always_save_mapping=True)
 
 
