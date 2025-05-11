@@ -2,6 +2,7 @@ import os
 import pathlib
 import tqdm
 import pandas as pd
+from datetime import date
 from common import get_depart, DEPARTS_EN, VLM_CKPT2_FOLDERS, VLM_ADDDED_0407_FOLDERS
 
 def find_depth3_subfolders(start_folder_path: str | pathlib.Path) -> list[pathlib.Path]:
@@ -70,6 +71,10 @@ if __name__ == "__main__":
     df_formatted = df_formatted.rename_axis('depart', axis='columns')
     print(df_formatted)
     df_showed = df_formatted[["uploaded not QA", "QA done", "gov checked", new_data_col_name, "TOTAL"]]
+
+    today = date.today()
+    date_str = today.strftime("%m/%d")
+    print(f"\nvlm updated {date_str}")
     print(df_showed)
 
     import ipdb; ipdb.set_trace()
