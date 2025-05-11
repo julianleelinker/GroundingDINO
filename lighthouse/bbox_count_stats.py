@@ -1,6 +1,7 @@
 import pathlib
 import pandas as pd
 import json
+from datetime import date
 from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
 import copy
 
@@ -98,7 +99,11 @@ df.loc["total"] = df.sum(axis=0)
 df_formatted = df.map(lambda x: f"{x:,}")
 df_formatted = df_formatted.rename_axis('depart', axis='columns')
 print(df_formatted)
-df_showed = df_formatted[["not QA", "done QA", "pass QA", "new infered done", "total"]]
+df_showed = df_formatted[["not QA", "done QA", "pass QA", "new json", "new infered done", "total"]]
+
+today = date.today()
+date_str = today.strftime("%m/%d")
+print(f"\n# bbox updated {date_str}")
 print(df_showed)
 
 import ipdb; ipdb.set_trace()

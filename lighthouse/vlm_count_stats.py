@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     today = date.today()
     date_str = today.strftime("%m/%d")
-    print(f"\nvlm updated {date_str}")
+    print(f"\n# vlm updated {date_str}")
     print(df_showed)
 
     import ipdb; ipdb.set_trace()
