@@ -1,14 +1,14 @@
 import pathlib
 import pandas as pd
 import json
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_FOLDERS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
 import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-new_infer_folders = DINO_COCO_FOLDERS_0508
+new_infer_folders = DINO_COCO_SPLITS_0508
 # new_infer_folders = DINO_COCO_SPLITS_0418
 print(f"{len(new_infer_folders)=}")
 new_json_list = []
@@ -33,7 +33,8 @@ df = pd.DataFrame(0, index=row_names, columns=column_names)
 
 # check all uploaded stats
 prev_uploaded_folders = copy.deepcopy(
-    DINO_COCO_FOLDERS_0418
+    # DINO_COCO_FOLDERS_0418
+    DINO_COCO_SPLITS_0418
 )
 for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
@@ -91,13 +92,13 @@ for col_name, folder_list in col_name_to_folder_list.items():
 # import ipdb; ipdb.set_trace()
 
 
-df["total"] = df["not QA"] + df["pass QA"] + df["new infered"]
+df["total"] = df["not QA"] + df["pass QA"] + df["new infered done"]
 df.loc["total"] = df.sum(axis=0)
 
 df_formatted = df.map(lambda x: f"{x:,}")
 df_formatted = df_formatted.rename_axis('depart', axis='columns')
 print(df_formatted)
-df_showed = df_formatted[["not QA", "done QA", "pass QA", "new infered", "total"]]
+df_showed = df_formatted[["not QA", "done QA", "pass QA", "new infered done", "total"]]
 print(df_showed)
 
 import ipdb; ipdb.set_trace()

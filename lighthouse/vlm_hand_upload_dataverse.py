@@ -5,11 +5,11 @@ from common import DATAVERSE_PASSWORD, DATAVERSE_CKPT2_PROJECT_ID, DATAVERSE_SER
 from common import get_depart_date
 
 
-def main(folder, prefix):
+def main(input_folder, prefix):
     service_id = DATAVERSE_SERVICE_ID_HAND
     project_id = DATAVERSE_VLM_HAND_PROJECT_ID
     # folder_list = VLM_ADDDED_0407_FOLDERS
-    folder_list = list(pathlib.Path(folder).glob("*"))
+    folder_list = list(pathlib.Path(input_folder).glob("*"))
 
     # check folder exit
     for folder in folder_list:
