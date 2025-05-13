@@ -3,7 +3,7 @@ import time
 import pathlib
 import os
 import tqdm
-from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0508, copy_images_in_json
+from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0509, copy_images_in_json
 
 
 def get_gpu_memory(skip_gpu_list=[]):
@@ -29,7 +29,7 @@ def get_gpu_memory(skip_gpu_list=[]):
 
 
 def main():
-    json_list = AUGMENTED_CURATED_JSONS_0508
+    json_list = AUGMENTED_CURATED_JSONS_0509
 
     dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
 
@@ -38,9 +38,9 @@ def main():
     source_root = DINO_COCO_SOURCE_ROOT
     mem_thres = 4000
     wait_time = 300
-    # skip_gpu_list = [0,]
+    skip_gpu_list = [0,]
     # skip_gpu_list = [1,2,3]
-    skip_gpu_list = []
+    # skip_gpu_list = []
 
     base_command = (
         "CUDA_VISIBLE_DEVICES={gpu_id} nohup conda run -n {conda_env} python lighthouse/inference_gpt_on_images_in_folder.py "
