@@ -6,7 +6,7 @@ import fire
 from dataverse_sdk import *
 from dataverse_sdk.connections import get_connection
 from export_project_dataslices import export_dataslice_to_local
-from common import DATAVERSE_PASSWORD, DATAVERSE_LVM300K_PROJECT_ID, DATAVERSE_CURATION_HOST, DATAVERSE_EMAIL, DATAVERSE_SERVICE_ID_QA, get_depart
+from common import DATAVERSE_PASSWORD, DATAVERSE_BBOX_QA_PROJECT_ID, DATAVERSE_CURATION_HOST, DATAVERSE_EMAIL, DATAVERSE_SERVICE_ID_QA, get_depart
 
 
 SLICE_NAME_TO_DATASET_0428 = {
@@ -171,7 +171,7 @@ def main(save_root, new_excel=None, old_excel=None):
             )
     assert client is get_connection("default")
     # projects = client.list_projects(current_user = False,)
-    lvm300k_slices = client.list_dataslices(project_id=DATAVERSE_LVM300K_PROJECT_ID, client_alias=client.alias)
+    lvm300k_slices = client.list_dataslices(project_id=DATAVERSE_BBOX_QA_PROJECT_ID, client_alias=client.alias)
 
     # new_slices_to_name = get_new_data_slices_set(new_excel_path=new_excel, old_excel_path=old_excel)
     excel_path = '/home/julian/LVM相關資訊(new dataset).csv'

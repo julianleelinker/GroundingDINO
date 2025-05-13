@@ -4,7 +4,7 @@ import tqdm
 from dataverse_sdk import *
 from dataverse_sdk.connections import get_connection
 from export_dataslice_large import export_dataslice_to_local
-from common import DATAVERSE_PASSWORD, DATAVERSE_CKPT1_PROJECT_ID, DATAVERSE_CKPT2_PROJECT_ID, DATAVERSE_LVM300K_PROJECT_ID
+from common import DATAVERSE_PASSWORD, DATAVERSE_CKPT1_PROJECT_ID, DATAVERSE_CKPT2_PROJECT_ID, DATAVERSE_BBOX_QA_PROJECT_ID
 
 
 if __name__ == "__main__":
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
 
     # exporting lvm300k dataslices
-    lvm300k_slices = client.list_dataslices(project_id=DATAVERSE_LVM300K_PROJECT_ID, client_alias=client.alias)
+    lvm300k_slices = client.list_dataslices(project_id=DATAVERSE_BBOX_QA_PROJECT_ID, client_alias=client.alias)
     import ipdb; ipdb.set_trace()
     host = "https://visionai.linkervision.ai/dataverse/curation"
     email = "julianlee@linkervision.com"
