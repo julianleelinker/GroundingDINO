@@ -13,14 +13,17 @@ def xyxy_to_xywh(bboxes):
     results[:, :2] += results[:, 2:] / 2
     return results
 
-def fix_boundary(bboxes):
+def fix_boundary(bboxes, image_size=(1.0, 1.0)):
+    H, W = image_size
     results = bboxes.clone()
+    results = results / torch.Tensor([W, H, W, H])
     results = xywh_to_xyxy(results)
     results = torch.clamp(results, 0., 1.)
     results = xyxy_to_xywh(results)
+    results = results * torch.Tensor([W, H, W, H])
     return results
 
-def compute_intersection_over_self(bboxes1, bboxes2=None):
+def compute_intersection_over_union(bboxes1, bboxes2=None):
     if bboxes2 is None:
         bboxes2 = bboxes1.clone()
 
@@ -49,7 +52,7 @@ def merge_two_bbox(bbox1, bbox2):
     result[:2] = torch.min(bbox1, bbox2)[:2]
     return result
 
-def merge_by_ios(bboxes, image_size, threshold):
+def merge_by_iou(bboxes, image_size = (1.0, 1.0), threshold = 0.5):
     if len(bboxes) == 0:
         return bboxes, []
     labels = [str(i) for i in range(len(bboxes))]
@@ -57,7 +60,7 @@ def merge_by_ios(bboxes, image_size, threshold):
     H, W = image_size
     bboxes = bboxes * torch.Tensor([W, H, W, H])
     while True:
-        ios = compute_intersection_over_self(bboxes)
+        ios = compute_intersection_over_union(bboxes)
         ios = ios - 2.0*torch.eye(ios.size(0))
         max_pos = torch.unravel_index(torch.argmax(ios), ios.shape)
         if ios[max_pos]<threshold:

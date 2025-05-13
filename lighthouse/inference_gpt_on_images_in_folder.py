@@ -15,7 +15,7 @@ import torch
 from inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image, infer_an_image, infer_an_image_text_list
 from chatgpt import encode_image, ask_chatgpt_describe_image, ask_chatgpt_describe_image_find_suitable_answer, convert_pil_to_base64, generate_vlm_pretraining_annotation
 from infer_settings import AZURE_OPENAI_API_KEY, DINO_INFER_CLASSES, HARD_CLASSES_TO_THRESHOLD, BOX_THRESHOLD, TEXT_THRESHOLD
-from box_utils import xywh_to_xyxy, fix_boundary, merge_by_ios
+from box_utils import xywh_to_xyxy, fix_boundary, merge_by_iou
 
 
 FULL_IMAGE_PROMPT = 'Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.'
@@ -119,7 +119,7 @@ def infer_images_text_list_save_gpt_result(image_path_list, model, text_prompt_l
         print(f'raw    {len(pred_dict["boxes"])=}')
         pred_dict["boxes"][:, 2:] *= scale
         pred_dict["boxes"] = fix_boundary(pred_dict["boxes"])
-        pred_dict["boxes"], pred_dict['labels'] = merge_by_ios(pred_dict["boxes"], pred_dict['size'], threshold=merge_threshold)
+        pred_dict["boxes"], pred_dict['labels'] = merge_by_iou(pred_dict["boxes"], pred_dict['size'], threshold=merge_threshold)
         print(f'merged {len(pred_dict["boxes"])=}')
 
         bboxes = xywh_to_xyxy(pred_dict["boxes"])
