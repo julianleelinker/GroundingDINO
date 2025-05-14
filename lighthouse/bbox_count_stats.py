@@ -2,14 +2,15 @@ import pathlib
 import pandas as pd
 import json
 from datetime import date
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508, AUGMENTED_CURATED_EXCLUDED_JSONS
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508, DINO_COCO_SPLITS_0509, AUGMENTED_CURATED_EXCLUDED_JSONS
 import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-new_infer_folders = DINO_COCO_SPLITS_0508
+new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0508)
+new_infer_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0509))
 # new_infer_folders = DINO_COCO_SPLITS_0418
 print(f"{len(new_infer_folders)=}")
 new_json_list = []
