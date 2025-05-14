@@ -5,6 +5,8 @@ import tqdm
 from PIL import Image
 import os
 import fire
+import io
+import webdataset as wds
 
 from infer_settings import AZURE_OPENAI_API_KEY
 from inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image, infer_an_image, infer_an_image_text_list
@@ -41,7 +43,7 @@ def get_yolo_bboxes_from_coco_anno(image_path, anno_list):
     return bboxes, (W, H)
 
 
-def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_root, scale=4.0, merge_threshold=0.1, plot_mode=False, full_image_prompt = "Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.​"):
+def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_root, scale=4.0, merge_threshold=0.1, plot_mode=False, full_image_prompt = "Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.​", cropped_image_prompt = "Provide a one-sentence caption​ for the provided image."):
     image_pil = Image.open(image_path)
     W, H = image_size
 
@@ -68,29 +70,71 @@ def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_roo
     gpt_bboxes = gpt_bboxes * torch.Tensor([W, H, W, H])
 
 
-    json_path = pathlib.Path(output_root) / "response.json"
-    response_json = []
     # import ipdb; ipdb.set_trace()
     # # save image_pil to output_root_dir
     for i, bbox in enumerate(gpt_bboxes):
+        instance_name = f"{image_path.stem}-{i}"
         bbox_int = torch.ceil(bbox)
         cropped_image = image_pil.crop((int(bbox_int[0]), int(bbox_int[1]), int(bbox_int[2]), int(bbox_int[3])))
-        cropped_image_path = pathlib.Path(output_root) / f"{image_path.stem}-{i}.jpg"
+        cropped_image_path = pathlib.Path(output_root) / f"{instance_name}.jpg"
         cropped_image.save(cropped_image_path)
-        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = 'Provide a one-sentence​ caption for​ the provided image.')
+        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
         if response is None:
             cropped_image_path.unlink()
             continue
-        response_json.append({"file": f"{image_path.stem}-{i}.jpg", "response": response})
+        json_path = pathlib.Path(output_root) / f"{instance_name}.json"
         with open(json_path, "w") as f:
             json.dump(response, f, indent=4, ensure_ascii=False)
 
     response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
     if response is not None:
-        image_pil.save(pathlib.Path(output_root) / f"{image_path.name}")
-        response_json.append({"file": f"{image_path.stem}.jpg", "response": response})
-    with open(json_path, "w") as f:
-        json.dump(response_json, f, indent=4, ensure_ascii=False)
+        instance_name = image_path.stem
+        image_pil.save(pathlib.Path(output_root) / f"{instance_name}.jpg")
+        json_path = pathlib.Path(output_root) / f"{instance_name}.json"
+        with open(json_path, "w") as f:
+            json.dump(response, f, indent=4, ensure_ascii=False)
+
+
+def save_to_webdataset_auto(pairs, output_dir, base_name="shard", max_per_shard=10):
+    """
+    Save image-text pairs to WebDataset shards with automatic shard rotation.
+
+    Args:
+        pairs: Iterable of (image_pil, text) pairs.
+        output_dir: Directory to save .tar shards.
+        base_name: Base name for shards (e.g., 'shard' -> shard-000000.tar).
+        max_per_shard: Max samples per shard (auto-rotate beyond this).
+    """
+    # os.makedirs(output_dir, exist_ok=True)
+    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+    os.chmod(output_dir, 0o777)
+    pattern = os.path.join(output_dir, f"{base_name}-%06d.tar")
+
+    with wds.ShardWriter(pattern, maxcount=max_per_shard) as sink:
+        for i, (image_pil, caption_text, image_name) in enumerate(pairs):
+            # Convert image to JPEG bytes
+            img_buffer = io.BytesIO()
+            image_pil.convert("RGB").save(img_buffer, format="jpeg")
+            img_bytes = img_buffer.getvalue()
+
+            # Create sample
+            sample = {
+                "__key__": image_name,
+                "jpg": img_bytes,
+                "txt": caption_text,
+            }
+            sink.write(sample)
+
+
+def yield_image_text_name(folder_path):
+    image_list = pathlib.Path(folder_path).glob("*.jpg")
+    for image_path in image_list:
+    # for i in range(10000000):
+        image_pil = Image.open(image_path)
+        json_path = image_path.with_suffix(".json")
+        with open(json_path, "r") as f:
+            text = json.load(f)
+        yield image_pil, text, image_path.name
 
 
 def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
@@ -101,10 +145,18 @@ def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
     pathlib.Path(output_root).mkdir(parents=True, exist_ok=True)
     os.chmod(output_root, 0o777)
 
-    for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
-        image_path = pathlib.Path(coco_root) / "images" / image_name
-        bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
-        coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), output_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+    # count = 0
+    # for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
+    #     image_path = pathlib.Path(coco_root) / "images" / image_name
+    #     bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
+    #     coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), output_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+    #     count += 1
+    #     if count > 10:
+    #         break
+
+    output_web_root = f"{coco_root.parent.name}/web_{coco_root.name}_s{scale}_mt{merge_threshold}"
+    image_text_name = yield_image_text_name(output_root)
+    save_to_webdataset_auto(image_text_name, output_web_root, base_name="shard", max_per_shard=10)
 
 
 if __name__ == "__main__":
