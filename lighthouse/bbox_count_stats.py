@@ -24,9 +24,9 @@ uploaded_root_to_pattern = {
     "/mnt/lighthouseACD/ACD-gdino-COCO/Transportation_20250115_image_list_keep_0.95_rededuplicate": "*",
 }
 qa_root_to_pattern = { 
-    "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422/": "*/*",
-    "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423/": "*/*",
-    "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0428/": "*/*",
+    "/mnt/lighthouseACD/QAed-data//bbox/hand0422/": "*/*",
+    "/mnt/lighthouseACD/QAed-data//bbox/hand0423/": "*/*",
+    "/mnt/lighthouseACD/QAed-data//bbox/hand0428/": "*/*",
 }
 
 column_names = ["not QA", "done QA", "pass QA", "new json", "new infered done", "new infered uploaded"]

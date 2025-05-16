@@ -7,13 +7,13 @@ folder_list = [pathlib.Path(str(x).replace("/vlm-annotations/", "/checkpoint/vlm
 
 remaining_list = [
     # # ckpt2
-    # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Water_Resources/20250213/Water_Resources_20250213_curated_t1",
+    # "/mnt/lighthouseACD/QAed-data//vlm/hand/Water_Resources/20250213/Water_Resources_20250213_curated_t1",
     # # ckpt1 remaining
-    # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch",
-    # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Transportation/20250120/Transportation_20250120_llava-onevision-0.5b-full",
-    # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch",
+    # "/mnt/lighthouseACD/QAed-data//vlm/hand/Water_Resources/20250106/Water_Resources_20250106_curated_t8_VLM_100000_patch",
+    # "/mnt/lighthouseACD/QAed-data//vlm/hand/Transportation/20250120/Transportation_20250120_llava-onevision-0.5b-full",
+    # "/mnt/lighthouseACD/QAed-data//vlm/hand/Sports_Development/20241223/Sports_Development_20241223_curated_t6_VLM_100000_patch",
     # patch ckpt2
-    # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand/Transportation/20250115/Transportation_20250115_curated_t4/"
+    # "/mnt/lighthouseACD/QAed-data//vlm/hand/Transportation/20250115/Transportation_20250115_curated_t4/"
 ]
 remaining_list = [pathlib.Path(x) for x in remaining_list]
 folder_list = remaining_list

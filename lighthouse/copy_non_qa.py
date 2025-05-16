@@ -15,8 +15,8 @@ for x in acd_de_list:
 
 prefix = "/mnt/lighthouseACD/ACD-gdino-COCO/Public_Works_20241230_image_list_keep_0.95"
 
-output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand"
-# slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices"
+output_root = "/mnt/lighthouseACD/QAed-data//bbox/hand"
+# slice_root = "/mnt/lighthouseACD/QAed-data//bbox/dataslices"
 slice_folder_list = [f"{prefix}/split{i}_0.30_0.35" for i in range(30,77)]
 slice_folder_list = [pathlib.Path(x) for x in slice_folder_list] 
 # slice_folder_list = slice_folder_list[:1]

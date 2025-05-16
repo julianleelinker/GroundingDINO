@@ -47,8 +47,8 @@ for key, value in acd_de_dict.items():
     # update number
 
 
-output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand"
-slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices"
+output_root = "/mnt/lighthouseACD/QAed-data//bbox/hand"
+slice_root = "/mnt/lighthouseACD/QAed-data//bbox/dataslices"
 slice_folder_list = pathlib.Path(slice_root).glob("*")
 slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
 # slice_folder_list = slice_folder_list[:1]

@@ -9,7 +9,7 @@ import fire
 
 def main(vlm_root, dedu_json, actuall_run=False):
     # dedu_json = "/mnt/data-home/chungan/curation/hand0505_image_list_keep_0.95.json"
-    # vlm_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand0505"
+    # vlm_root = "/mnt/lighthouseACD/QAed-data/vlm/hand0505"
     # copyt hand0505 to hand0505-back using shutil
     print(f"copying {vlm_root} to {vlm_root}-back")
     shutil.copytree(vlm_root, vlm_root + "-back")

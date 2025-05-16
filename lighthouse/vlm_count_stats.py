@@ -38,8 +38,8 @@ if __name__ == "__main__":
     row_names = DEPARTS_EN + ["total"]
     df = pd.DataFrame(0, index=row_names, columns=column_names)
 
-    gov_checked_folders = find_depth3_subfolders("/mnt/data-home/mobility-multimodal/checkpoint/vlm/gov0415")
-    qa_folders = list(pathlib.Path("/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand0505").glob("*"))
+    gov_checked_folders = find_depth3_subfolders("/mnt/lighthouseACD/QAed-data/vlm/gov0415")
+    qa_folders = list(pathlib.Path("/mnt/lighthouseACD/QAed-data/vlm/hand0505").glob("*"))
     qa_folders_set = {x.name for x in qa_folders}
     print(f"{len(qa_folders)=}")
 

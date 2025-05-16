@@ -61,12 +61,12 @@ def main(conda_env, prefix):
     print("Starting auto upload to dataverse")
     wait_time = 4*3600
     # coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
-    # coco_root = '/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand'
+    # coco_root = '/mnt/lighthouseACD/QAed-data//bbox/hand'
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/datasets"
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated"
-    # coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422"
-    # coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0423"
-    coco_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0428"
+    # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0422"
+    # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0423"
+    coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0428"
     file_path_list =[
         # p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
         "/mnt/lighthouseACD/ACD-gdino-COCO-new/Transportation_20250319_image_list_keep_0.95/split37"
@@ -75,7 +75,6 @@ def main(conda_env, prefix):
     file_path_list.extend(DINO_COCO_SPLITS_0509)
     
     # file_path_list = file_path_list[:1]
-    import ipdb; ipdb.set_trace()
     n_batch = 0
     while n_batch < 3:
         count = 0

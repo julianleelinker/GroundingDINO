@@ -7,8 +7,6 @@ import shutil
 
 
 def main(slice_root, output_root, actuall_run=False):
-    # output_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/hand0422"
-    # slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices0422"
     slice_folder_list = pathlib.Path(slice_root).glob("*/*")
     slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
 

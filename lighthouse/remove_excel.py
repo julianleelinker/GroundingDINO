@@ -50,9 +50,9 @@ bad_image_name_list = [
     "1725080466.42883945.jpg",
     "1724755386.25589776.jpg",
 ]
-# image_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand"
-# image_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand-revised-0415"
-image_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/gov0415"
+# image_root = "/mnt/lighthouseACD/QAed-data/vlm/hand"
+# image_root = "/mnt/lighthouseACD/QAed-data/vlm/hand-revised-0415"
+image_root = "/mnt/lighthouseACD/QAed-data/vlm/gov0415"
 image_list = list(pathlib.Path(image_root).rglob("*.jpg"))
 image_list.extend(list(pathlib.Path(image_root).rglob("*.JPG")))
 image_name_set = {pathlib.Path(x).name for x in image_list}

@@ -32,8 +32,8 @@ if __name__ == "__main__":
     # export_format = "vlm"
     # anno = "groundtruth"
     # target_root_to_ckpt = {
-    #     # "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt1": vlm_ckpt1_slices,
-    #     "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2": vlm_ckpt2_slices,
+    #     # "/mnt/lighthouseACD/QAed-data//vlm/ckpt1": vlm_ckpt1_slices,
+    #     "/mnt/lighthouseACD/QAed-data//vlm/ckpt2": vlm_ckpt2_slices,
     # }
     # for target_root, vlm_slices in target_root_to_ckpt.items():
     #     for dataslice in vlm_slices:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     service_id = "2bd928e5-a98f-4aae-a093-8545c57c103f"
     export_format = "coco"
     anno = "groundtruth"
-    target_root = "/mnt/data-home/mobility-multimodal/checkpoint/bbox/dataslices"
+    target_root = "/mnt/lighthouseACD/QAed-data//bbox/dataslices"
     for dataslice in tqdm.tqdm(lvm300k_slices):
         dataslice_id = dataslice['id']
         target_folder = f"{target_root}/{dataslice['name']}"

@@ -139,7 +139,7 @@ def yield_image_text_name(folder_path):
 
 
 def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
-    data_root = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand0422/Transportation_20250115_image_list_keep_0.95_rededuplicate")
+    data_root = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand0428/Water_Resources_20250213_image_list_keep_0.95")
     output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
     split_list = list(data_root.glob("split*"))
     for split_root in tqdm.tqdm(split_list):

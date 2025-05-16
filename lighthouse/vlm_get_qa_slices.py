@@ -23,7 +23,7 @@ VLM0505_SLICE_NAME = {
 }
 
 
-# save_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand0505"
+# save_root = "/mnt/lighthouseACD/QAed-data/vlm/hand0505"
 def main(save_root):
     client = DataverseClient(
                 host=DataverseHost.PRODUCTION.value ,

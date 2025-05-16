@@ -38,7 +38,7 @@ dupl_name_to_path = {
  "lk-241231-p4-s1s2s3s4": "/mnt/data-home/mobility-multimodal/vlm-annotations/Kaohsiung-full-dataset/20241231/Kaoshsiung_76152_retrieval_curated_t220_part4_3/images/1725874761.74193668.jpg",
 }
 
-output_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand"
+output_root = "/mnt/lighthouseACD/QAed-data/vlm/hand"
 
 
 # load anno, iterated over all images and annos
@@ -49,7 +49,7 @@ output_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/hand"
     # else create new_anno
     # save new anno to new folder
     # update number
-slice_root = "/mnt/data-home/mobility-multimodal/checkpoint/vlm/ckpt2"
+slice_root = "/mnt/lighthouseACD/QAed-data/vlm/ckpt2"
 slice_folder_list = pathlib.Path(slice_root).glob("*")
 slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
 slice_folder_list = [x for x in slice_folder_list if x.name in ["tr-250115"]]
