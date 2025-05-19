@@ -75,23 +75,28 @@ def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_roo
     # # save image_pil to output_root_dir
     for i, bbox in enumerate(gpt_bboxes):
         instance_name = f"{image_path.stem}-{i}"
+        cropped_image_path = pathlib.Path(output_root) / f"{instance_name}.jpg"
+        json_path = pathlib.Path(output_root) / f"{instance_name}.json"
+        if cropped_image_path.exists() and json_path.exists():
+            continue
         bbox_int = torch.ceil(bbox)
         cropped_image = image_pil.crop((int(bbox_int[0]), int(bbox_int[1]), int(bbox_int[2]), int(bbox_int[3])))
-        cropped_image_path = pathlib.Path(output_root) / f"{instance_name}.jpg"
         cropped_image.save(cropped_image_path)
         response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
         if response is None:
             cropped_image_path.unlink()
             continue
-        json_path = pathlib.Path(output_root) / f"{instance_name}.json"
         with open(json_path, "w") as f:
             json.dump(response, f, indent=4, ensure_ascii=False)
 
+    instance_name = image_path.stem
+    image_path = pathlib.Path(output_root) / f"{instance_name}.jpg"
+    json_path = pathlib.Path(output_root) / f"{instance_name}.json"
+    if image_path.exists() and json_path.exists():
+        return
     response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
     if response is not None:
-        instance_name = image_path.stem
-        image_pil.save(pathlib.Path(output_root) / f"{instance_name}.jpg")
-        json_path = pathlib.Path(output_root) / f"{instance_name}.json"
+        image_pil.save(image_path)
         with open(json_path, "w") as f:
             json.dump(response, f, indent=4, ensure_ascii=False)
 
