@@ -25,8 +25,8 @@ uploaded_root_to_pattern = {
 }
 qa_root_to_pattern = { 
     "/mnt/lighthouseACD/QAed-data//bbox/hand0422/": "*/*",
-    "/mnt/lighthouseACD/QAed-data//bbox/hand0423/": "*/*",
     "/mnt/lighthouseACD/QAed-data//bbox/hand0428/": "*/*",
+    "/mnt/lighthouseACD/QAed-data//bbox/hand0521/": "*/*",
 }
 
 column_names = ["not QA", "done QA", "pass QA", "new json", "new infered done", "new infered uploaded"]

@@ -82,6 +82,47 @@ SLICE_NAME_TO_DATASET_0428 = {
 }
 
 
+SLICE_NAME_TO_DATASET_0521 = {
+"upload0408-tr-split13": "Transportation_20250109_image_list_keep_0.95/split13_0.30_0.35",
+"upload0408-tr-split19": "Transportation_20250109_image_list_keep_0.95/split19_0.30_0.35",
+"upload0408-tr-split12": "Transportation_20250109_image_list_keep_0.95/split12_0.30_0.35",
+"transportation-20250115-split30": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split30_0.30_0.35",
+"transportation-20250115-split34": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split34_0.30_0.35",
+"transportation-20250115-split32": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split32_0.30_0.35",
+"transportation-20250115-split33": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split33_0.30_0.35",
+"transportation-20250115-split40": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split40_0.30_0.35",
+"transportation-20250115-split24": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split24_0.30_0.35",
+"transportation-20250115-split29": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split29_0.30_0.35",
+"transportation-20250115-split27": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split27_0.30_0.35",
+"transportation-20250115-split20": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split20_0.30_0.35",
+"transportation-20250115-split25": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split25_0.30_0.35",
+"transportation-20250115-split21": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split21_0.30_0.35",
+"transportation-20250115-split22": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split22_0.30_0.35",
+"transportation-20250115-split23": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split23_0.30_0.35",
+"transportation-20250115-split16": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split16_0.30_0.35",
+"transportation-20250115-split26": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split26_0.30_0.35",
+"transportation-20250115-split18": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split18_0.30_0.35",
+"transportation-20250115-split17": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split17_0.30_0.35",
+"transportation-20250115-split19": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split19_0.30_0.35",
+"transportation-20250115-split15": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split15_0.30_0.35",
+"transportation-20250115-split5": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split5_0.30_0.35",
+"transportation-20250115-split14": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split14_0.30_0.35",
+"transportation-20250115-split7": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split7_0.30_0.35",
+"transportation-20250115-split3": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split3_0.30_0.35",
+"transportation-20250115-split6": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split6_0.30_0.35",
+"transportation-20250115-split13": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split13_0.30_0.35",
+"transportation-20250115-split8": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split8_0.30_0.35",
+"transportation-20250115-split12": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split12_0.30_0.35",
+"transportation-20250115-split10": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split10_0.30_0.35",
+"transportation-20250115-split9": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split9_0.30_0.35",
+"transportation-20250115-split4": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split4_0.30_0.35",
+"transportation-20250115-split0": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split0_0.30_0.35",
+"transportation-20250115-split2": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split2_0.30_0.35",
+"transportation-20250115-split11": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split11_0.30_0.35",
+"transportation-20250115-split1": "Transportation_20250115_image_list_keep_0.95_rededuplicate/split1_0.30_0.35",
+}
+
+
 def get_new_data_slices_set(new_excel_path, old_excel_path=None):
     # new_excel_path = "/home/julian/LVM相關資訊-0421.xlsx"
 
@@ -178,8 +219,9 @@ def main(save_root, new_excel=None, old_excel=None):
     # new_slices_to_name = find_excel_new_0428(excel_path)
 
     # new_slices = [x for x in lvm300k_slices if x["name"] in new_slices_to_name]
-    slice_name_to_dataset = SLICE_NAME_TO_DATASET_0428
+    slice_name_to_dataset = SLICE_NAME_TO_DATASET_0521
     new_slices = [x for x in lvm300k_slices if x["name"] in slice_name_to_dataset]
+    new_slices = new_slices[34:]
     # import ipdb; ipdb.set_trace()
     for dataslice in tqdm.tqdm(new_slices, total=len(new_slices)):
         dataslice_id = dataslice['id']
@@ -188,7 +230,8 @@ def main(save_root, new_excel=None, old_excel=None):
         depart_en = get_depart(dataset_name)
         depart_ch = get_depart(dataset_name, chout=True)
         dataset_name = dataset_name.replace(depart_ch, depart_en)
-        folder_name = ('_').join(dataset_name.split('_')[1:])
+        folder_name = dataset_name
+        # folder_name = ('_').join(dataset_name.split('_')[1:])
         # import ipdb; ipdb.set_trace()
         # dataset_name = new_slices_to_name[dataslice["name"]]
         # depart = get_depart(dataset_name)

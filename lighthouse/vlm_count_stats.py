@@ -40,6 +40,7 @@ if __name__ == "__main__":
 
     gov_checked_folders = find_depth3_subfolders("/mnt/lighthouseACD/QAed-data/vlm/gov0415")
     qa_folders = list(pathlib.Path("/mnt/lighthouseACD/QAed-data/vlm/hand0505").glob("*"))
+    qa_folders.extend(pathlib.Path("/mnt/lighthouseACD/QAed-data/vlm/hand0521").glob("*"))
     qa_folders_set = {x.name for x in qa_folders}
     print(f"{len(qa_folders)=}")
 

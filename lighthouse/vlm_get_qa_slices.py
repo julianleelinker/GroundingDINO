@@ -22,6 +22,10 @@ VLM0505_SLICE_NAME = {
 "lk3"       : "LinkerV3_Linker_Vision_Data_V3_curated_t6_new-Linker_Vision_Data_V3_curated_t6_new",
 }
 
+VLM0521_SLICE_NAME = {
+"sd-250416": "運發局_20250226_curated_t20"
+}
+
 
 # save_root = "/mnt/lighthouseACD/QAed-data/vlm/hand0505"
 def main(save_root):
@@ -39,7 +43,7 @@ def main(save_root):
     # vlm_ckpt1_slices = client.list_dataslices(project_id=DATAVERSE_CKPT1_PROJECT_ID, client_alias=client.alias)
     vlm_slices = client.list_dataslices(project_id=DATAVERSE_CKPT2_PROJECT_ID, client_alias=client.alias)
     print(f"{len(vlm_slices)=}")
-    vlm_slice_name = VLM0505_SLICE_NAME
+    vlm_slice_name = VLM0521_SLICE_NAME
     vlm_slices = [x for x in vlm_slices if x['name'] in vlm_slice_name]
     print(f"{len(vlm_slices)=}")
     host = "https://visionai.linkervision.ai/dataverse/curation"
@@ -50,7 +54,6 @@ def main(save_root):
     anno = "groundtruth"
     for dataslice in vlm_slices:
         dataset_name = vlm_slice_name[dataslice['name']]
-        dataset_name = dataset_name.replace("upload0416_", "")
         depart_en = get_depart(dataset_name)
         depart_ch = get_depart(dataset_name, chout=True)
         dataset_name = dataset_name.replace(depart_ch, depart_en)
