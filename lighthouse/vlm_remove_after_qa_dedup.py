@@ -7,15 +7,20 @@ import shutil
 import fire
 
 
-def main(vlm_root, dedu_json, actuall_run=False):
+def main(vlm_root, dedu_json=None, actuall_run=False):
     # dedu_json = "/mnt/data-home/chungan/curation/hand0505_image_list_keep_0.95.json"
     # vlm_root = "/mnt/lighthouseACD/QAed-data/vlm/hand0505"
     # copyt hand0505 to hand0505-back using shutil
-    print(f"copying {vlm_root} to {vlm_root}-back")
-    shutil.copytree(vlm_root, vlm_root + "-back")
-    with open(dedu_json, 'r') as f:
-        dedu_list = json.load(f)
-    dedu_set = {x for x in dedu_list}
+    if not pathlib.Path(vlm_root + "-back").exists():
+        print(f"copying {vlm_root} to {vlm_root}-back")
+        shutil.copytree(vlm_root, vlm_root + "-back")
+    else:
+        print(f"{vlm_root}-back already exists, skipping backup")
+
+    if dedu_json is not None:
+        with open(dedu_json, 'r') as f:
+            dedu_list = json.load(f)
+        dedu_set = {x for x in dedu_list}
 
     slice_folder_list = list(pathlib.Path(vlm_root).glob("*"))
 
@@ -36,7 +41,7 @@ def main(vlm_root, dedu_json, actuall_run=False):
         for image in tqdm.tqdm(image_list):
             count["total"] += 1
 
-            if not str(image) in dedu_set:
+            if dedu_json is not None and str(image) not in dedu_set:
                 count["dedu"] += 1
                 if actuall_run:
                     image.unlink()
