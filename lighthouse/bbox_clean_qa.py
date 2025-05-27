@@ -6,7 +6,7 @@ import fire
 import shutil
 
 
-def main(slice_root, output_root, actuall_run=False):
+def main(slice_root, output_root, dedu_json=None, actuall_run=False):
     slice_folder_list = pathlib.Path(slice_root).glob("*/*")
     slice_folder_list = [x for x in slice_folder_list if x.is_dir()]
 
@@ -16,6 +16,11 @@ def main(slice_root, output_root, actuall_run=False):
         "deduplicated": 0,
         "final": 0,
     }
+
+    if dedu_json is not None:
+        with open(dedu_json, 'r') as f:
+            dedu_list = json.load(f)
+        dedu_set = {x for x in dedu_list}
 
     for slice_folder in tqdm.tqdm(slice_folder_list):
         image_list = list((slice_folder / "images").glob("*"))
@@ -30,11 +35,15 @@ def main(slice_root, output_root, actuall_run=False):
 
         orginal_number = len(image_list)
         image_qa_id_set = {x['image_id'] for x in anno_annos}
-        image_final_id_set = image_qa_id_set 
+        image_keep_id_set = {x['id'] for x in image_annos if x['coco_url'] in dedu_set}
+        if dedu_json is None:
+            image_final_id_set = image_qa_id_set
+        else:
+            image_final_id_set = image_qa_id_set & image_keep_id_set
         image_final_id_map = {x: i for i, x in enumerate(image_final_id_set)}
         count["orginal"] += orginal_number
         count["qa"] += len(image_qa_id_set)
-        # count["deduplicated"] += len(image_keep_id_set)
+        count["deduplicated"] += len(image_keep_id_set)
         count["final"] += len(image_final_id_set)
 
         image_new_annos = [x for x in image_annos if x['id'] in image_final_id_set]

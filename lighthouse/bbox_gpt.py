@@ -94,11 +94,13 @@ def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_roo
     json_path = pathlib.Path(output_root) / f"{instance_name}.json"
     if image_path.exists() and json_path.exists():
         return
+    image_pil.save(image_path)
     response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
     if response is not None:
-        image_pil.save(image_path)
         with open(json_path, "w") as f:
             json.dump(response, f, indent=4, ensure_ascii=False)
+    else:
+        image_path.unlink()
 
 
 def save_to_webdataset_auto(pairs, output_dir, base_name="shard", max_per_shard=1000):
@@ -143,28 +145,62 @@ def yield_image_text_name(folder_path):
         yield image_pil, text, image_path.name
 
 
+DATA_ROOTS_1 = {
+    "hand0422/Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35": None,
+    "hand0428/China_Steel_20250226_image_list_keep_0.95": None,
+    "hand0428/Mass_Rapid_Transit_20250109_image_list_keep_0.95_0.30_0.35": None,
+    "hand0428/Mass_Rapid_Transit_20250213_image_list_keep_0.95": None,
+    "hand0428/Ports_Corporation_20250226_image_list_keep_0.95": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95": None,
+}
+DATA_ROOTS_2 = {
+    "hand0428/Public_Works_20241230_image_list_keep_0.95": None,
+    "hand0428/Public_Works_20250106_image_list_keep_0.95": None,
+    "hand0428/Sports_Development_20250109_image_list_keep_0.95": None,
+    "hand0521/Transportation_20250109_image_list_keep_0.95": None,
+}
+
+DATA_ROOTS_3 = {
+    "hand0521/Transportation_20250115_image_list_keep_0.95_rededuplicate" : (0, 17),
+}
+
+DATA_ROOTS_4 = {
+    "hand0521/Transportation_20250115_image_list_keep_0.95_rededuplicate" : (17, 34),
+}
+
+
 def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
-    data_root = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand0428/Water_Resources_20250213_image_list_keep_0.95")
-    output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
-    split_list = list(data_root.glob("split*"))
-    for split_root in tqdm.tqdm(split_list):
-        image_id_to_name_and_anno = parse_coco_anno(split_root)
+    # data_root_list = DATA_ROOTS_1
+    # data_root_list = DATA_ROOTS_2
+    # data_root_list = DATA_ROOTS_3
+    data_root_list = DATA_ROOTS_4
 
-        tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
-        tmp_root.mkdir(parents=True, exist_ok=True)
-        os.chmod(tmp_root, 0o777)
+    for data_root, split_range in tqdm.tqdm(data_root_list.items()):
+        data_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{data_root}")
+        output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
+        split_list = list(data_root.glob("split*"))
+        if len(data_root_list) == 1 and split_range is not None:
+            split_list = split_list[split_range[0]:split_range[1]]
 
-        # generate temp file for saving to webdataset
-        for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
-            image_path = pathlib.Path(split_root) / "images" / image_name
-            bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
-            coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+        for split_root in tqdm.tqdm(split_list):
+            image_id_to_name_and_anno = parse_coco_anno(split_root)
 
-        output_folder = f"{output_root}/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}"
-        image_text_name = yield_image_text_name(tmp_root)
+            tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
+            tmp_root.mkdir(parents=True, exist_ok=True)
+            os.chmod(tmp_root, 0o777)
 
-        save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
-        shutil.rmtree(tmp_root)
+            # generate temp file for saving to webdataset
+            for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
+                image_path = pathlib.Path(split_root) / "images" / image_name
+                bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
+                coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+
+            output_folder = f"{output_root}/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}"
+            image_text_name = yield_image_text_name(tmp_root)
+
+            save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
+            shutil.rmtree(tmp_root)
 
 
 if __name__ == "__main__":

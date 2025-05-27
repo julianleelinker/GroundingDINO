@@ -10,7 +10,9 @@ DATAVERSE_PASSWORD = os.environ.get("DATAVERSE_PASSWORD")
 DATAVERSE_CKPT1_PROJECT_ID = 230 
 DATAVERSE_CKPT2_PROJECT_ID = 464 
 DATAVERSE_BBOX_QA_PROJECT_ID = 225
+DATAVERSE_BBOX_QA_2ND_PROJECT_ID = 926
 DATAVERSE_BBOX_GOV_PROJECT_ID = 200
+DATAVERSE_BBOX_GOV_PROJECT_ID_202505 = 365
 DATAVERSE_VLM_HAND_PROJECT_ID = 122
 DATAVERSE_CURATION_HOST = "https://visionai.linkervision.ai/dataverse/curation"
 DATAVERSE_EMAIL = "julianlee@linkervision.com"
@@ -195,12 +197,9 @@ AUGMENTED_CURATED_JSONS_0508 = {
     "Public_Works/20250319/Public_Works_20250319_image_list_keep_0.95.json",
     "Transportation/20250319/Transportation_20250319_image_list_keep_0.95.json",
     "Mass_Rapid_Transit/20250402/Mass_Rapid_Transit_20250402_image_list_keep_0.95.json",
-}
-AUGMENTED_CURATED_JSONS_0508 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0508}
-AUGMENTED_CURATED_JSONS_0509 = {
     "Public_Works/20250206/Public_Works_20250206_image_list_keep_0.95.json",
 }
-AUGMENTED_CURATED_JSONS_0509 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0509}
+AUGMENTED_CURATED_JSONS_0508 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0508}
 DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
 
 def get_dino_coco_folders_and_splits(dino_coco_target_root, augmented_curated_jsons):
@@ -216,7 +215,6 @@ def get_dino_coco_folders_and_splits(dino_coco_target_root, augmented_curated_js
 
 DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0418 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0418)
 DINO_COCO_FOLDERS_0508, DINO_COCO_SPLITS_0508 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0508)
-DINO_COCO_FOLDERS_0509, DINO_COCO_SPLITS_0509 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0509)
 
 
 # import ipdb; ipdb.set_trace()

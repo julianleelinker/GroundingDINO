@@ -1,4 +1,3 @@
-# %%
 import pandas as pd
 
 # csv_path = "/home/julian/vlm_qa_data(0521).csv"
@@ -6,11 +5,10 @@ import pandas as pd
 # df = pd.read_csv(csv_path, encoding="big5")
 # print(df.head())
 xlsx_path = "/home/julian/vlm_qa_data.xlsx"
-df = pd.read_excel(xlsx_path)
+sheet_name = "0526"
+df = pd.read_excel(xlsx_path, sheet_name=sheet_name)
 
 for index, row in df.iterrows():
     data_slice = row['data slice 名稱']
     dataset = row['dataset']
     print(f'"{data_slice}": "{dataset}",')
-
-# %%
