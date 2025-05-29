@@ -172,9 +172,9 @@ DATA_ROOTS_4 = {
 
 def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
     # data_root_list = DATA_ROOTS_1
-    # data_root_list = DATA_ROOTS_2
+    data_root_list = DATA_ROOTS_2
     # data_root_list = DATA_ROOTS_3
-    data_root_list = DATA_ROOTS_4
+    # data_root_list = DATA_ROOTS_4
 
     for data_root, split_range in tqdm.tqdm(data_root_list.items()):
         data_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{data_root}")
@@ -184,6 +184,11 @@ def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
             split_list = split_list[split_range[0]:split_range[1]]
 
         for split_root in tqdm.tqdm(split_list):
+            output_folder = pathlib.Path(f"{output_root}/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
+            if output_folder.exists():
+                print(f"Output folder {output_folder} already exists, skipping...")
+                continue
+
             image_id_to_name_and_anno = parse_coco_anno(split_root)
 
             tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
@@ -196,9 +201,7 @@ def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
                 bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
                 coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
 
-            output_folder = f"{output_root}/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}"
             image_text_name = yield_image_text_name(tmp_root)
-
             save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
             shutil.rmtree(tmp_root)
 

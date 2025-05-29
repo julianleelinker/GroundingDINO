@@ -9,8 +9,9 @@ import argparse
 import io
 from collections import defaultdict
 from openai import AzureOpenAI
-from openai import BadRequestError, InternalServerError
+from openai import BadRequestError, InternalServerError, RateLimitError
 from common import copy_images_in_json
+import time
 
 
 PROMPT_LIST = [
@@ -99,6 +100,11 @@ def ask_chatgpt_describe_image(azure_openai_api_key, image_path, prompt="Please 
     except InternalServerError as e:
         print(e)
         return None
+    except RateLimitError as e:
+        print(e)
+        time.sleep(3)
+        print("Retrying after rate limit error...")
+        return ask_chatgpt_describe_image(azure_openai_api_key, image_path, prompt=prompt)
     return(completion.choices[0].message.content)
 
 
