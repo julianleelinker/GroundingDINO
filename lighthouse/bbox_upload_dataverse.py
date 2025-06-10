@@ -59,7 +59,7 @@ def check_and_execute(data_path, command):
 
 def main(conda_env, prefix):
     print("Starting auto upload to dataverse")
-    wait_time = 2*3600
+    wait_time = 5400
     # coco_root ='/mnt/lighthouseACD/ACD-gdino-COCO'
     # coco_root = '/mnt/lighthouseACD/QAed-data//bbox/hand'
     # coco_root = "/mnt/data-home/mobility-multimodal/revised_bbox/datasets"
@@ -67,18 +67,17 @@ def main(conda_env, prefix):
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0422"
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0423"
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0428"
-    coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0526"
+    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-merged"
     file_path_list =[
         p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Transportation_20250319_image_list_keep_0.95/split37"
     ]
-    file_path_list = DINO_COCO_SPLITS_0508
+    # file_path_list = DINO_COCO_SPLITS_0508
     # file_path_list.extend(DINO_COCO_SPLITS_0509)
     
-    # file_path_list = file_path_list[:1]
     n_batch = 0
     # import ipdb; ipdb.set_trace()
-    while n_batch < 3:
+    while n_batch < 4:
         count = 0
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
             print(f"dataset number {i}")
@@ -88,10 +87,10 @@ def main(conda_env, prefix):
 
             # for checkpoint
             # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
-            # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project {DATAVERSE_BBOX_GOV_PROJECT_ID_202505} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project {DATAVERSE_BBOX_GOV_PROJECT_ID_202505} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
             # for QA
-            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project {DATAVERSE_BBOX_QA_2ND_PROJECT_ID} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+            # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project {DATAVERSE_BBOX_QA_2ND_PROJECT_ID} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
             success = check_and_execute(file_path, command)
             count += int(success)

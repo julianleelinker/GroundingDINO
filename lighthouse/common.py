@@ -227,7 +227,8 @@ DINO_COCO_FOLDERS_0508, DINO_COCO_SPLITS_0508 = get_dino_coco_folders_and_splits
 #     DINO_COCO_SPLITS_0418.extend(split_list)
 
 AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS \
-    | AUGMENTED_CURATED_JSONS_0418
+    | AUGMENTED_CURATED_JSONS_0418 \
+    | AUGMENTED_CURATED_JSONS_0508
 
 
 def get_depart(path: str | pathlib.Path, chout: bool=False, chin: bool=False) -> str | None:

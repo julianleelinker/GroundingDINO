@@ -9,8 +9,8 @@ import copy
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0508)
-# new_infer_folders = DINO_COCO_SPLITS_0418
+# new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0508)
+new_infer_folders = []
 print(f"{len(new_infer_folders)=}")
 new_json_list = []
 new_json_list = [path for path in pathlib.Path(DATA_CURATION_ROOT).rglob('*image_list_keep*') if path.is_file()]
@@ -26,6 +26,7 @@ qa_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data//bbox/hand0422/": "*/*",
     "/mnt/lighthouseACD/QAed-data//bbox/hand0428/": "*/*",
     "/mnt/lighthouseACD/QAed-data//bbox/hand0521/": "*/*",
+    "/mnt/lighthouseACD/QAed-data//bbox/hand0526/": "*/*",
 }
 
 column_names = ["not QA", "done QA", "pass QA", "new json", "new infered done", "new infered uploaded"]
@@ -33,10 +34,8 @@ row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
 # check all uploaded stats
-prev_uploaded_folders = copy.deepcopy(
-    # DINO_COCO_FOLDERS_0418
-    DINO_COCO_SPLITS_0418
-)
+prev_uploaded_folders = copy.deepcopy(DINO_COCO_SPLITS_0418)
+prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0508))
 for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     prev_uploaded_folders.extend(folder_list)
