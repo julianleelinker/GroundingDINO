@@ -44,6 +44,17 @@ def get_yolo_bboxes_from_coco_anno(image_path, anno_list):
     return bboxes, (W, H)
 
 
+def get_cocoo_bboxes_from_yolo_bboxes(bboxes, H, W):
+    # bbox_list = [anno["bbox"] for anno in anno_list]
+    # image_pil = Image.open(image_path)
+    # W, H = image_pil.width, image_pil.height
+    # bboxes = torch.tensor(bbox_list, dtype=torch.float32)
+    # shift top left corner to center
+    bboxes[:, :2] -= 0.5*bboxes[:, 2:]
+    bboxes = bboxes * torch.Tensor([W, H, W, H])
+    return bboxes
+
+
 def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_root, scale=4.0, merge_threshold=0.1, plot_mode=False, full_image_prompt = "Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.​", cropped_image_prompt = "Provide a one-sentence caption​ for the provided image."):
     image_pil = Image.open(image_path)
     W, H = image_size
