@@ -44,7 +44,7 @@ def compute_intersection_over_union(bboxes1, bboxes2=None):
     height = torch.max(torch.tensor([0]), mi[:, 3, :] - ma[:, 1, :])
     intersection_area = width * height
     # ios = intersection_area / area_min # ios
-    ios = intersection_area / (area1+area2) # iou
+    ios = intersection_area / (area1+area2-intersection_area) # iou
     return ios
 
 def merge_two_bbox(bbox1, bbox2):

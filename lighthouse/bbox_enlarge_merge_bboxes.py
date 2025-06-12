@@ -9,10 +9,10 @@ import json
 import fire
 
 
-def main(scale=2.5, merge_threshold=0.26):
+def main(scale=1.0, merge_threshold=0.38):
     data_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526/"
     split_root_list = list(pathlib.Path(f"{data_root}").glob("*/*"))
-    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0526-merge-updated")
+    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38")
 
     # split_root_list = DINO_COCO_SPLITS_0508
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/upload0527-merged")
@@ -23,7 +23,7 @@ def main(scale=2.5, merge_threshold=0.26):
 
     # split_root = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand0526/Transportation_20250109_image_list_keep_0.95/split16_0.30_0.35")
     print(len(split_root_list))
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     for split_root in tqdm.tqdm(split_root_list):
         if not split_root.is_dir():
             continue
@@ -31,7 +31,7 @@ def main(scale=2.5, merge_threshold=0.26):
 
         # output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
         # print(f"{output_root=}")
-        output_folder = output_root / f"{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}"
+        output_folder = output_root / f"{split_root.parent.name}/{split_root.name}"
 
         if (output_folder / "done").exists():
             print(f"Output folder {output_folder} already exists, skipping...")
@@ -53,7 +53,8 @@ def main(scale=2.5, merge_threshold=0.26):
         coco_anno = {
             "images": [],
             "annotations": [],
-            "categories": [{"id": i+1, "name": name} for i, name in enumerate(DINO_INFER_CLASSES)]
+            # "categories": [{"id": i+1, "name": name} for i, name in enumerate(DINO_INFER_CLASSES)]
+            "categories": [{"id": 1, "name": "object"}]
         }
         count = 0
         for image_id, (image_name, anno_list) in tqdm.tqdm(image_id_to_name_and_anno.items()):
