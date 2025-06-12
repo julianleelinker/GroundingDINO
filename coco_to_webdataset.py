@@ -47,7 +47,8 @@ def save_coco_to_webdataset(val_id_to_path_caption, output_path, base_name="shar
             sample = {
                 "__key__": pathlib.Path(image_path).stem,
                 "jpg": img_bytes,
-                "txt": caption_text[caption_idx],
+                # "json": caption_text[caption_idx],
+                "json": json.dumps(caption_text[:5], ensure_ascii=False),
             }
             sink.write(sample)
 
@@ -59,8 +60,9 @@ train_json_path = "/mnt/data-home/julian/coco/annotations/captions_train2017.jso
 val_id_to_path_caption = check_coco_caption_data(val_image_root, val_json_path)
 train_id_to_path_caption = check_coco_caption_data(train_image_root, train_json_path)
 
-output_path = "/mnt/data-home/julian/coco/val"
-# save_coco_to_webdataset(val_id_to_path_caption, output_path, caption_idx=0)
+output_path = "/mnt/data-home/julian/coco-catpion-web/val"
+save_coco_to_webdataset(val_id_to_path_caption, output_path, caption_idx=0)
 output_path = "/mnt/data-home/julian/coco/train"
-save_coco_to_webdataset(train_id_to_path_caption, output_path, caption_idx=0)
+# save_coco_to_webdataset(train_id_to_path_caption, output_path, caption_idx=0)
 import ipdb; ipdb.set_trace()
+
