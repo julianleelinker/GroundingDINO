@@ -60,14 +60,17 @@ def merge_by_iou(bboxes, image_size = (1.0, 1.0), threshold = 0.5):
     H, W = image_size
     bboxes = bboxes * torch.Tensor([W, H, W, H])
     while True:
-        ios = compute_intersection_over_union(bboxes)
-        ios = ios - 2.0*torch.eye(ios.size(0))
-        max_pos = torch.unravel_index(torch.argmax(ios), ios.shape)
-        if ios[max_pos]<threshold:
-            break
-        bboxes[max_pos[0]] = merge_two_bbox(bboxes[max_pos[0]], bboxes[max_pos[1]])
-        bboxes = torch.cat((bboxes[:max_pos[1], :], bboxes[max_pos[1]+1:, :]), dim=0)
-        labels[max_pos[0]] = labels[max_pos[0]] + '_' + labels.pop(max_pos[1])
+        try:
+            ios = compute_intersection_over_union(bboxes)
+            ios = ios - 2.0*torch.eye(ios.size(0))
+            max_pos = torch.unravel_index(torch.argmax(ios), ios.shape)
+            if ios[max_pos]<threshold:
+                break
+            bboxes[max_pos[0]] = merge_two_bbox(bboxes[max_pos[0]], bboxes[max_pos[1]])
+            bboxes = torch.cat((bboxes[:max_pos[1], :], bboxes[max_pos[1]+1:, :]), dim=0)
+            # labels[max_pos[0]] = labels[max_pos[0]] + '_' + labels.pop(max_pos[1])
+        except IndexError as e:
+            import ipdb; ipdb.set_trace()
     bboxes = bboxes / torch.Tensor([W, H, W, H])
     bboxes = xyxy_to_xywh(bboxes)
     return bboxes, labels

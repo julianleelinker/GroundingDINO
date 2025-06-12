@@ -67,7 +67,7 @@ def main(conda_env, prefix):
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0422"
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0423"
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0428"
-    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-merged"
+    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-merge-updated"
     file_path_list =[
         p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Transportation_20250319_image_list_keep_0.95/split37"
@@ -77,7 +77,7 @@ def main(conda_env, prefix):
     
     n_batch = 0
     # import ipdb; ipdb.set_trace()
-    while n_batch < 4:
+    while n_batch < 5:
         count = 0
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
             print(f"dataset number {i}")
@@ -95,7 +95,7 @@ def main(conda_env, prefix):
             success = check_and_execute(file_path, command)
             count += int(success)
 
-            if count >= 10:
+            if count >= 20:
                 n_batch += 1
                 break
 
