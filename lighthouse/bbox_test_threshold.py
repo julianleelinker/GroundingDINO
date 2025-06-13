@@ -7,31 +7,19 @@ from infer_settings import DINO_INFER_CLASSES
 from common import DINO_COCO_SPLITS_0508
 import json
 import fire
+from inference_on_a_image import plot_boxes_to_image
 
 
-def main(scale=1.0, merge_threshold=0.38):
+def main(scale=1.0, merge_threshold=0.26):
     data_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526/"
-    # split_root_list = list(pathlib.Path(f"{data_root}").glob("*/*"))
-    # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38")
+    output_root = pathlib.Path("test_threshold")
+    split_root = pathlib.Path("threshold_test")
 
-    split_root_list = DINO_COCO_SPLITS_0508
-    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38")
+    # import ipdb; ipdb.set_trace()
+    # for split_root in tqdm.tqdm(split_root_list):
+    for merge_threshold in [0.50, 0.26, 0.38]:
 
-    # for split in split_root:
-    #     image_path_list = list(split.rglob("images/*"))
-    #     print(f"Split: {split}, Number of images: {len(image_path_list)}")
-
-    # split_root = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand0526/Transportation_20250109_image_list_keep_0.95/split16_0.30_0.35")
-    print(len(split_root_list))
-    import ipdb; ipdb.set_trace()
-    for split_root in tqdm.tqdm(split_root_list):
-        if not split_root.is_dir():
-            continue
-        # print(split_root)
-
-        # output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
-        # print(f"{output_root=}")
-        output_folder = output_root / f"{split_root.parent.name}/{split_root.name}"
+        output_folder = pathlib.Path(f"{output_root}_iou{merge_threshold:.2f}")
 
         if (output_folder / "done").exists():
             print(f"Output folder {output_folder} already exists, skipping...")
@@ -53,7 +41,6 @@ def main(scale=1.0, merge_threshold=0.38):
         coco_anno = {
             "images": [],
             "annotations": [],
-            # "categories": [{"id": i+1, "name": name} for i, name in enumerate(DINO_INFER_CLASSES)]
             "categories": [{"id": 1, "name": "object"}]
         }
         count = 0
@@ -69,7 +56,18 @@ def main(scale=1.0, merge_threshold=0.38):
                 new_bboxes[:, 2:] *= scale
                 new_bboxes = fix_boundary(new_bboxes)
                 merged_bboxes, _ = merge_by_iou(new_bboxes, image_size=(H, W), threshold=merge_threshold)
-                merged_bboxes = get_cocoo_bboxes_from_yolo_bboxes(merged_bboxes, H, W)
+                # merged_bboxes = get_cocoo_bboxes_from_yolo_bboxes(merged_bboxes, H, W)
+
+            merged_labels = [1] * len(merged_bboxes)  
+            pred_dict = {
+                "boxes": merged_bboxes,
+                "labels":  merged_labels,
+                "size": (H, W),
+            }
+            image_pil = Image.open(image_path)
+            image_pil = plot_boxes_to_image(image_pil, pred_dict, color=(0, 255, 0))[0] # Uses imported plot_boxes_to_image
+            image_pil.save(pathlib.Path(output_folder) / f"{image_path.name}")
+            continue
 
             image_anno = {
                 "id": image_id,
@@ -96,8 +94,8 @@ def main(scale=1.0, merge_threshold=0.38):
         with open(coco_label_path, 'w') as f:
             json.dump(coco_anno, f, indent=4)
 
-        assert len(coco_anno['images']) == len(image_id_to_name_and_anno), f"n images in new {len(coco_anno['images'])} does not match n images in old image_id_to_name_and_anno {len(image_id_to_name_and_anno)}"
-        (output_folder / "done").touch()
+        # assert len(coco_anno['images']) == len(image_id_to_name_and_anno), f"n images in new {len(coco_anno['images'])} does not match n images in old image_id_to_name_and_anno {len(image_id_to_name_and_anno)}"
+        # (output_folder / "done").touch()
 
 
 if __name__ == "__main__":
