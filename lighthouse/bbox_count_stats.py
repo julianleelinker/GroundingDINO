@@ -32,7 +32,7 @@ qaed_merged_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38/": "*/*",
 }
 
-column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "new infered done", "new infered uploaded"]
+column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "infer this month", "new infered uploaded"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
@@ -88,7 +88,7 @@ for json_path in new_json_list:
 # check recent running stats
 for folder in new_infer_folders:
     if (folder / "done").exists():
-        df.loc[get_depart(folder), "new infered done"] += len(list((folder / "images").glob("*")))
+        df.loc[get_depart(folder), "infer this month"] += len(list((folder / "images").glob("*")))
         if (folder / "uploaded").exists():
             df.loc[get_depart(folder), "new infered uploaded"] += len(list((folder / "images").glob("*")))
 print(df.map(lambda x: f"{x:,}"))
@@ -103,13 +103,13 @@ for col_name, folder_list in col_name_to_folder_list.items():
 # import ipdb; ipdb.set_trace()
 
 
-df["total"] = df["not QA/merged"] + df["pass QA/merged"] + df["new infered done"]
+df["total"] = df["not QA/merged"] + df["pass QA/merged"] + df["infer this month"]
 df.loc["total"] = df.sum(axis=0)
 
 df_formatted = df.map(lambda x: f"{x:,}")
 df_formatted = df_formatted.rename_axis('depart', axis='columns')
 print(df_formatted)
-df_showed = df_formatted[["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "new infered done", "total"]]
+df_showed = df_formatted[["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "infer this month", "total"]]
 
 today = date.today()
 date_str = today.strftime("%m/%d")
