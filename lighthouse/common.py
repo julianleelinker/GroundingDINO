@@ -201,6 +201,23 @@ AUGMENTED_CURATED_JSONS_0508 = {
     "Public_Works/20250206/Public_Works_20250206_image_list_keep_0.95.json",
 }
 AUGMENTED_CURATED_JSONS_0508 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0508}
+AUGMENTED_CURATED_JSONS_0617 = {
+    "Public_Works/20250526/Public_Works_20250526_image_list_keep_0.95.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_7.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_9.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_1.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_5.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_6.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_2.json",
+    "Mass_Rapid_Transit/20250515/Mass_Rapid_Transit_20250515_image_list_keep_0.95.json",
+    "Sports_Development/20250526/Sports_Development_20250526_image_list_keep_0.95.json",
+    "Sports_Development/20250610/Sports_Development_20250610_image_list_keep_0.95.json",
+    "Taiwan_Power/20250526/Taiwan_Power_20250526_image_list_keep_0.95.json",
+    "Taiwan_Power/20250526/Taiwan_Power_20250526_image_list_keep_0.95-deprecated.json",
+    "Taiwan_Power/20250610/Taiwan_Power_20250610_image_list_keep_0.95.json",
+}
+AUGMENTED_CURATED_JSONS_0617 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0617}
+
 DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
 
 def get_dino_coco_folders_and_splits(dino_coco_target_root, augmented_curated_jsons):
@@ -216,6 +233,7 @@ def get_dino_coco_folders_and_splits(dino_coco_target_root, augmented_curated_js
 
 DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0418 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0418)
 DINO_COCO_FOLDERS_0508, DINO_COCO_SPLITS_0508 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0508)
+DINO_COCO_FOLDERS_0617, DINO_COCO_SPLITS_0617 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0617)
 
 
 # import ipdb; ipdb.set_trace()
