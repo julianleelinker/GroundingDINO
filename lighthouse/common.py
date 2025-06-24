@@ -213,7 +213,6 @@ AUGMENTED_CURATED_JSONS_0617 = {
     "Sports_Development/20250526/Sports_Development_20250526_image_list_keep_0.95.json",
     "Sports_Development/20250610/Sports_Development_20250610_image_list_keep_0.95.json",
     "Taiwan_Power/20250526/Taiwan_Power_20250526_image_list_keep_0.95.json",
-    "Taiwan_Power/20250526/Taiwan_Power_20250526_image_list_keep_0.95-deprecated.json",
     "Taiwan_Power/20250610/Taiwan_Power_20250610_image_list_keep_0.95.json",
 }
 AUGMENTED_CURATED_JSONS_0617 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0617}

@@ -18,6 +18,7 @@ new_json_list = []
 new_json_list = [path for path in pathlib.Path(DATA_CURATION_ROOT).rglob('*image_list_keep*') if path.is_file()]
 new_json_list = [x for x in new_json_list if x not in AUGMENTED_CURATED_EXCLUDED_JSONS]
 new_json_list = [x for x in new_json_list if get_depart(x) is not None] # this line exclude bus
+new_json_list = [x for x in new_json_list if "deprecated" not in str(x)] # this line exclude the deprecated json
 
 uploaded_root_to_pattern = {
     "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated": "*/*",
