@@ -135,12 +135,14 @@ def save_to_webdataset_auto(pairs, output_dir, base_name="shard", max_per_shard=
             img_buffer = io.BytesIO()
             image_pil.convert("RGB").save(img_buffer, format="jpeg")
             img_bytes = img_buffer.getvalue()
+            caption_bytes = caption_text.encode("utf-8")
 
             # Create sample
             sample = {
                 "__key__": pathlib.Path(image_name).stem,
                 "jpg": img_bytes,
-                "txt": caption_text,
+                # "txt": caption_text,
+                "txt": caption_bytes,
             }
             sink.write(sample)
 
@@ -156,66 +158,109 @@ def yield_image_text_name(folder_path):
         yield image_pil, text, image_path.name
 
 
-DATA_ROOTS_1 = {
-    "hand0422/Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35": None,
-    "hand0428/China_Steel_20250226_image_list_keep_0.95": None,
-    "hand0428/Mass_Rapid_Transit_20250109_image_list_keep_0.95_0.30_0.35": None,
-    "hand0428/Mass_Rapid_Transit_20250213_image_list_keep_0.95": None,
-    "hand0428/Ports_Corporation_20250226_image_list_keep_0.95": None,
-    "hand0428/Sports_Development_20241223_image_list_keep_0.95": None,
-    "hand0428/Water_Resources_20250106_image_list_keep_0.95": None,
+DATA_ROOTS_0 = {
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split1_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split29_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split2_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split31_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split3_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split4_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split5_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split6_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split7_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split8_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split9_0.30_0.35": None,
+    "hand0428/Public_Works_20250106_image_list_keep_0.95/split1_0.30_0.35": None,
 }
+
+DATA_ROOTS_1 = {
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split12_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split13_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split1_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split2_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split3_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split4_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split5_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split6_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split7_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split8_0.30_0.35": None,
+    "hand0428/Sports_Development_20241223_image_list_keep_0.95/split9_0.30_0.35": None,
+    "hand0428/Sports_Development_20250109_image_list_keep_0.95/split1_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split11_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split12_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split13_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split14_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split15_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split1_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split2_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split3_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split4_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split5_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split6_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split7_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split8_0.30_0.35": None,
+    "hand0428/Water_Resources_20250106_image_list_keep_0.95/split9_0.30_0.35": None,
+}
+
 DATA_ROOTS_2 = {
-    "hand0428/Public_Works_20241230_image_list_keep_0.95": None,
-    "hand0428/Public_Works_20250106_image_list_keep_0.95": None,
-    "hand0428/Sports_Development_20250109_image_list_keep_0.95": None,
-    "hand0521/Transportation_20250109_image_list_keep_0.95": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split19_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split20_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split21_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split23_0.30_0.35": None,
 }
 
 DATA_ROOTS_3 = {
-    "hand0521/Transportation_20250115_image_list_keep_0.95_rededuplicate" : (0, 17),
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split25_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split26_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split27_0.30_0.35": None,
+    "hand0428/Public_Works_20241230_image_list_keep_0.95/split28_0.30_0.35": None,
 }
 
-DATA_ROOTS_4 = {
-    "hand0521/Transportation_20250115_image_list_keep_0.95_rededuplicate" : (17, 34),
-}
 
+def main(scale=2.5, merge_threshold=0.35, plot_mode=False, split=0):
+    data_root_list = [
+        DATA_ROOTS_0,
+        DATA_ROOTS_1,
+        DATA_ROOTS_2,
+        DATA_ROOTS_3,
+    ]
+    split_root_list = data_root_list[split]
 
-def main(scale=2.5, merge_threshold=0.26, plot_mode=False):
-    # data_root_list = DATA_ROOTS_1
-    data_root_list = DATA_ROOTS_2
-    # data_root_list = DATA_ROOTS_3
-    # data_root_list = DATA_ROOTS_4
-
-    for data_root, split_range in tqdm.tqdm(data_root_list.items()):
-        data_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{data_root}")
+    for split_root, split_range in tqdm.tqdm(split_root_list.items()):
+        split_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{split_root}")
+        data_root = split_root.parent
         output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
-        split_list = list(data_root.glob("split*"))
-        if len(data_root_list) == 1 and split_range is not None:
-            split_list = split_list[split_range[0]:split_range[1]]
 
-        for split_root in tqdm.tqdm(split_list):
-            output_folder = pathlib.Path(f"{output_root}/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
-            if output_folder.exists():
-                print(f"Output folder {output_folder} already exists, skipping...")
-                continue
+        # for split_root in tqdm.tqdm(split_list):
+        output_folder = pathlib.Path(f"{output_root}/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
+        if output_folder.exists():
+            print(f"Output folder {output_folder} already exists, skipping...")
+            continue
 
-            image_id_to_name_and_anno = parse_coco_anno(split_root)
+        image_id_to_name_and_anno = parse_coco_anno(split_root)
 
-            tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
-            tmp_root.mkdir(parents=True, exist_ok=True)
-            os.chmod(tmp_root, 0o777)
+        tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
+        tmp_root.mkdir(parents=True, exist_ok=True)
+        os.chmod(tmp_root, 0o777)
 
-            # generate temp file for saving to webdataset
-            for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
-                image_path = pathlib.Path(split_root) / "images" / image_name
-                bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
-                coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+        # generate temp file for saving to webdataset
+        for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
+            image_path = pathlib.Path(split_root) / "images" / image_name
+            bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
+            coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
 
-            image_text_name = yield_image_text_name(tmp_root)
-            save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
-            shutil.rmtree(tmp_root)
+        image_text_name = yield_image_text_name(tmp_root)
+        save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
+        shutil.rmtree(tmp_root)
+# "deprecated"
 
 
 if __name__ == "__main__":
     fire.Fire(main)
+
+
+# data for metaclip
+# a json store the fowllowing information:
+# a list of dict, each dict contains:
+# "image_path": "/mnt/Jan/Sports_Development/20250109/NO.22_H車道/20250109_NO.22_H車道_2024_10_3 上午 (UTC+08_00) 09_59_59_s0.jpg",
+# "text":  "Provide a one-sentence caption​ for the provided image.", 
