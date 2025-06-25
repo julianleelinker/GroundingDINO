@@ -30,6 +30,7 @@ DEPART_MAP = {
     "Transportation"        : ("Transportation"    , "交通局",),
     "Water_Resources"       : ("Water_Resources"   , "水利局",),
 
+    "Bus"                   : ("Bus"               , "公車",),
     "Kaohsiung-full-dataset": ("Linker"            , "Linker",),
     "Linker_Vision_Data_V3" : ("Linker"            , "Linker",),
 }
