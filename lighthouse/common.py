@@ -247,7 +247,8 @@ DINO_COCO_FOLDERS_0617, DINO_COCO_SPLITS_0617 = get_dino_coco_folders_and_splits
 
 AUGMENTED_CURATED_EXCLUDED_JSONS = AUGMENTED_CURATED_EXCLUDED_JSONS \
     | AUGMENTED_CURATED_JSONS_0418 \
-    | AUGMENTED_CURATED_JSONS_0508
+    | AUGMENTED_CURATED_JSONS_0508 \
+    | AUGMENTED_CURATED_JSONS_0617
 
 
 def get_depart(path: str | pathlib.Path, chout: bool=False, chin: bool=False) -> str | None:
@@ -280,8 +281,9 @@ def change_vlm_image_id(path: str | pathlib.Path, start_id: int=1) -> int:
     return new_id
 
 
-def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, path_to_name = "name_to_path.txt", always_save_mapping: bool = False):
+def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, path_to_name = "name_to_path.txt", mapping_in_parent: bool = False, always_save_mapping: bool = False):
     assert not dst_root.exists(), "dst_root already exists"
+    dst_root = pathlib.Path(dst_root)
     dst_root.mkdir(exist_ok=True, parents=True)
     os.chmod(dst_root, 0o777)
     name_to_path_map = []
@@ -299,13 +301,21 @@ def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, pa
             count += 1
             rename_path = rename_path.parent / (f"{dst_path.stem}_{count}{rename_path.suffix}")
 
-        name_to_path_map.append(f"'{rename_path.name}','{src_path}'")
+        if mapping_in_parent:
+            name_to_path_map.append(f"'{rename_path.parent.name}/{rename_path.name}','{src_path}'")
+        else:
+            name_to_path_map.append(f"'{rename_path.name}','{src_path}'")
         shutil.copy2(src_path, rename_path)
 
     if always_save_mapping or save_path_map:
-        with open(dst_root / path_to_name, "w") as f:
-            f.write("\"copied_name\",\"original_path\"\n")
-            f.write("\n".join(name_to_path_map))
+        if mapping_in_parent:
+            with open(dst_root.parent / path_to_name, "w") as f:
+                f.write("\"copied_name\",\"original_path\"\n")
+                f.write("\n".join(name_to_path_map))
+        else:
+            with open(dst_root / path_to_name, "w") as f:
+                f.write("\"copied_name\",\"original_path\"\n")
+                f.write("\n".join(name_to_path_map))
 
 
 def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0, split_number: int=0):
@@ -322,7 +332,7 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         else:
             split_number = len(splited_image_list)
         for i, chunk in tqdm.tqdm(enumerate(splited_image_list[:split_number]), total=split_number):
-            copy_images_in_image_list(chunk, dst_root / f"split{i}", path_to_name, always_save_mapping=True)
+            copy_images_in_image_list(chunk, dst_root / f"split{i}", f"split{i}_{path_to_name}", always_save_mapping=True, mapping_in_parent=True)
 
 
 STATS_COLUMN_DTYPES = {

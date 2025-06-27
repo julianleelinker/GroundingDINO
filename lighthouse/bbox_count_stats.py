@@ -9,8 +9,8 @@ import copy
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0617)
-# new_infer_folders = []
+# new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0617)
+new_infer_folders = []
 print(f"{len(new_infer_folders)=}")
 # for counting new jsons for infer
 # new_json_list = AUGMENTED_CURATED_JSONS_0617
@@ -32,6 +32,7 @@ qaed_merged_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/hand0521/": "*/*",
     "/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38/": "*/*",
     "/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38/": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38/": "*/*/*",
 }
 
 column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "infer this month", "new infered uploaded"]
