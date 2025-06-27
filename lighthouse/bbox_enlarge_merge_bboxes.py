@@ -4,7 +4,7 @@ from bbox_gpt import parse_coco_anno, get_yolo_bboxes_from_coco_anno, fix_bounda
 import os
 from PIL import Image, ImageDraw
 from infer_settings import DINO_INFER_CLASSES
-from common import DINO_COCO_SPLITS_0508
+from common import DINO_COCO_SPLITS_0508, DINO_COCO_SPLITS_0617
 import json
 import fire
 
@@ -14,8 +14,9 @@ def main(scale=1.0, merge_threshold=0.38):
     # split_root_list = list(pathlib.Path(f"{data_root}").glob("*/*"))
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38")
 
-    split_root_list = DINO_COCO_SPLITS_0508
-    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38")
+    # split_root_list = DINO_COCO_SPLITS_0508
+    split_root_list = DINO_COCO_SPLITS_0617
+    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38")
 
     # for split in split_root:
     #     image_path_list = list(split.rglob("images/*"))

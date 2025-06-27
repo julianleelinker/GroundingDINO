@@ -68,9 +68,10 @@ def main(conda_env, prefix):
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0423"
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0428"
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38"
-    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38"
+    # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38"
+    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38"
     file_path_list =[
-        p for p in pathlib.Path(coco_root).glob('*/*') if p.is_dir()
+        p for p in pathlib.Path(coco_root).glob('*/*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Transportation_20250319_image_list_keep_0.95/split37"
     ]
     # file_path_list = DINO_COCO_SPLITS_0508
@@ -86,6 +87,10 @@ def main(conda_env, prefix):
     while n_batch < 22:
         count = 0
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
+            project_id = int(file_path.parent.parent.name.split('-')[-1])
+            print(file_path)
+            print(project_id)
+
             print(f"dataset number {i}")
             depart, split = get_depart_date(file_path, ch=True)
             dataset_name = f"{prefix}_{depart}_{split}"
@@ -95,7 +100,9 @@ def main(conda_env, prefix):
 
             # for checkpoint
             # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project 121 --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
-            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project {DATAVERSE_BBOX_GOV_PROJECT_ID_202506} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+
+            # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project {DATAVERSE_BBOX_GOV_PROJECT_ID_202506} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
+            command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 697aa90b-00d0-4455-8863-bd2ad70a93e7 -project {project_id} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
 
             # for QA
             # command = f'conda run -n {conda_env} python tools/import_dataset_from_local.py -host https://visionai.linkervision.ai/dataverse/curation -e julianlee@linkervision.com -p {DATAVERSE_PASSWORD} -s 2bd928e5-a98f-4aae-a093-8545c57c103f  -project {DATAVERSE_BBOX_QA_2ND_PROJECT_ID} --folder {file_path} -name {dataset_name} -type annotated_data -anno coco'
@@ -103,7 +110,7 @@ def main(conda_env, prefix):
             success = check_and_execute(file_path, command)
             count += int(success)
 
-            if count >= 10:
+            if count >= 50:
                 n_batch += 1
                 break
 

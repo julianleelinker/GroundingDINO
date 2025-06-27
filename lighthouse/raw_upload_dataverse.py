@@ -79,13 +79,15 @@ def main(conda_env, prefix):
     # ]
     
     n_batch = 0
+    print(f"{len(file_path_list)=}")
     import ipdb; ipdb.set_trace()
-    while n_batch < 22:
+    while n_batch < 50:
         count = 0
         for i, file_path in tqdm.tqdm(enumerate(file_path_list), total=len(file_path_list)):
             print(f"dataset number {i}")
             depart, split = get_depart_date(file_path, ch=True)
             dataset_name = f"{prefix}_{depart}_{split}"
+            # dataset_name = f"{prefix}_中鋼_20250506"
 
             # dataset_name = file_path.name
             # import ipdb; ipdb.set_trace()
@@ -96,7 +98,7 @@ def main(conda_env, prefix):
             success = check_and_execute(file_path, command)
             count += int(success)
 
-            if count >= 10:
+            if count >= 50:
                 n_batch += 1
                 break
 
