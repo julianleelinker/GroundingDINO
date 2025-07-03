@@ -1,11 +1,11 @@
 import os
 import pathlib
 import tqdm
-from common import DINO_COCO_SOURCE_ROOT, copy_images_in_json, AUGMENTED_CURATED_JSONS_0617
+from common import DINO_COCO_SOURCE_ROOT, copy_images_in_json, AUGMENTED_CURATED_JSONS_0703
  
 
 def main():
-    json_list = AUGMENTED_CURATED_JSONS_0617
+    json_list = AUGMENTED_CURATED_JSONS_0703
 
     dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
 
@@ -16,6 +16,9 @@ def main():
         dst.mkdir(exist_ok=True, parents=True)
         os.chmod(dst, 0o777)
         copy_images_in_json(json_path, dst, is_image_list=True, split_size=10000)
+
+        # for copying and uploading raw images
+        # copy_images_in_json(json_path, dst, is_image_list=True, split_size=10000, mapping_in_parent=True)
 
 
 if __name__ == "__main__":

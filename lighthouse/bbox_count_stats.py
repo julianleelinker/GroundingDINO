@@ -2,15 +2,15 @@ import pathlib
 import pandas as pd
 import json
 from datetime import date
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0617, AUGMENTED_CURATED_EXCLUDED_JSONS
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703
 import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-# new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0617)
-new_infer_folders = []
+new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0703)
+# new_infer_folders = []
 print(f"{len(new_infer_folders)=}")
 # for counting new jsons for infer
 # new_json_list = AUGMENTED_CURATED_JSONS_0617
@@ -20,6 +20,7 @@ new_json_list = [x for x in new_json_list if x not in AUGMENTED_CURATED_EXCLUDED
 new_json_list = [x for x in new_json_list if get_depart(x) is not None] # this line exclude illegal json
 new_json_list = [x for x in new_json_list if get_depart(x) != "Bus"] # this line exclude bus
 new_json_list = [x for x in new_json_list if "deprecated" not in str(x)] # this line exclude the deprecated json
+new_json_list = AUGMENTED_CURATED_JSONS_0703
 
 uploaded_root_to_pattern = {
     "/mnt/data-home/mobility-multimodal/revised_bbox/deduplicated": "*/*",

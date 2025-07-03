@@ -217,6 +217,13 @@ AUGMENTED_CURATED_JSONS_0617 = {
     "Taiwan_Power/20250610/Taiwan_Power_20250610_image_list_keep_0.95.json",
 }
 AUGMENTED_CURATED_JSONS_0617 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0617}
+AUGMENTED_CURATED_JSONS_0703 = {
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_0.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_3.json",
+    "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_4.json",
+}
+AUGMENTED_CURATED_JSONS_0703 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0703}
+
 
 DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"
 
@@ -234,6 +241,7 @@ def get_dino_coco_folders_and_splits(dino_coco_target_root, augmented_curated_js
 DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0418 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0418)
 DINO_COCO_FOLDERS_0508, DINO_COCO_SPLITS_0508 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0508)
 DINO_COCO_FOLDERS_0617, DINO_COCO_SPLITS_0617 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0617)
+DINO_COCO_FOLDERS_0703, DINO_COCO_SPLITS_0703 = get_dino_coco_folders_and_splits(DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0703)
 
 
 # import ipdb; ipdb.set_trace()
@@ -318,7 +326,7 @@ def copy_images_in_image_list(image_list: list, dst_root: str | pathlib.Path, pa
                 f.write("\n".join(name_to_path_map))
 
 
-def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0, split_number: int=0):
+def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.Path, is_image_list: bool=True, path_to_name = "name_to_path.txt", split_size: int=0, split_number: int=0, mapping_in_parent: bool = False):
     with open(json_path, "r") as f:
         image_list = json.load(f)
     if not is_image_list:
@@ -332,7 +340,7 @@ def copy_images_in_json(json_path: str | pathlib.Path, dst_root: str | pathlib.P
         else:
             split_number = len(splited_image_list)
         for i, chunk in tqdm.tqdm(enumerate(splited_image_list[:split_number]), total=split_number):
-            copy_images_in_image_list(chunk, dst_root / f"split{i}", f"split{i}_{path_to_name}", always_save_mapping=True, mapping_in_parent=True)
+            copy_images_in_image_list(chunk, dst_root / f"split{i}", f"split{i}_{path_to_name}", always_save_mapping=True, mapping_in_parent=mapping_in_parent)
 
 
 STATS_COLUMN_DTYPES = {
