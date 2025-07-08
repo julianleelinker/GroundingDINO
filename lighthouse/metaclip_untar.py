@@ -15,7 +15,7 @@ def untar_all_under_split_dirs(root_dir):
                     except Exception as e:
                         print(f"  ❌ Failed to extract {tar_path}: {e}")
 
-root_dir = "/mnt/lighthouseACD/image_text-back/hand0428"
+root_dir = "/mnt/lighthouseACD/image_text/hand0428"
 untar_all_under_split_dirs(root_dir)
 
 # Example usage: scan the folders you already extracted

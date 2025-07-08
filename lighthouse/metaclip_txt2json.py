@@ -3,7 +3,8 @@ import pathlib
 import tqdm
 
 
-data_root = "/mnt/lighthouseACD/image_text-back/"
+# data_root = "/mnt/lighthouseACD/image_text-back/"
+data_root = "/mnt/lighthouseACD/image_text"
 image_list = list(pathlib.Path(data_root).rglob("*.jpg"))
 
 # data for metaclip
