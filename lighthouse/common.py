@@ -223,6 +223,10 @@ AUGMENTED_CURATED_JSONS_0703 = {
     "Transportation/20250516/Transportation_20250516_image_list_keep_0.95_part_4.json",
 }
 AUGMENTED_CURATED_JSONS_0703 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0703}
+AUGMENTED_CURATED_JSONS_0715 = {
+    "Ports_Corporation/20250124/Ports_Corporation_20250124_image_list_keep_0.95.json",
+}
+AUGMENTED_CURATED_JSONS_0715 = {pathlib.Path(f"{DATA_CURATION_ROOT}/{x}") for x in AUGMENTED_CURATED_JSONS_0715}
 
 
 DINO_COCO_TARGET_ROOT_NEW = "/mnt/lighthouseACD/ACD-gdino-COCO-new"

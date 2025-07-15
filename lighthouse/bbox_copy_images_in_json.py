@@ -1,11 +1,11 @@
 import os
 import pathlib
 import tqdm
-from common import DINO_COCO_SOURCE_ROOT, copy_images_in_json, AUGMENTED_CURATED_JSONS_0703
+from common import DINO_COCO_SOURCE_ROOT, copy_images_in_json, AUGMENTED_CURATED_JSONS_0715
  
 
 def main():
-    json_list = AUGMENTED_CURATED_JSONS_0703
+    json_list = AUGMENTED_CURATED_JSONS_0715
 
     dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
 
