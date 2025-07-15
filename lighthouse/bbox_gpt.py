@@ -13,6 +13,8 @@ from infer_settings import AZURE_OPENAI_API_KEY
 from inference_on_a_image import load_image, load_model, get_grounding_output, plot_boxes_to_image, infer_an_image, infer_an_image_text_list
 from box_utils import xywh_to_xyxy, fix_boundary, merge_by_iou
 from chatgpt import encode_image, ask_chatgpt_describe_image, ask_chatgpt_describe_image_find_suitable_answer, convert_pil_to_base64, generate_vlm_pretraining_annotation
+from common import get_depart
+from collections import defaultdict
 
 
 def parse_coco_anno(coco_root):
@@ -114,6 +116,65 @@ def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_roo
         image_path.unlink()
 
 
+def coco_bbox_gpt_generate_image_text_new(image_path, bboxes, image_size, output_root, json_data, scale=4.0, merge_threshold=0.1, plot_mode=False, full_image_prompt = "Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.​", cropped_image_prompt = "Provide a one-sentence caption​ for the provided image."):
+    image_pil = Image.open(image_path)
+    W, H = image_size
+
+    if plot_mode:
+        pred_dict = {
+            "size": (H, W),
+            "boxes": bboxes,
+            "labels": [x for x in range(len(bboxes))],
+        }
+        image_tmp = plot_boxes_to_image(image_pil, pred_dict, color=(255, 0, 0))[0] # Uses imported plot_boxes_to_image
+
+    bboxes[:, 2:] *= scale
+    bboxes = fix_boundary(bboxes)
+    merged_bboxes, merged_labels = merge_by_iou(bboxes, image_size=(H, W), threshold=merge_threshold)
+
+    if plot_mode:
+        pred_dict["boxes"] = merged_bboxes
+        pred_dict['labels'] = merged_labels
+        image_tmp = plot_boxes_to_image(image_tmp, pred_dict, color=(0, 255, 0))[0] # Uses imported plot_boxes_to_image
+        image_tmp.save(pathlib.Path(output_root) / f"{image_path.name}")
+        return
+
+    gpt_bboxes = xywh_to_xyxy(merged_bboxes)
+    gpt_bboxes = gpt_bboxes * torch.Tensor([W, H, W, H])
+
+
+    # import ipdb; ipdb.set_trace()
+    # # save image_pil to output_root_dir
+    for i, bbox in enumerate(gpt_bboxes):
+        instance_name = f"{image_path.stem}-{i}"
+        cropped_image_path = pathlib.Path(output_root) / f"{instance_name}.jpg"
+        # json_path = pathlib.Path(output_root) / f"{instance_name}.json"
+        if cropped_image_path.exists():
+            continue
+        bbox_int = torch.ceil(bbox)
+        cropped_image = image_pil.crop((int(bbox_int[0]), int(bbox_int[1]), int(bbox_int[2]), int(bbox_int[3])))
+        cropped_image.save(cropped_image_path)
+        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
+        if response is None:
+            cropped_image_path.unlink()
+            continue
+        # with open(json_path, "w") as f:
+        #     json.dump(response, f, indent=4, ensure_ascii=False)
+
+    instance_name = image_path.stem
+    image_path = pathlib.Path(output_root) / f"{instance_name}.jpg"
+    json_path = pathlib.Path(output_root) / f"{instance_name}.json"
+    if image_path.exists() and json_path.exists():
+        return
+    image_pil.save(image_path)
+    response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
+    if response is not None:
+        with open(json_path, "w") as f:
+            json.dump(response, f, indent=4, ensure_ascii=False)
+    else:
+        image_path.unlink()
+
+
 def save_to_webdataset_auto(pairs, output_dir, base_name="shard", max_per_shard=1000):
     """
     Save image-text pairs to WebDataset shards with automatic shard rotation.
@@ -145,6 +206,20 @@ def save_to_webdataset_auto(pairs, output_dir, base_name="shard", max_per_shard=
                 "txt": caption_bytes,
             }
             sink.write(sample)
+
+
+def save_to_jpg_txt(pairs, output_dir):
+    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+    os.chmod(output_dir, 0o777)
+    for image_pil, caption_text, image_name in pairs:
+        # Build full paths
+        jpg_path = output_dir / f"{image_name.stem}.jpg"
+        txt_path = output_dir / f"{image_name.stem}.txt"
+        # 1. Save image
+        # Pillow handles the open file descriptor, so no BytesIO is needed
+        image_pil.convert("RGB").save(jpg_path, format="JPEG", quality=95)
+        # 2. Save caption
+        txt_path.write_text(caption_text, encoding="utf-8")
 
 
 def yield_image_text_name(folder_path):
@@ -217,17 +292,38 @@ DATA_ROOTS_3 = {
 }
 
 
-def main(scale=2.5, merge_threshold=0.35, plot_mode=False, split=0):
-    data_root_list = [
-        DATA_ROOTS_0,
-        DATA_ROOTS_1,
-        DATA_ROOTS_2,
-        DATA_ROOTS_3,
-    ]
-    split_root_list = data_root_list[split]
+def main(scale=2.5, merge_threshold=0.35, plot_mode=False, batch=0):
+    check_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0521/"
+    check_folder_list = list(pathlib.Path(check_root).glob("*/*"))
+    check_count = defaultdict(int)
+    for folder in check_folder_list:
+        image_count = len(list((folder/"images").glob("*")))
+        print(folder)
+        print(image_count)
+        check_count[get_depart(folder)] += image_count
+    print(check_count)
 
-    for split_root, split_range in tqdm.tqdm(split_root_list.items()):
-        split_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{split_root}")
+
+
+    # data_root_list = [
+    #     DATA_ROOTS_0,
+    #     DATA_ROOTS_1,
+    #     DATA_ROOTS_2,
+    #     DATA_ROOTS_3,
+    # ]
+    batch_list = [
+        check_folder_list[:9],
+        check_folder_list[9:18],
+        check_folder_list[18:27],
+        check_folder_list[27:36],
+        check_folder_list[36:], # split4
+    ]
+    split_root_list = batch_list[batch]
+
+    # for split_root, split_range in tqdm.tqdm(split_root_list.items()):
+    json_data = []
+    for split_root in tqdm.tqdm(split_root_list):
+        # split_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{split_root}")
         data_root = split_root.parent
         output_root = pathlib.Path(f"/mnt/lighthouseACD/image_text/{data_root.parent.name}")
 
@@ -239,21 +335,48 @@ def main(scale=2.5, merge_threshold=0.35, plot_mode=False, split=0):
 
         image_id_to_name_and_anno = parse_coco_anno(split_root)
 
-        tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
-        tmp_root.mkdir(parents=True, exist_ok=True)
-        os.chmod(tmp_root, 0o777)
+        # tmp_root = pathlib.Path(f"/tmp/{split_root.parent.name}/{split_root.name}_s{scale}_mt{merge_threshold}")
+        # import ipdb; ipdb.set_trace()
+        # tmp_root.mkdir(parents=True, exist_ok=True)
+        # os.chmod(tmp_root, 0o777)
+        # /mnt/lighthouseACD/image_text/hand0428/China_Steel_20250226_image_list_keep_0.95/split0_0.30_0.35_s2.5_mt0.26
+        output_folder.mkdir(parents=True, exist_ok=True)
+        os.chmod(output_folder, 0o777)
 
         # generate temp file for saving to webdataset
         for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
             image_path = pathlib.Path(split_root) / "images" / image_name
             bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
-            coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+            # coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+            coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), output_folder, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
 
-        image_text_name = yield_image_text_name(tmp_root)
-        save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
-        shutil.rmtree(tmp_root)
+        # image_text_name = yield_image_text_name(tmp_root)
+        # save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)
+        # shutil.rmtree(tmp_root)
 # "deprecated"
 
+        image_root = output_folder
+        image_list = list(pathlib.Path(image_root).rglob("*.jpg"))
+        anno_list = []
+        for image_path in tqdm.tqdm(image_list):
+            json_path = image_path.with_suffix(".json")
+            with open(json_path, "r") as f:
+                text_content = json.load(f)
+            anno = {
+                "image_path": str(image_path),
+                "text": text_content.strip(),
+            }
+            anno_list.append(anno)
+
+        with open(f"{image_root}/metaclip_annos.json", "w") as f:
+            json.dump(anno_list, f, indent=4, ensure_ascii=False)
+
+        # remove all json except metaclip_annos.json
+        json_path_list = list(image_root.glob("*.json"))
+        for json_path in json_path_list:
+            if json_path.name == "metaclip_annos.json":
+                continue
+            json_path.unlink()
 
 if __name__ == "__main__":
     fire.Fire(main)
