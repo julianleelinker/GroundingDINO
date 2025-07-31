@@ -4,7 +4,7 @@ import subprocess
 import os
 import tqdm
 import fire
-from common import get_depart_date, DATAVERSE_PASSWORD, DATAVERSE_BBOX_GOV_PROJECT_ID_202505, DATAVERSE_BBOX_QA_2ND_PROJECT_ID, DATAVERSE_BBOX_GOV_PROJECT_ID_202506
+from common import get_depart_date, DATAVERSE_PASSWORD, DATAVERSE_BBOX_GOV_PROJECT_ID_202505, DATAVERSE_BBOX_QA_2ND_PROJECT_ID, DATAVERSE_BBOX_GOV_PROJECT_ID_202506, DATAVERSE_BBOX_GOV_PROJECT_ID_202507_1, DATAVERSE_BBOX_GOV_PROJECT_ID_202507_2, DATAVERSE_BBOX_GOV_PROJECT_ID_202507_3, DATAVERSE_BBOX_GOV_PROJECT_ID_202508_1, DATAVERSE_BBOX_GOV_PROJECT_ID_202508_2, DATAVERSE_BBOX_GOV_PROJECT_ID_202508_3
 from common import DINO_COCO_FOLDERS_0508, DINO_COCO_SPLITS_0508
 
 
@@ -28,7 +28,8 @@ def execute(data_path, command):
 def check_and_execute(data_path, command):
     done_path = pathlib.Path(data_path) / 'done'
     upload = pathlib.Path(data_path) / 'uploaded'
-    if done_path.exists() and not upload.exists():
+    # if done_path.exists() and not upload.exists():
+    if not upload.exists():
         print(f"COCO {data_path} done and not uploaded, Running command:")
         print(command)
         try:
@@ -49,7 +50,8 @@ def check_and_execute(data_path, command):
         except subprocess.CalledProcessError as e:
             print(f"Error executing command: {e}")
             return False
-    elif done_path.exists() and upload.exists():
+    # elif done_path.exists() and upload.exists():
+    elif upload.exists():
         print(f"COCO {data_path} done and already uploaded")
         return False
     else:
@@ -69,7 +71,9 @@ def main(conda_env, prefix):
     # coco_root = "/mnt/lighthouseACD/QAed-data//bbox/hand0428"
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38"
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38"
-    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38"
+    # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38"
+    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38"
+    # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38"
     file_path_list =[
         p for p in pathlib.Path(coco_root).glob('*/*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Transportation_20250319_image_list_keep_0.95/split37"

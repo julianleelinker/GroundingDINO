@@ -5,7 +5,7 @@ import os
 from PIL import Image, ImageDraw
 from infer_settings import DINO_INFER_CLASSES
 from common import DINO_COCO_SPLITS_0508, DINO_COCO_SPLITS_0617
-from bbox_non_qa import JULY_SPLIT_LIST
+from bbox_non_qa import JULY_SPLIT_LIST, AUG_SPLIT_LIST
 import json
 import fire
 
@@ -17,9 +17,10 @@ def main(scale=1.0, merge_threshold=0.38):
 
     # split_root_list = DINO_COCO_SPLITS_0508
     # split_root_list = DINO_COCO_SPLITS_0617
-    split_root_list = JULY_SPLIT_LIST
+    split_root_list = AUG_SPLIT_LIST
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38")
-    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38")
+    # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38")
+    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38")
 
     # for split in split_root:
     #     image_path_list = list(split.rglob("images/*"))

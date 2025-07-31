@@ -12,11 +12,6 @@ vlm_de_json = "/mnt/data-home/chungan/curation/checkpoint_1_and_2_image_list_kee
 
 # acd_de_json = "/mnt/data-home/chungan/acd_ckpt1_image_list_keep_0.95.json"
 acd_de_json = "/mnt/data-home/chungan/curation/julian_20250730_image_list_keep_0.95.json"
-
-# with open(acd_json, 'r') as f:
-#     acd_list = json.load(f)
-
-
 with open(acd_de_json, 'r') as f:
     acd_de_list = json.load(f)
 
@@ -26,6 +21,31 @@ for x in acd_de_list:
 for key, value in acd_de_dict.items():
     if len(value) > 1:
         print(key, value)
+
+tmp_path = "/mnt/lighthouseACD/QAed-data/bbox/dedup/Taiwan_Power/Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35/split0/images"
+tmp_list = pathlib.Path(tmp_path).glob("*")
+for x in tmp_list:
+    if x.name not in acd_de_dict:
+        acd_de_dict[x.name].append(str(x))
+
+qa_json_list = [
+    "/mnt/data-home/mobility-multimodal/data-curation/Taiwan_Power/20250106/Taiwan_Power_20250106_image_list_keep_0.95_updated.json",
+    "/mnt/data-home/mobility-multimodal/data-curation/Taiwan_Power/20250526/Taiwan_Power_20250526_image_list_keep_0.95_updated.json",
+    "/mnt/data-home/mobility-multimodal/data-curation/Taiwan_Power/20250610/Taiwan_Power_20250610_image_list_keep_0.95_updated.json",
+]
+qa_all_list = []
+for json_path in qa_json_list:
+    with open(json_path, 'r') as f:
+        qa_list = json.load(f)
+    qa_all_list.extend(qa_list)
+qa_all_list = [pathlib.Path(x).name for x in qa_all_list]
+qa_all_set = set(qa_all_list)
+print(f"before qa {len(acd_de_dict)=}")
+acd_de_dict = {k: v for k, v in acd_de_dict.items() if k in qa_all_set}
+print(f"after qa {len(acd_de_dict)=}")
+
+
+
 
 # with open(vlm_de_json, 'r') as f:
 #     vlm_de_list = json.load(f)
@@ -61,7 +81,7 @@ print(str(slice_folder_list[0]))
 
 accumulate_count = 0
 new_anno_list_dict = {}
-dry_run = True
+dry_run = False
 # import ipdb; ipdb.set_trace()
 
 
@@ -75,7 +95,6 @@ count = {
     "deduplicated": 0,
     "final": 0,
 }
-# slice_folder_list = slice_folder_list[:1]
 for slice_folder in tqdm.tqdm(slice_folder_list):
     image_list = list((slice_folder / "images").glob("*"))
     anno_path = slice_folder / "annotations" / "labels.json"

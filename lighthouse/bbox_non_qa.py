@@ -1,7 +1,8 @@
 import pathlib
 import copy
 
-from common import get_depart, DINO_COCO_SPLITS_0418, DINO_COCO_SPLITS_0508, DINO_COCO_SPLITS_0703
+from common import get_depart, DINO_COCO_SPLITS_0418, DINO_COCO_SPLITS_0508, DINO_COCO_SPLITS_0703, DINO_COCO_SPLITS_0715
+from collections import defaultdict
 
 
 
@@ -59,4 +60,14 @@ print(numbers)
 
 
 
-AUG_FOLDER_LIST = copy.deepcopy(public_works_folder_list[64:])
+# AUG_FOLDER_LIST = copy.deepcopy(public_works_folder_list[64:])
+AUG_SPLIT_LIST = [x for x in not_qa_folder_list if x not in JULY_SPLIT_LIST]
+print(f"{len(AUG_SPLIT_LIST)=}")
+AUG_SPLIT_LIST.extend(DINO_COCO_SPLITS_0715)
+print(f"{len(AUG_SPLIT_LIST)=}")
+count = defaultdict(int)
+for folder in AUG_SPLIT_LIST:
+    image_list = list((folder/"images").glob("*"))
+    count[get_depart(folder)] += len(image_list)
+
+import ipdb; ipdb.set_trace()
