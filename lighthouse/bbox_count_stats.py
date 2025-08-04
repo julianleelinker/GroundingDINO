@@ -2,16 +2,16 @@ import pathlib
 import pandas as pd
 import json
 from datetime import date
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703, DINO_COCO_SPLITS_0715
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703, DINO_COCO_SPLITS_0731
 import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-# new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0703)
+new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0731)
 # new_infer_folders.extend(DINO_COCO_SPLITS_0715)
-new_infer_folders = []
+# new_infer_folders = []
 print(f"{len(new_infer_folders)=}")
 # for counting new jsons for infer
 new_json_list = []
@@ -38,7 +38,16 @@ qaed_merged_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/": "*/*/*",
 }
 
-column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "infer this month", "new infered uploaded"]
+tmp_root_to_pattern = {
+    "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/project-id-695": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/project-id-696": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/project-id-697": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/project-id-698": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/project-id-699": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/project-id-700": "*/*",
+}
+
+column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "infer this month", "new infered uploaded", "695", "696", "697", "698", "699", "700"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 

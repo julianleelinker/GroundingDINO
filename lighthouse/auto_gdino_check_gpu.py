@@ -3,7 +3,7 @@ import time
 import pathlib
 import os
 import tqdm
-from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0509, copy_images_in_json
+from common import DINO_COCO_SOURCE_ROOT, DINO_COCO_TARGET_ROOT_NEW, AUGMENTED_CURATED_JSONS_0801, copy_images_in_json
 
 
 def get_gpu_memory(skip_gpu_list=[]):
@@ -29,11 +29,12 @@ def get_gpu_memory(skip_gpu_list=[]):
 
 
 def main():
-    json_list = AUGMENTED_CURATED_JSONS_0509
+    json_list = AUGMENTED_CURATED_JSONS_0801
 
     dst_root = pathlib.Path(DINO_COCO_SOURCE_ROOT)
 
     conda_env = "lighthouse"
+    conda_env = "groundingdino"
 
     source_root = DINO_COCO_SOURCE_ROOT
     mem_thres = 4000
