@@ -72,9 +72,10 @@ def main(conda_env, prefix):
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38"
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/upload0527-iou38"
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38"
-    # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38"
+    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38"
     # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38"
-    coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0731-iou38"
+    # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0731-iou38"
+    # coco_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0801-iou38"
     file_path_list =[
         p for p in pathlib.Path(coco_root).glob('*/*/*') if p.is_dir()
         # "/mnt/lighthouseACD/ACD-gdino-COCO-new/Transportation_20250319_image_list_keep_0.95/split37"

@@ -5,8 +5,9 @@ import json
 
 def main():
     # data_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526-merge-updated/"
-    data_root = "/mnt/lighthouseACD/QAed-data/bbox/upload0527-merged/"
-    split_root_list = list(pathlib.Path(f"{data_root}").glob("*/*"))
+    # data_root = "/mnt/lighthouseACD/QAed-data/bbox/upload0527-merged/"
+    data_root = "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/project-id-697/Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35/"
+    split_root_list = list(pathlib.Path(f"{data_root}").glob("*"))
     print(f"Number of splits: {len(split_root_list)}")
 
     # split_root_list = DINO_COCO_SPLITS_0508

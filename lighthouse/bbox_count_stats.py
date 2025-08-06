@@ -2,14 +2,14 @@ import pathlib
 import pandas as pd
 import json
 from datetime import date
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703, DINO_COCO_SPLITS_0731
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703, DINO_COCO_SPLITS_0801
 import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
 
-new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0731)
+new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0801)
 # new_infer_folders.extend(DINO_COCO_SPLITS_0715)
 # new_infer_folders = []
 print(f"{len(new_infer_folders)=}")
@@ -36,6 +36,8 @@ qaed_merged_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38/": "*/*/*",
     "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/": "*/*/*",
     "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/": "*/*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand0731-iou38/": "*/*/*",
+    # "/mnt/lighthouseACD/QAed-data/bbox/hand0801-iou38/": "*/*/*",
 }
 
 tmp_root_to_pattern = {
@@ -91,7 +93,8 @@ for json_path in new_json_list:
 
 # check recent running stats
 for folder in new_infer_folders:
-    if (folder / "done").exists():
+    # if (folder / "done").exists():
+    if True:
         df.loc[get_depart(folder), "infer this month"] += len(list((folder / "images").glob("*")))
         if (folder / "uploaded").exists():
             df.loc[get_depart(folder), "new infered uploaded"] += len(list((folder / "images").glob("*")))
@@ -120,34 +123,3 @@ print(df_showed)
 
 import ipdb; ipdb.set_trace()
 
-
-#temporary_added for counting assuming July is uploaded
-count_dict = {
-    'Public_Works':       299_691,
-    'Sports_Development':  18_940,
-    'Mass_Rapid_Transit': 133_357,
-    'Ports_Corporation':   40_000,
-    'Transportation':     267_186,
-}
-for key, val in count_dict.items():
-    if key == 'Transportation':
-        df.loc[key, "infer this month"] -= val
-    else:
-        df.loc[key, "not QA/merged"] -= val
-    df.loc[key, "pass QA/merged"] += val
-print(df)
-
-df["total"] = df["not QA/merged"] + df["pass QA/merged"] + df["infer this month"]
-df.loc["total"]=0
-df.loc["total"] = df.sum(axis=0)
-
-df_formatted = df.map(lambda x: f"{x:,}")
-df_formatted = df_formatted.rename_axis('depart', axis='columns')
-print(df_formatted)
-df_showed = df_formatted[["not QA/merged", "pass QA/merged", "new json", "infer this month", "total"]]
-
-today = date.today()
-date_str = today.strftime("%m/%d")
-print(f"\n# bbox updated {date_str}")
-print(df_showed)
-import ipdb; ipdb.set_trace()
