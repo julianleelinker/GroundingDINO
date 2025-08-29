@@ -2,12 +2,18 @@ import pathlib
 import pandas as pd
 import json
 from datetime import date
-from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703, DINO_COCO_SPLITS_0801
+from common import get_depart, DEPARTS_EN, DATA_CURATION_ROOT, DINO_COCO_SPLITS_0418, DINO_COCO_FOLDERS_0418, DINO_COCO_SPLITS_0508,  DINO_COCO_SPLITS_0703, AUGMENTED_CURATED_EXCLUDED_JSONS, AUGMENTED_CURATED_JSONS_0703, DINO_COCO_SPLITS_0801, DINO_COCO_SPLITS_0617, DINO_COCO_SPLITS_0715, DINO_COCO_SPLITS_0731
 import copy
 
 
 def get_split_name(folder):
     return ('/').join(str(folder).split('/')[-2:])
+
+
+def get_anno_split_name(folder):
+    tmp = ('/').join(str(folder).split('/')[-2:])
+    return ("_").join(tmp.split("_")[:-2])
+
 
 new_infer_folders = copy.deepcopy(DINO_COCO_SPLITS_0801)
 # new_infer_folders.extend(DINO_COCO_SPLITS_0715)
@@ -39,6 +45,11 @@ qaed_merged_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/hand0731-iou38/": "*/*/*",
     # "/mnt/lighthouseACD/QAed-data/bbox/hand0801-iou38/": "*/*/*",
 }
+done_anno_root_to_pattern = {
+    "/mnt/lighthouseACD/QAed-data/bbox/hand0422/": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand0428/": "*/*",
+    "/mnt/lighthouseACD/QAed-data/bbox/hand0521/": "*/*",
+}
 
 tmp_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/project-id-695": "*/*",
@@ -49,13 +60,18 @@ tmp_root_to_pattern = {
     "/mnt/lighthouseACD/QAed-data/bbox/hand08xx-iou38/project-id-700": "*/*",
 }
 
-column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "new json", "infer this month", "new infered uploaded", "695", "696", "697", "698", "699", "700"]
+column_names = ["not QA/merged", "done QA/merged", "pass QA/merged", "done anno", "not anno", "new json", "infer this month", "new infered uploaded", "695", "696", "697", "698", "699", "700"]
 row_names = DEPARTS_EN + ["total"]
 df = pd.DataFrame(0, index=row_names, columns=column_names)
 
 # check all uploaded stats
 prev_uploaded_folders = copy.deepcopy(DINO_COCO_SPLITS_0418)
 prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0508))
+prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0617))
+prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0703))
+prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0715))
+prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0731))
+prev_uploaded_folders.extend(copy.deepcopy(DINO_COCO_SPLITS_0801))
 for data_root, pattern in uploaded_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     prev_uploaded_folders.extend(folder_list)
@@ -65,11 +81,19 @@ for data_root, pattern in qaed_merged_root_to_pattern.items():
     folder_list = list(pathlib.Path(data_root).glob(pattern))
     qaed_merged_folder_list.extend(folder_list)
 qaed_merged_split_set = {get_split_name(x) for x in qaed_merged_folder_list}
+
+done_anno_folder_list = []
+for data_root, pattern in done_anno_root_to_pattern.items():
+    folder_list = list(pathlib.Path(data_root).glob(pattern))
+    done_anno_folder_list.extend(folder_list)
+done_anno_split_set = {get_split_name(x) for x in done_anno_folder_list}
 print(f"{len(qaed_merged_folder_list)=}")
 print(f"{len(qaed_merged_split_set)=}")
 
 not_qa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in qaed_merged_split_set]
 done_qa_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in qaed_merged_split_set]
+not_anno_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) not in done_anno_split_set]
+done_anno_folder_list = [x for x in prev_uploaded_folders if get_split_name(x) in done_anno_split_set]
 print(f"{len(prev_uploaded_folders)=}")
 print(f"{len(not_qa_folder_list)=}")
 print(f"{len(done_qa_folder_list)=}")
@@ -79,47 +103,53 @@ col_name_to_folder_list = {
     "not QA/merged": not_qa_folder_list,
     "pass QA/merged": qaed_merged_folder_list,
     "done QA/merged": done_qa_folder_list,
+    "done anno": done_anno_folder_list,
+    "not anno": not_anno_folder_list,
 }
 
 
-# check newly add stats
-print(f"\nfinding new jsons...")
-for json_path in new_json_list:
-    with open(json_path, 'r') as f:
-        image_list = json.load(f)
-    print(json_path)
-    print(f"{len(image_list)=}\n")
-    df.loc[get_depart(json_path), 'new json'] += len(image_list)
+def main():
+    # check newly add stats
+    print(f"\nfinding new jsons...")
+    for json_path in new_json_list:
+        with open(json_path, 'r') as f:
+            image_list = json.load(f)
+        print(json_path)
+        print(f"{len(image_list)=}\n")
+        df.loc[get_depart(json_path), 'new json'] += len(image_list)
 
-# check recent running stats
-for folder in new_infer_folders:
-    # if (folder / "done").exists():
-    if True:
-        df.loc[get_depart(folder), "infer this month"] += len(list((folder / "images").glob("*")))
-        if (folder / "uploaded").exists():
-            df.loc[get_depart(folder), "new infered uploaded"] += len(list((folder / "images").glob("*")))
-print(df.map(lambda x: f"{x:,}"))
-
-
-for col_name, folder_list in col_name_to_folder_list.items():
-    for folder in folder_list:
-        image_list = list((folder/"images").glob("*"))
-        df.loc[get_depart(folder), col_name] += len(image_list)
+    # check recent running stats
+    for folder in new_infer_folders:
+        # if (folder / "done").exists():
+        if True:
+            df.loc[get_depart(folder), "infer this month"] += len(list((folder / "images").glob("*")))
+            if (folder / "uploaded").exists():
+                df.loc[get_depart(folder), "new infered uploaded"] += len(list((folder / "images").glob("*")))
+    print(df.map(lambda x: f"{x:,}"))
 
 
+    for col_name, folder_list in col_name_to_folder_list.items():
+        for folder in folder_list:
+            image_list = list((folder/"images").glob("*"))
+            df.loc[get_depart(folder), col_name] += len(image_list)
 
-df["total"] = df["not QA/merged"] + df["pass QA/merged"] + df["infer this month"]
-df.loc["total"] = df.sum(axis=0)
 
-df_formatted = df.map(lambda x: f"{x:,}")
-df_formatted = df_formatted.rename_axis('depart', axis='columns')
-print(df_formatted)
-df_showed = df_formatted[["not QA/merged", "pass QA/merged", "new json", "infer this month", "total"]]
 
-today = date.today()
-date_str = today.strftime("%m/%d")
-print(f"\n# bbox updated {date_str}")
-print(df_showed)
+    df["total"] = df["not QA/merged"] + df["pass QA/merged"] + df["infer this month"]
+    df.loc["total"] = df.sum(axis=0)
 
-import ipdb; ipdb.set_trace()
+    df_formatted = df.map(lambda x: f"{x:,}")
+    df_formatted = df_formatted.rename_axis('depart', axis='columns')
+    print(df_formatted)
+    df_showed = df_formatted[["not QA/merged", "pass QA/merged", "new json", "infer this month", "total"]]
 
+    today = date.today()
+    date_str = today.strftime("%m/%d")
+    print(f"\n# bbox updated {date_str}")
+    print(df_showed)
+
+    import ipdb; ipdb.set_trace()
+
+
+if __name__ == "__main__":
+    main()

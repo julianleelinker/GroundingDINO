@@ -15,6 +15,7 @@ from box_utils import xywh_to_xyxy, fix_boundary, merge_by_iou
 from chatgpt import encode_image, ask_chatgpt_describe_image, ask_chatgpt_describe_image_find_suitable_answer, convert_pil_to_base64, generate_vlm_pretraining_annotation
 from common import get_depart
 from collections import defaultdict
+from llava_infer import llava_infer, load_llava
 
 
 def parse_coco_anno(coco_root):
@@ -57,7 +58,7 @@ def get_cocoo_bboxes_from_yolo_bboxes(bboxes, H, W):
     return bboxes
 
 
-def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_root, scale=4.0, merge_threshold=0.1, plot_mode=False, full_image_prompt = "Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.​", cropped_image_prompt = "Provide a one-sentence caption​ for the provided image."):
+def coco_bbox_llava_generate_image_text(model, processor, image_path, bboxes, image_size, output_root, scale=4.0, merge_threshold=0.1, plot_mode=False, full_image_prompt = "Provide a one-sentence caption​ for the scene, time, and weather​ in the provided image.​", cropped_image_prompt = "Provide a one-sentence caption​ for the provided image."):
     image_pil = Image.open(image_path)
     W, H = image_size
 
@@ -95,7 +96,8 @@ def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_roo
         bbox_int = torch.ceil(bbox)
         cropped_image = image_pil.crop((int(bbox_int[0]), int(bbox_int[1]), int(bbox_int[2]), int(bbox_int[3])))
         cropped_image.save(cropped_image_path)
-        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
+        # response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
+        response = llava_infer(model, processor, [cropped_image_path], [cropped_image_prompt], batch_size=1, max_new_tokens=200)
         if response is None:
             cropped_image_path.unlink()
             continue
@@ -108,7 +110,8 @@ def coco_bbox_gpt_generate_image_text(image_path, bboxes, image_size, output_roo
     if image_path.exists() and json_path.exists():
         return
     image_pil.save(image_path)
-    response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
+    # response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
+    response = llava_infer(model, processor, [cropped_image_path], [full_image_prompt], batch_size=1, max_new_tokens=200)
     if response is not None:
         with open(json_path, "w") as f:
             json.dump(response, f, indent=4, ensure_ascii=False)
@@ -154,7 +157,7 @@ def coco_bbox_gpt_generate_image_text_new(image_path, bboxes, image_size, output
         bbox_int = torch.ceil(bbox)
         cropped_image = image_pil.crop((int(bbox_int[0]), int(bbox_int[1]), int(bbox_int[2]), int(bbox_int[3])))
         cropped_image.save(cropped_image_path)
-        response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
+        # response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, cropped_image_path, prompt = cropped_image_prompt)
         if response is None:
             cropped_image_path.unlink()
             continue
@@ -167,7 +170,7 @@ def coco_bbox_gpt_generate_image_text_new(image_path, bboxes, image_size, output
     if image_path.exists() and json_path.exists():
         return
     image_pil.save(image_path)
-    response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
+    # response = ask_chatgpt_describe_image(AZURE_OPENAI_API_KEY, image_path, prompt = full_image_prompt)
     if response is not None:
         with open(json_path, "w") as f:
             json.dump(response, f, indent=4, ensure_ascii=False)
@@ -324,9 +327,14 @@ def main(scale=2.5, merge_threshold=0.35, plot_mode=False, batch=0):
     ]
     split_root_list = batch_list[batch]
 
+    root_folder = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox-training-only/split0_50")
+    split_root_list = list(root_folder.glob("*/split*"))
+    import ipdb; ipdb.set_trace()
+
     # for split_root, split_range in tqdm.tqdm(split_root_list.items()):
     json_data = []
 
+    model, processor = load_llava()
     for split_root in tqdm.tqdm(split_root_list):
         print(f"{split_root}")
         # split_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/{split_root}")
@@ -352,9 +360,11 @@ def main(scale=2.5, merge_threshold=0.35, plot_mode=False, batch=0):
         # generate temp file for saving to webdataset
         for image_name, anno_list in tqdm.tqdm(image_id_to_name_and_anno.values()):
             image_path = pathlib.Path(split_root) / "images" / image_name
+            if not anno_list:
+                continue
             bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)
             # coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), tmp_root, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
-            coco_bbox_gpt_generate_image_text(image_path, bboxes, (W, H), output_folder, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
+            coco_bbox_llava_generate_image_text(model, processor, image_path, bboxes, (W, H), output_folder, scale=scale, merge_threshold=merge_threshold, plot_mode=plot_mode)
 
         # image_text_name = yield_image_text_name(tmp_root)
         # save_to_webdataset_auto(image_text_name, output_folder, base_name="shard", max_per_shard=1000)

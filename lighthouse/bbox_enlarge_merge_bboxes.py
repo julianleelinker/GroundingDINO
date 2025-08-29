@@ -5,33 +5,38 @@ import os
 from PIL import Image, ImageDraw
 from infer_settings import DINO_INFER_CLASSES
 from common import DINO_COCO_SPLITS_0801
+from bbox_count_stats import not_anno_folder_list
 # from bbox_non_qa import JULY_SPLIT_LIST, AUG_SPLIT_LIST
 import json
 import fire
 
 
-def main(scale=1.0, merge_threshold=0.38):
+def main(scale=2.5, merge_threshold=0.38):
+    # scale = 2.5 for training, 1.0 for hand to gov
     data_root = "/mnt/lighthouseACD/QAed-data/bbox/hand0526/"
     # split_root_list = list(pathlib.Path(f"{data_root}").glob("*/*"))
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0526-iou38")
 
     # split_root_list = DINO_COCO_SPLITS_0508
-    split_root_list = DINO_COCO_SPLITS_0801
-    split_root_list = [pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/project-id-697/Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35/split0")]
+    # split_root_list = DINO_COCO_SPLITS_0801
+    # split_root_list = [pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38/project-id-697/Taiwan_Power_20250106_image_list_keep_0.95_0.30_0.35/split0")]
     # split_root_list = AUG_SPLIT_LIST
+    split_root_list = [pathlib.Path(x) for x in not_anno_folder_list]
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0626-iou38")
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand07xx-iou38")
     # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0801-iou38")
-    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0806-iou38")
+    # output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox/hand0806-iou38")
+    output_root = pathlib.Path(f"/mnt/lighthouseACD/QAed-data/bbox-training-only/split0_50")
 
     # for split in split_root:
     #     image_path_list = list(split.rglob("images/*"))
     #     print(f"Split: {split}, Number of images: {len(image_path_list)}")
 
     # split_root = pathlib.Path("/mnt/lighthouseACD/QAed-data/bbox/hand0526/Transportation_20250109_image_list_keep_0.95/split16_0.30_0.35")
+    split_root_list.sort()
     print(len(split_root_list))
     import ipdb; ipdb.set_trace()
-    for split_root in tqdm.tqdm(split_root_list):
+    for split_root in tqdm.tqdm(split_root_list[:50]):
         if not split_root.is_dir():
             continue
         # print(split_root)
@@ -69,6 +74,8 @@ def main(scale=1.0, merge_threshold=0.38):
 
             if len(anno_list) == 0:
                 merged_bboxes = []
+                image_pil = Image.open(image_path)
+                W, H = image_pil.width, image_pil.height
                 count += 1
             else:
                 bboxes, (W, H) = get_yolo_bboxes_from_coco_anno(image_path, anno_list)

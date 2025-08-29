@@ -5,6 +5,7 @@ import webdataset as wds
 import os
 import io
 import fire
+import tqdm
 
 
 def save_to_webdataset_auto(pairs, output_dir, base_name="shard", max_per_shard=1000):
@@ -61,7 +62,7 @@ def main(output_path, train_json, val_json):
         "val": val_json,
     }
 
-    for split, json_path in split_path.items():
+    for split, json_path in tqdm.tqdm(split_path.items()):
         image_text_name = yield_image_text_name(json_path)
         save_to_webdataset_auto(image_text_name, output_path, base_name=split, max_per_shard=1000)
 
